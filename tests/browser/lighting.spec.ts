@@ -50,7 +50,7 @@ test("rooms, light controls, complete scene lifecycle, persistence, and mobile l
   ).toBeVisible();
   await page.reload();
   await expect(
-    page.getByRole("heading", { name: "Living room." }),
+    page.getByRole("heading", { name: "Living room" }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", {
@@ -112,7 +112,9 @@ test("rooms, light controls, complete scene lifecycle, persistence, and mobile l
     page.getByRole("button", { name: "All lights off", exact: true }),
   ).toBeDisabled();
   await page.getByRole("button", { name: "Lights on", exact: true }).click();
-  await expect(page.getByText("The house is resting.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "All lights are off" }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "Show all rooms", exact: true })
     .click();
@@ -193,7 +195,7 @@ test("assets, live events, room links, and actions work below the Home Assistant
   if (on) await expect(toggle).not.toBeChecked();
   else await expect(toggle).toBeChecked();
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Bedroom." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Bedroom" })).toBeVisible();
   expect(
     await page.evaluate(() => document.fonts.check('12px "DM Sans Variable"')),
   ).toBe(true);

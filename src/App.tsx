@@ -14,7 +14,6 @@ import {
   Power,
   Radio,
   Settings2,
-  ShieldCheck,
   Sparkles,
   Sun,
   X,
@@ -23,14 +22,7 @@ import {
   ExternalLink,
   LayoutGrid,
 } from "lucide-react";
-import {
-  Brightness,
-  Modal,
-  RoomArt,
-  RoomIcon,
-  SceneOrb,
-  Toggle,
-} from "./components";
+import { Brightness, Modal, RoomIcon, SceneOrb, Toggle } from "./components";
 import { SceneEditor } from "./SceneEditor";
 import type { Home, Light, LightSettings, Room, Scene } from "./types";
 
@@ -178,13 +170,6 @@ export default function App() {
   const lightsOn = home?.lights.filter((l) => l.on && l.available).length ?? 0;
   const disabled = busy || !home?.connected || !streamOnline;
   const currentLight = home?.lights.find((l) => l.id === lightEditor);
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12
-      ? "Good morning."
-      : hour < 18
-        ? "Good afternoon."
-        : "Good evening.";
 
   function sceneCard(scene: Scene, compact = false) {
     const sceneRoom = home?.rooms.find((r) => r.id === scene.roomId);
@@ -268,55 +253,35 @@ export default function App() {
         className={`room-card room-${item.style} ${on ? "room-on" : "room-off"}`}
         key={item.id}
       >
-        <div className="room-visual">
-          <button
-            className="room-open-art"
-            aria-label={`Open ${item.name}`}
-            onClick={() => navigate("rooms", item.id)}
-          >
-            <div className="ambient-glow" />
-            <RoomArt kind={item.style} />
-            <span className="room-icon">
-              <RoomIcon style={item.style} />
-            </span>
-            <span className="room-scene-label">
-              {on ? (
-                <>
-                  <span className="tiny-dot" />
-                  {active?.name ?? "Your own mix"}
-                </>
-              ) : (
-                <>
-                  <Moon size={12} />
-                  Resting
-                </>
-              )}
-            </span>
-          </button>
-          <Toggle
-            label={`${item.name} lights`}
-            on={on}
-            disabled={disabled || !available.length}
-            onChange={() => lightsAction(lights, { on: !on })}
-          />
-        </div>
         <div className="room-info">
-          <button
-            className="room-name"
-            onClick={() => navigate("rooms", item.id)}
-          >
-            <span>
-              <h3>{item.name}</h3>
-              <p>
-                {!available.length
-                  ? "Lights unavailable"
-                  : count
-                    ? `${count} of ${lights.length} lights on`
-                    : `${lights.length} lights · All off`}
-              </p>
-            </span>
-            <ChevronRight size={18} />
-          </button>
+          <div className="room-card-heading">
+            <button
+              className="room-name"
+              aria-label={`Open ${item.name}`}
+              onClick={() => navigate("rooms", item.id)}
+            >
+              <span className="room-icon">
+                <RoomIcon style={item.style} />
+              </span>
+              <span className="room-name-text">
+                <h3>{item.name}</h3>
+                <p>
+                  {!available.length
+                    ? "Lights unavailable"
+                    : count
+                      ? `${count} of ${lights.length} lights on`
+                      : `${lights.length} lights · All off`}
+                </p>
+              </span>
+              <ChevronRight size={16} />
+            </button>
+            <Toggle
+              label={`${item.name} lights`}
+              on={on}
+              disabled={disabled || !available.length}
+              onChange={() => lightsAction(lights, { on: !on })}
+            />
+          </div>
           {lights.some((l) => l.dimmable) && (
             <Brightness
               value={brightness || 50}
@@ -328,6 +293,7 @@ export default function App() {
               }
             />
           )}
+          {on && active && <p className="room-active-scene">{active.name}</p>}
         </div>
       </article>
     );
@@ -352,11 +318,8 @@ export default function App() {
           <span className="home-mini-icon">
             <House size={16} />
           </span>
-          <div>
-            My home<small>A space to feel good</small>
-          </div>
+          <div>My home</div>
         </div>
-        <span className="nav-label">YOUR SPACE</span>
         <nav aria-label="Main navigation">
           <button
             className={`nav-item ${page === "rooms" ? "selected" : ""}`}
@@ -374,20 +337,6 @@ export default function App() {
             <span>All scenes</span>
           </button>
         </nav>
-        <div className="sidebar-note">
-          <div className="note-orbit">
-            <Sparkles size={21} strokeWidth={1.4} />
-          </div>
-          <p>
-            A little light.
-            <br />
-            <strong>A lot of atmosphere.</strong>
-          </p>
-          <span>
-            Make every moment feel
-            <br />a little more like you.
-          </span>
-        </div>
         <div className="sidebar-bottom">
           <button className="nav-item" onClick={() => setConnectionOpen(true)}>
             <Settings2 size={18} />
@@ -397,7 +346,7 @@ export default function App() {
             <span
               className={`status-dot ${home?.connected && streamOnline ? "" : "offline"}`}
             />
-            <span>Made for Home Assistant</span>
+            <span>Home Assistant</span>
           </div>
         </div>
       </aside>
@@ -428,8 +377,8 @@ export default function App() {
           {!home ? (
             <div className="loading-state">
               <Sun className="loading-sun" size={42} />
-              <h1>A little light is on its way.</h1>
-              <p>{loadError || "Getting your home ready…"}</p>
+              <h1>Loading lights</h1>
+              <p>{loadError || "Connecting to your home…"}</p>
               {loadError && (
                 <button
                   className="button secondary"
@@ -465,18 +414,12 @@ export default function App() {
                   </button>
                   <div className={`room-detail-hero room-${room.style}`}>
                     <div className="room-detail-title">
-                      <span className="eyebrow">MAKE YOURSELF AT HOME</span>
-                      <h1>
-                        {room.name}
-                        <span>.</span>
-                      </h1>
+                      <h1>{room.name}</h1>
                       <p>
                         {roomLights.filter((l) => l.on && l.available).length}{" "}
-                        of {roomLights.length} lights on <span>·</span> Just the
-                        way you like it.
+                        of {roomLights.length} lights on
                       </p>
                     </div>
-                    <RoomArt kind={room.style} />
                     <div className="room-detail-power">
                       <span>
                         {roomLights.some((l) => l.on && l.available)
@@ -524,50 +467,11 @@ export default function App() {
                     <div className="section-heading">
                       <div>
                         <h2>
-                          Your scenes{" "}
-                          <span className="count-label">
-                            {
-                              home.scenes.filter((s) => s.roomId === room.id)
-                                .length
-                            }
-                          </span>
-                        </h2>
-                        <p>A different feeling, just a tap away.</p>
-                      </div>
-                      <button
-                        className="button primary"
-                        onClick={() => setEditor({ roomId: room.id })}
-                      >
-                        <Plus size={17} />
-                        Create scene
-                      </button>
-                    </div>
-                    <div className="scenes-grid">
-                      {home.scenes
-                        .filter((s) => s.roomId === room.id)
-                        .map((s) => sceneCard(s))}
-                      <button
-                        className="create-scene-card"
-                        onClick={() => setEditor({ roomId: room.id })}
-                      >
-                        <span>
-                          <Plus size={23} />
-                        </span>
-                        <strong>Make a moment</strong>
-                        <small>Save your perfect light</small>
-                      </button>
-                    </div>
-                  </section>
-                  <section className="section">
-                    <div className="section-heading">
-                      <div>
-                        <h2>
                           Lights{" "}
                           <span className="count-label">
                             {roomLights.length}
                           </span>
                         </h2>
-                        <p>A little adjustment makes all the difference.</p>
                       </div>
                     </div>
                     <div className="lights-grid">
@@ -633,42 +537,146 @@ export default function App() {
                       ))}
                     </div>
                   </section>
+                  <section className="section">
+                    <div className="section-heading">
+                      <div>
+                        <h2>
+                          Scenes{" "}
+                          <span className="count-label">
+                            {
+                              home.scenes.filter((s) => s.roomId === room.id)
+                                .length
+                            }
+                          </span>
+                        </h2>
+                      </div>
+                      <button
+                        className="button primary"
+                        onClick={() => setEditor({ roomId: room.id })}
+                      >
+                        <Plus size={17} />
+                        Create scene
+                      </button>
+                    </div>
+                    <div className="scenes-grid">
+                      {home.scenes
+                        .filter((s) => s.roomId === room.id)
+                        .map((s) => sceneCard(s))}
+                    </div>
+                  </section>
                 </>
               ) : page === "rooms" ? (
                 <>
                   <div className="page-heading">
                     <div>
-                      <span className="eyebrow">
-                        YOUR HOME, IN A GOOD LIGHT
-                      </span>
-                      <h1>{greeting}</h1>
-                      <p>Set the mood. Settle in. Make yourself at home.</p>
+                      <h1>Rooms</h1>
                     </div>
-                    <div className="home-summary">
-                      <span className="summary-bulb">
-                        <Lightbulb size={23} strokeWidth={1.5} />
-                      </span>
-                      <div>
-                        <strong>{lightsOn} lights on</strong>
-                        <small>
-                          across{" "}
-                          {
-                            home.rooms.filter((r) =>
-                              home.lights.some(
-                                (l) => l.roomId === r.id && l.on && l.available,
-                              ),
-                            ).length
-                          }{" "}
-                          rooms
-                        </small>
+                    <div className="home-actions">
+                      <div className="home-summary">
+                        <span className="summary-bulb">
+                          <Lightbulb size={23} strokeWidth={1.5} />
+                        </span>
+                        <div>
+                          <strong>{lightsOn} lights on</strong>
+                          <small>
+                            across{" "}
+                            {
+                              home.rooms.filter((r) =>
+                                home.lights.some(
+                                  (l) =>
+                                    l.roomId === r.id && l.on && l.available,
+                                ),
+                              ).length
+                            }{" "}
+                            rooms
+                          </small>
+                        </div>
                       </div>
+                      <button
+                        className="button secondary all-off"
+                        disabled={disabled || !lightsOn}
+                        onClick={() =>
+                          lightsAction(
+                            home.lights.filter((l) => l.on),
+                            { on: false },
+                          )
+                        }
+                      >
+                        <Power size={15} />
+                        All lights off
+                      </button>
                     </div>
                   </div>
+                  <section className="section rooms-section">
+                    <div
+                      className="room-filters"
+                      role="group"
+                      aria-label="Filter rooms"
+                    >
+                      <button
+                        className={filter === "all" ? "selected" : ""}
+                        onClick={() => setFilter("all")}
+                      >
+                        All rooms
+                      </button>
+                      <button
+                        className={filter === "on" ? "selected" : ""}
+                        onClick={() => setFilter("on")}
+                      >
+                        <span className="tiny-dot" />
+                        Lights on
+                      </button>
+                    </div>
+                    <div className="rooms-grid">
+                      {home.rooms
+                        .filter(
+                          (r) =>
+                            filter === "all" ||
+                            home.lights.some(
+                              (l) => l.roomId === r.id && l.on && l.available,
+                            ),
+                        )
+                        .map(roomCard)}
+                    </div>
+                    {!home.rooms.length ? (
+                      <div className="empty-state">
+                        <House size={32} />
+                        <h3>No rooms yet</h3>
+                        <p>
+                          Add lights to Areas in Home Assistant and they’ll
+                          appear here automatically. Unassigned lights appear in
+                          “Other lights”.
+                        </p>
+                        <button
+                          className="button secondary"
+                          onClick={() => setConnectionOpen(true)}
+                        >
+                          How it works
+                        </button>
+                      </div>
+                    ) : (
+                      filter === "on" &&
+                      !lightsOn && (
+                        <div className="empty-state">
+                          <Moon size={32} />
+                          <h3>All lights are off</h3>
+                          <p>Choose a room to turn on its lights.</p>
+                          <button
+                            className="text-button"
+                            onClick={() => setFilter("all")}
+                          >
+                            Show all rooms
+                            <ArrowRight size={15} />
+                          </button>
+                        </div>
+                      )
+                    )}
+                  </section>
                   <section className="section favorites-section">
                     <div className="section-heading">
                       <h2>
                         <Heart size={17} />
-                        Your go-to moods
+                        Favorite scenes
                       </h2>
                       <button
                         className="text-button"
@@ -690,125 +698,18 @@ export default function App() {
                         onClick={() => navigate("scenes")}
                       >
                         <Heart size={19} />
-                        <span>
-                          A few favorites make a home. Tap the heart on a scene
-                          to keep it here.
-                        </span>
+                        <span>Tap the heart on a scene to keep it here.</span>
                         <ArrowRight size={17} />
                       </button>
                     )}
                   </section>
-                  <section className="section rooms-section">
-                    <div className="section-heading">
-                      <h2>
-                        Your rooms{" "}
-                        <span className="count-label">{home.rooms.length}</span>
-                      </h2>
-                      <button
-                        className="button secondary all-off"
-                        disabled={disabled || !lightsOn}
-                        onClick={() =>
-                          lightsAction(
-                            home.lights.filter((l) => l.on),
-                            { on: false },
-                          )
-                        }
-                      >
-                        <Power size={15} />
-                        All lights off
-                      </button>
-                    </div>
-                    <div
-                      className="room-filters"
-                      role="group"
-                      aria-label="Filter rooms"
-                    >
-                      <button
-                        className={filter === "all" ? "selected" : ""}
-                        onClick={() => setFilter("all")}
-                      >
-                        All rooms
-                      </button>
-                      <button
-                        className={filter === "on" ? "selected" : ""}
-                        onClick={() => setFilter("on")}
-                      >
-                        <span className="tiny-dot" />
-                        Lights on
-                      </button>
-                      <span className="room-hint">
-                        Small changes. A whole new feeling.
-                      </span>
-                    </div>
-                    <div className="rooms-grid">
-                      {home.rooms
-                        .filter(
-                          (r) =>
-                            filter === "all" ||
-                            home.lights.some(
-                              (l) => l.roomId === r.id && l.on && l.available,
-                            ),
-                        )
-                        .map(roomCard)}
-                    </div>
-                    {!home.rooms.length ? (
-                      <div className="empty-state">
-                        <House size={32} />
-                        <h3>Your rooms will feel right at home.</h3>
-                        <p>
-                          Add lights to Areas in Home Assistant and they’ll
-                          appear here automatically. Unassigned lights appear in
-                          “Other lights”.
-                        </p>
-                        <button
-                          className="button secondary"
-                          onClick={() => setConnectionOpen(true)}
-                        >
-                          How it works
-                        </button>
-                      </div>
-                    ) : (
-                      filter === "on" &&
-                      !lightsOn && (
-                        <div className="empty-state">
-                          <Moon size={32} />
-                          <h3>The house is resting.</h3>
-                          <p>
-                            All your lights are off. A little peace and quiet.
-                          </p>
-                          <button
-                            className="text-button"
-                            onClick={() => setFilter("all")}
-                          >
-                            Show all rooms
-                            <ArrowRight size={15} />
-                          </button>
-                        </div>
-                      )
-                    )}
-                  </section>
-                  <div className="bottom-note">
-                    <span>
-                      <Sparkles size={17} />
-                    </span>
-                    <p>
-                      <strong>Good light, on repeat.</strong> Open a room to
-                      create a scene that feels like you.
-                    </p>
-                    <span className="note-stars">✦</span>
-                  </div>
                 </>
               ) : (
                 <>
                   <div className="page-heading">
                     <div>
-                      <span className="eyebrow">A MOOD FOR EVERY MOMENT</span>
-                      <h1>A little atmosphere.</h1>
-                      <p>Your favorite looks, all in one place.</p>
+                      <h1>Scenes</h1>
                     </div>
-                    <span className="large-page-icon">
-                      <Sparkles size={37} strokeWidth={1.2} />
-                    </span>
                   </div>
                   <div className="section-heading scene-page-heading">
                     <div
@@ -870,7 +771,7 @@ export default function App() {
                   ) && (
                     <div className="empty-state">
                       <Sparkles size={32} />
-                      <h3>A fresh start for your atmosphere.</h3>
+                      <h3>No scenes yet</h3>
                       <p>
                         {sceneFilter === "favorites"
                           ? "Tap the heart on any scene to make it a favorite."
@@ -890,43 +791,15 @@ export default function App() {
                       </button>
                     </div>
                   )}
-                  <div className="bottom-note">
-                    <span>
-                      <Plus size={18} />
-                    </span>
-                    <p>
-                      Want a new mood?{" "}
-                      <button
-                        className="inline-link"
-                        onClick={() => navigate("rooms")}
-                      >
-                        Choose a room
-                      </button>{" "}
-                      and create your own scene.
-                    </p>
-                  </div>
                 </>
               )}
-              <footer className="footer">
-                <span>
-                  <Sun size={14} />
-                  Less configuring. More living.
-                </span>
-                <button onClick={() => setConnectionOpen(true)}>
-                  <ShieldCheck size={14} />
-                  {home.mode === "demo"
-                    ? "Exploring a demo home"
-                    : "At home. In sync."}
-                </button>
-              </footer>
             </>
           )}
         </main>
       </div>
       {connectionOpen && (
         <Modal
-          title="Right at home."
-          subtitle="Your lights. Your rooms. A simpler way."
+          title="Connection & help"
           onClose={() => setConnectionOpen(false)}
         >
           <div
@@ -950,7 +823,7 @@ export default function App() {
           </div>
           {home?.mode === "demo" && (
             <>
-              <h3 className="help-heading">Bring Glow into your home</h3>
+              <h3 className="help-heading">Connect to Home Assistant</h3>
               <ol className="setup-steps">
                 <li>
                   <span>1</span>
@@ -976,7 +849,7 @@ export default function App() {
                 <li>
                   <span>3</span>
                   <div>
-                    <strong>Start it. Make yourself at home.</strong>
+                    <strong>Start Glow</strong>
                     <p>
                       Enable “Show in sidebar” and open Glow. Your existing
                       rooms and lights are ready to go.
@@ -1001,9 +874,9 @@ export default function App() {
             <div>
               <Sparkles size={18} />
               <p>
-                <strong>Save a look, keep it.</strong> Glow scenes are stored in
-                the app and shared across your devices. Existing Home Assistant
-                scenes appear too; edit those in Home Assistant.
+                <strong>Scenes sync across devices.</strong> Glow scenes are
+                stored in the app and shared across your devices. Existing Home
+                Assistant scenes appear too; edit those in Home Assistant.
               </p>
             </div>
           </div>
@@ -1021,7 +894,7 @@ export default function App() {
               className="button primary"
               onClick={() => setConnectionOpen(false)}
             >
-              Sounds good
+              Done
               <Check size={16} />
             </button>
           </div>
@@ -1039,9 +912,7 @@ export default function App() {
               id ? `scenes/${encodeURIComponent(id)}` : "scenes",
               body,
               id ? "PUT" : "POST",
-              id
-                ? "Scene updated. Your moment, saved."
-                : "Your new scene is ready.",
+              id ? "Scene updated" : "Scene saved",
             )
           }
           onDelete={(id) =>

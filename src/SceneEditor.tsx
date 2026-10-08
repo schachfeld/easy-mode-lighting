@@ -82,7 +82,7 @@ export function SceneEditor({
   }
   return (
     <Modal
-      title={scene ? "Make it your own." : "A scene for your moment."}
+      title={scene ? "Edit scene" : "Create scene"}
       subtitle={`${room.name} · ${roomLights.length} lights`}
       onClose={onClose}
       wide
@@ -96,13 +96,13 @@ export function SceneEditor({
           className="text-input"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Movie night, slow mornings…"
+          placeholder="e.g. Movie night"
           required
           maxLength={60}
           autoFocus
         />
         <div className="field-heading">
-          <span className="field-label">Start with a mood</span>
+          <span className="field-label">Color presets</span>
           <button
             className="text-button"
             type="button"
@@ -133,7 +133,7 @@ export function SceneEditor({
           ))}
         </div>
         <div className="field-heading">
-          <span className="field-label">Fine-tune your lights</span>
+          <span className="field-label">Lights</span>
           <span className="subtle">Changes are saved with the scene</span>
         </div>
         <div className="scene-light-list">
