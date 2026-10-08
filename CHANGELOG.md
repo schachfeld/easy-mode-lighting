@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1] - 2026-10-08
+
+- Fix container verification on Docker's classic image store so both amd64 and ARM64 are tested before publication.
+- First installable public release: automatic rooms, light controls, persistent room scenes, and Home Assistant sidebar access.
+
+Automated checks cover the app and both container architectures. Validation on a real Home Assistant installation with physical lights is still pending.
+
 ## [1.0.0] - 2026-10-08
 
 - Discover Home Assistant rooms and lights automatically.

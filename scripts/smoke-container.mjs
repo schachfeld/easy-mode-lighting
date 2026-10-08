@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import assert from "node:assert/strict";
 
-const image = process.argv[2];
+let image = process.argv[2];
 const platform = process.argv[3] ?? "linux/amd64";
 if (!image || !["linux/amd64", "linux/arm64"].includes(platform))
   throw new Error(
@@ -10,6 +10,21 @@ if (!image || !["linux/amd64", "linux/arm64"].includes(platform))
 const docker = (args) =>
   execFileSync("docker", args, { encoding: "utf8", timeout: 180000 }).trim();
 if (image.startsWith("ghcr.io/")) {
+  // Pull the platform manifest, since classic Docker cannot cache two
+  // architectures under the same multi-platform index digest.
+  const index = JSON.parse(docker(["manifest", "inspect", image]));
+  const [os, architecture] = platform.split("/");
+  const manifest = index.manifests?.find(
+    (entry) =>
+      entry.platform?.os === os &&
+      entry.platform?.architecture === architecture,
+  );
+  assert.match(
+    manifest?.digest ?? "",
+    /^sha256:[a-f0-9]{64}$/,
+    `Missing ${platform} manifest`,
+  );
+  image = `${image.split("@")[0].replace(/:[^/]+$/, "")}@${manifest.digest}`;
   docker(["pull", "--platform", platform, image]);
   const [metadata] = JSON.parse(docker(["image", "inspect", image]));
   assert.equal(metadata.Architecture, platform.split("/")[1]);
