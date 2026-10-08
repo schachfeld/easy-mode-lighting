@@ -2,7 +2,29 @@
 
 Start the app and enable **Show in sidebar**. Open **Glow** from the Home Assistant sidebar.
 
-Glow's sidebar entry is available to all Home Assistant users, including non-admins. If an older installation only shows it to admins, set `panel_admin: false` in Glow's app `config.yaml`, reload the app store, and turn **Show in sidebar** off and on again. Refresh the other users' browsers or companion apps. Users who previously hid Glow in their sidebar may also need to unhide it in their profile's sidebar settings.
+Glow's app configuration sets `panel_admin: false` so its sidebar entry is available to all Home Assistant users, including non-admins.
+
+For an existing local installation that only shows Glow to admins:
+
+1. Confirm the installed source file at `/local_apps/glow/config.yaml` (or `/addons/glow/config.yaml` on older versions) contains `panel_admin: false`. Editing a copy on another computer does not update Home Assistant's installation.
+2. Open **Settings → Apps → App store → ⋮ → Check for updates**. On older versions, use **Add-ons → Add-on store**. Do this before rebuilding so Supervisor reads the changed app configuration into its store cache.
+3. Open the installed Glow app and select **Rebuild** from its menu. Rebuilding copies the store's cached configuration to the installed app; refreshing the store alone does not update the installed configuration.
+4. Turn **Show in sidebar** off and on again, then refresh the affected users' browsers or companion apps.
+
+For a repository installation, install a published Glow update containing the sidebar change instead of editing a local app folder.
+
+If Glow is still missing for a user, open that user's profile and edit the sidebar visibility settings to check whether they previously hid it. On a desktop browser, an admin can also inspect the active panel setting in the browser's developer console:
+
+```js
+Object.values(document.querySelector("home-assistant").hass.panels)
+  .filter((panel) => panel.config?.addon?.includes("glow"))
+  .map((panel) => ({
+    path: panel.url_path,
+    adminOnly: panel.require_admin,
+  }));
+```
+
+Glow should report `adminOnly: false`. If it reports `true`, the active panel still has the old restriction; check the source file and repeat the store refresh, rebuild, and sidebar toggle in that order. If it reports `false`, check the affected user's sidebar settings and reload their session.
 
 ## Your rooms
 
