@@ -2,6 +2,8 @@
 
 Start the app and enable **Show in sidebar**. Open **Glow** from the Home Assistant sidebar.
 
+Glow's sidebar entry is available to all Home Assistant users, including non-admins. If an older installation only shows it to admins, set `panel_admin: false` in Glow's app `config.yaml`, reload the app store, and turn **Show in sidebar** off and on again. Refresh the other users' browsers or companion apps. Users who previously hid Glow in their sidebar may also need to unhide it in their profile's sidebar settings.
+
 ## Your rooms
 
 Glow uses the Areas already set up in Home Assistant. Assign your light devices to Areas under **Settings → Areas, labels & zones** to organize the room view. You can override the Area on individual light entities. Unassigned lights appear in **Other lights**. Hidden and disabled light entities are excluded.

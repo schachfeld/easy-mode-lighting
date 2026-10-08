@@ -13,5 +13,6 @@ ingress: true
 ingress_port: 8099
 panel_icon: mdi:lightbulb-group-outline
 panel_title: Glow
+panel_admin: false
 options: {}
 schema: {}
