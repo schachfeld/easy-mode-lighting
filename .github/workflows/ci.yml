@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run release:check
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium --only-shell
+      - run: npm run test:browser
+      - run: npm run package:addon
+      - name: Build and start the packaged app
+        run: |
+          mkdir -p "$RUNNER_TEMP/glow-package"
+          tar -xzf artifacts/glow-addon.tar.gz -C "$RUNNER_TEMP/glow-package"
+          docker build -t glow-ci "$RUNNER_TEMP/glow-package/glow"
+          node scripts/smoke-container.mjs glow-ci linux/amd64
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: glow-check-results
+          path: |
+            artifacts/
+            test-results/
+          retention-days: 7

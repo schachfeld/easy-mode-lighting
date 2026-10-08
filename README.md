@@ -17,7 +17,11 @@ Open a room, set its brightness, tap a scene, or make one of your own. No dashbo
 
 ## Install on Home Assistant OS
 
-This project includes a local Home Assistant app (previously called an add-on). It is ready to build locally; it has not been published to a public app repository.
+Source code is hosted at [schachfeld/easy-mode-lighting](https://github.com/schachfeld/easy-mode-lighting). Until the first tagged release is published, use the local installation below.
+
+After the first successful release, add `https://github.com/schachfeld/easy-mode-lighting#home-assistant` in the Home Assistant app store's **Repositories** menu. Install **Glow** from that repository. Later releases appear as normal app updates, with prebuilt images for both supported architectures. The `home-assistant` branch is created automatically by the first successful release.
+
+### Local installation
 
 1. Download or build **`artifacts/glow-addon.tar.gz`**. To build it from source, run `npm ci` and `npm run package:addon`.
 2. Extract it into Home Assistant’s `/local_apps` directory, so the app configuration is at **`/local_apps/glow/config.yaml`**. For example, use the `local_apps` share exposed by Home Assistant’s Samba share app. On older versions, the directory and share are named `addons`, giving `/addons/glow/config.yaml`. Copy the extracted `glow` folder, not the archive itself. See [Home Assistant’s local app instructions](https://developers.home-assistant.io/docs/apps/tutorial/).
@@ -82,3 +86,7 @@ Integration tests use a real local WebSocket server to exercise authentication, 
 The server uses the official [WebSocket API](https://developers.home-assistant.io/docs/api/websocket/) and [app communication API](https://developers.home-assistant.io/docs/apps/communication/). The app only exposes its UI through authenticated Home Assistant ingress and rejects requests arriving directly from other containers. Scene changes require JSON and reject browser cross-site requests.
 
 Built with React, TypeScript, Vite, Express, and a small WebSocket client. No cloud service is required.
+
+## Releasing updates
+
+GitHub Actions checks pull requests and changes to `main`. Pushing a version tag publishes the multi-architecture image, verifies anonymous downloads and container startup, creates a GitHub release, and updates the Home Assistant catalog. See [the release guide](RELEASING.md) for version preparation, the first release, and recovery from failed publication.

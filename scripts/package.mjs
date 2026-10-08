@@ -19,6 +19,8 @@ execFileSync("tar", [
   "server",
   "README.md",
   "DOCS.md",
+  "CHANGELOG.md",
+  "RELEASING.md",
 ]);
 // Vite treats .gz as HTTP content encoding. The .tgz alias downloads intact.
 copyFileSync("artifacts/glow-addon.tar.gz", "artifacts/glow-addon.tgz");

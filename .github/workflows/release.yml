@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+# Serialize releases so an older run cannot overwrite the Home Assistant catalog.
+concurrency:
+  group: glow-release
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
+  image:
+    name: Publish container
+    needs: checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validate the tag and release source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          npm run release:check
+          git merge-base --is-ancestor HEAD origin/main
+          node scripts/check-unpublished.mjs
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Read version
+        id: version
+        run: echo "value=$(node -p 'require("./package.json").version')" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        id: build
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/schachfeld/easy-mode-lighting:${{ steps.version.outputs.value }}
+          build-args: BUILD_VERSION=${{ steps.version.outputs.value }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/schachfeld/easy-mode-lighting
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  publish:
+    name: Verify and publish release
+    needs: image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_DIGEST: ${{ needs.image.outputs.digest }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      # This job deliberately has no registry login: HA must be able to pull anonymously.
+      - name: Check public access and start both architectures
+        run: |
+          IMAGE="ghcr.io/schachfeld/easy-mode-lighting@$RELEASE_DIGEST"
+          if ! docker manifest inspect "$IMAGE" > /dev/null; then
+            echo "::error::Make the easy-mode-lighting container package public at https://github.com/users/schachfeld/packages/container/easy-mode-lighting/settings, then re-run failed jobs. Home Assistant has not been offered this update."
+            exit 1
+          fi
+          node scripts/smoke-container.mjs "$IMAGE" linux/amd64
+          node scripts/smoke-container.mjs "$IMAGE" linux/arm64
+      - run: npm run package:addon
+      - name: Prepare release notes and checksums
+        run: |
+          node scripts/release.mjs notes > artifacts/release-notes.md
+          cd artifacts
+          sha256sum glow-addon.tar.gz glow-addon.tgz > SHA256SUMS.txt
+      - name: Publish GitHub release
+        run: node scripts/publish-release.mjs
+      - name: Update the Home Assistant app repository
+        run: |
+          gh auth setup-git
+          node scripts/publish-repository.mjs
