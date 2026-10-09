@@ -83,7 +83,7 @@ export async function sceneStore(url: string): Promise<SceneStore> {
       } catch {
         await disk.set(url, previous);
         throw new Error(
-          "Could not save your scenes. Check the device’s available storage.",
+          "Could not save your changes. Check the device’s available storage.",
         );
       }
     },

@@ -27,7 +27,7 @@ export default function MobileApp() {
   const acceptCallbacks = useRef(true);
   const [saved, setSaved] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState("http://homeassistant.local:8123");
   const [token, setToken] = useState("");
   const [remember, setRemember] = useState(false);
   const [password, setPassword] = useState("");

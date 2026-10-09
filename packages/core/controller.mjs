@@ -4,6 +4,7 @@ import {
   validateSettings,
   serviceSettings,
 } from "./model.mjs";
+import { expandSceneLights, lightTargets } from "./groups.mjs";
 
 // All lighting and scene behavior lives here. Storage and transport are supplied
 // by the host; no Node, browser, or Tauri APIs are needed in this module.
@@ -29,6 +30,7 @@ export function createCore({
           ha.entities,
           store.data.scenes,
           store.data.favorites,
+          store.data.groupDisplay,
         )),
     mode: demo ? "demo" : "live",
     connected: demo || ha.connected,
@@ -68,18 +70,14 @@ export function createCore({
       throw new Error("Choose at least one light.");
     const settings = validateSettings(rawSettings);
     const home = state();
-    const lights = [...new Set(ids)].map((id) => {
-      const light = home.lights.find((l) => l.id === id);
-      if (!light)
-        throw new Error(
-          "One of these lights no longer exists. Refresh and try again.",
-        );
+    const lights = lightTargets(home, ids);
+    if (lights.length > 500) throw new Error("Choose no more than 500 lights.");
+    for (const light of lights) {
       if (!light.available)
         throw new Error(
           `${light.name} is unavailable. Check its power and connection.`,
         );
-      return light;
-    });
+    }
     if (demo) {
       await store.save({
         ...store.data,
@@ -112,6 +110,21 @@ export function createCore({
     return { ok: true };
   });
 
+  handlers.set("PUT group-display", async ({ groupId, display }) => {
+    if (!["group", "individual"].includes(display))
+      throw new Error("Choose grouped or individual lights.");
+    if (!state().groups?.some((group) => group.id === groupId))
+      throw new Error(
+        "This light group is no longer available. Refresh and try again.",
+      );
+    await store.save({
+      ...store.data,
+      groupDisplay: { ...store.data.groupDisplay, [groupId]: display },
+    });
+    broadcast();
+    return { ok: true };
+  });
+
   function sceneInput(body, existing) {
     const home = state();
     if (
@@ -132,7 +145,9 @@ export function createCore({
     )
       throw new Error("Add at least one light to the scene.");
     const lights = {};
-    for (const [id, settings] of Object.entries(body.lights)) {
+    for (const [id, settings] of Object.entries(
+      expandSceneLights(home, body.lights),
+    )) {
       if (!home.lights.some((l) => l.id === id && l.roomId === room.id))
         throw new Error("Scenes can only contain lights in their room.");
       lights[id] = validateSettings(settings);

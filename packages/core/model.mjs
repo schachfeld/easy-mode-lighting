@@ -1,3 +1,5 @@
+import { expandSceneLights, splitLightGroups } from "./groups.mjs";
+
 export const palettes = [
   {
     id: "warm",
@@ -234,6 +236,7 @@ export function mapHome(
   entities,
   savedScenes,
   favorites = {},
+  groupDisplay = {},
 ) {
   const deviceAreas = new Map(devices.map((d) => [d.id, d.area_id]));
   const registry = new Map(entities.map((e) => [e.entity_id, e]));
@@ -243,7 +246,7 @@ export function mapHome(
     const areaId = entity?.area_id ?? deviceAreas.get(entity?.device_id);
     return areaIds.has(areaId) ? areaId : "unassigned";
   };
-  const lights = Object.values(states)
+  const mappedLights = Object.values(states)
     .filter(
       (s) =>
         isLight(s.entity_id) &&
@@ -281,6 +284,11 @@ export function mapHome(
         maxKelvin: a.max_color_temp_kelvin ?? 6500,
       };
     });
+  const { lights, groups } = splitLightGroups(
+    mappedLights,
+    states,
+    groupDisplay,
+  );
   const rooms = areas
     .filter((a) => lights.some((l) => l.roomId === a.area_id))
     .map((a) => ({ id: a.area_id, name: a.name, style: roomStyle(a.name) }));
@@ -314,5 +322,16 @@ export function mapHome(
         lights: {},
       };
     });
-  return { rooms, lights, scenes: [...savedScenes, ...nativeScenes] };
+  return {
+    rooms,
+    lights,
+    groups,
+    scenes: [
+      ...savedScenes.map((scene) => ({
+        ...scene,
+        lights: expandSceneLights({ groups }, scene.lights),
+      })),
+      ...nativeScenes,
+    ],
+  };
 }

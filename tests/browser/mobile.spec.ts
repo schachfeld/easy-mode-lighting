@@ -110,7 +110,7 @@ test("mobile reports invalid tokens and failed saves without losing the editor",
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(
     page.getByText(
-      "Could not save your scenes. Check the device’s available storage.",
+      "Could not save your changes. Check the device’s available storage.",
     ),
   ).toBeVisible();
   await page.getByRole("button", { name: "Save scene", exact: true }).click();
