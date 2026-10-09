@@ -64,6 +64,12 @@ For development against a real instance, set `HA_URL` and `HA_TOKEN` on the serv
 | `PORT`             | `8099`            | Backend HTTP port                                                   |
 | `HOST`             | `127.0.0.1`       | Standalone listen address; the HA OS app uses ingress only          |
 
+## Standalone mobile app
+
+The same React interface and lighting core also power a Tauri 2 app for Android and iOS. Mobile connects directly to Home Assistant over its WebSocket API, without installing the Glow add-on. It includes connection setup, optional encrypted credential storage, and device-local scenes.
+
+See [the mobile guide](MOBILE.md) for prerequisites, build commands, architecture, and storage behavior. Preview its connection screen with `npm run dev:mobile`; build its frontend with `npm run build:mobile`. Custom Glow scenes are currently separate between mobile and the add-on; existing Home Assistant scenes appear in both.
+
 ## Scene storage
 
 Glow scenes are saved atomically in `/data/scenes.json` inside the app. They survive app and Home Assistant restarts and are shared by all browsers. Include Glow when creating a Home Assistant backup. Demo data is isolated in `demo.json`.
@@ -75,6 +81,7 @@ Glow applies its scenes through Home Assistant’s `scene.apply` service. They a
 ```sh
 npm test
 npm run build
+npm run build:mobile
 npx playwright install chromium --only-shell
 npm run test:browser
 docker build -t glow-lighting .

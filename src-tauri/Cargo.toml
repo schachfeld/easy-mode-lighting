@@ -1,0 +1,22 @@
+[package]
+name = "glow-mobile"
+version = "1.0.0"
+description = "Room-first lighting for Home Assistant"
+edition = "2021"
+rust-version = "1.90"
+
+[lib]
+name = "glow_mobile_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-websocket = { version = "2", features = ["rustls-tls"] }
+tauri-plugin-store = "2"
+tauri-plugin-stronghold = { version = "2", features = ["kdf"] }
+
+[profile.dev.package.scrypt]
+opt-level = 3

@@ -1,0 +1,5 @@
+{
+  "name": "@glow/core",
+  "private": true,
+  "type": "module"
+}

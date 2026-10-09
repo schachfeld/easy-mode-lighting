@@ -1,0 +1,13 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "Local Glow UI: Home Assistant sockets and device storage. Remote pages receive no native permissions.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "websocket:default",
+    "store:default",
+    "stronghold:default",
+    "stronghold:allow-destroy"
+  ]
+}

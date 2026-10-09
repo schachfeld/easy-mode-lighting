@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Glow",
+  "version": "../package.json",
+  "identifier": "io.github.schachfeld.glow",
+  "build": {
+    "beforeDevCommand": "npm run dev:mobile",
+    "beforeBuildCommand": "npm run build:mobile",
+    "devUrl": "http://localhost:5181",
+    "frontendDist": "../dist-mobile"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Glow",
+        "width": 430,
+        "height": 900,
+        "minWidth": 320
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data:; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-src 'none'",
+      "devCsp": "default-src 'self'; connect-src ipc: http://ipc.localhost http: https: ws: wss:; img-src 'self' asset: http://asset.localhost data:; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-src 'none'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "iOS": {
+      "minimumSystemVersion": "16.0",
+      "infoPlist": "Info.ios.plist"
+    },
+    "android": {
+      "minSdkVersion": 24
+    }
+  }
+}

@@ -2142,3 +2142,180 @@ h1 {
 .room-card .brightness.compact small {
   font-size: 10px;
 }
+
+/* The native shell shares all lighting screens; only onboarding is specific. */
+.connect-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: max(28px, env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
+  background: #f7f5f0;
+}
+.connect-card {
+  width: 100%;
+  max-width: 440px;
+}
+.connect-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: #253c32;
+}
+.connect-brand > span {
+  display: grid;
+  place-items: center;
+  width: 45px;
+  height: 45px;
+  background: #e5eadd;
+  border-radius: 16px;
+}
+.connect-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 160px;
+  color: #7e6745;
+  margin: 10px 0 8px;
+}
+.connect-art div {
+  position: absolute;
+  width: 170px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    #f8db99 0%,
+    #f7ead0 45%,
+    transparent 72%
+  );
+}
+.connect-art svg {
+  position: relative;
+}
+.connect-card h1 {
+  font-size: clamp(28px, 7vw, 36px);
+  letter-spacing: -1.3px;
+  line-height: 1.15;
+  margin: 12px 0;
+  color: #293c32;
+}
+.connect-intro {
+  color: #72766c;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.connect-card form > label:not(.remember-row) {
+  display: block;
+  font-size: 13px;
+  font-weight: 650;
+  margin: 18px 0 8px;
+}
+.connect-card input:not([type="checkbox"]) {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #d9ddd2;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #fffefa;
+  color: #293c32;
+  font: inherit;
+  font-size: 16px;
+}
+.connect-card input:focus-visible {
+  outline: 2px solid #66826c;
+  outline-offset: 2px;
+}
+.field-hint {
+  color: #74796f;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 9px 0 18px;
+}
+.field-hint svg {
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  margin: 20px 0;
+}
+.remember-row input {
+  accent-color: #365e46;
+  width: 17px;
+  height: 17px;
+}
+.connect-submit {
+  width: 100%;
+  justify-content: space-between;
+  min-height: 49px;
+  font-size: 14px;
+  margin-top: 12px;
+}
+.connect-secondary {
+  display: block;
+  margin: 14px auto 0;
+  background: none;
+  border: 0;
+  color: #526b58;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.connect-error {
+  color: #913c32;
+  background: #fae9e3;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.connect-footnote {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  border-top: 1px solid #dfe2d8;
+  padding-top: 20px;
+  margin-top: 28px;
+  color: #83877c;
+}
+.connect-footnote svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.connect-footnote p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .connect-art {
+    height: 125px;
+  }
+}
+
+.native-app body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.native-app .modal-overlay {
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+.native-app .toast {
+  bottom: calc(28px + env(safe-area-inset-bottom));
+}
+@media (max-width: 700px) {
+  .native-app .sidebar {
+    height: calc(65px + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+  }
+}

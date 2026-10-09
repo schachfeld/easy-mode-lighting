@@ -3,6 +3,7 @@ import { createApp } from "../server/app.mjs";
 
 const instance = createApp({ dataDir: process.env.DATA_DIR });
 const app = express();
+app.use("/mobile", express.static("dist-mobile"));
 // Mirror Supervisor's path prefix, while leaving the root available for normal tests.
 app.use("/api/hassio_ingress/glow-test", instance.app);
 app.use(instance.app);

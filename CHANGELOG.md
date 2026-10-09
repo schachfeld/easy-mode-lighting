@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+- Share the lighting controller, Home Assistant protocol, and React UI between the add-on and a Tauri mobile app.
+- Add direct mobile connection setup, optional encrypted credentials, and device-local scenes.
+- Add mobile browser coverage, native shell checks, and an Android debug build workflow.
+
 ## [1.0.1] - 2026-10-08
 
 - Fix container verification on Docker's classic image store so both amd64 and ARM64 are tested before publication.

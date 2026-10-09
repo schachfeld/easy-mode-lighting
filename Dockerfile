@@ -16,5 +16,6 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
 COPY server ./server
+COPY packages ./packages
 EXPOSE 8099
 CMD ["node", "server/index.mjs"]

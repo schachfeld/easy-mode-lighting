@@ -26,8 +26,7 @@ import { Brightness, Modal, RoomIcon, SceneOrb, Toggle } from "./components";
 import { SceneEditor } from "./SceneEditor";
 import type { Home, Light, LightSettings, Room, Scene } from "./types";
 
-const endpoint = (path: string) =>
-  new URL(`api/${path}`, new URL(".", window.location.href)).href;
+import { serverClient, type GlowClient } from "./platform/client";
 
 function readRoute(): { page: "rooms" | "scenes"; roomId: string | null } {
   const [, page, id] = window.location.hash.slice(1).split("/");
@@ -64,7 +63,13 @@ function sceneMatches(scene: Scene, lights: Light[]) {
   );
 }
 
-export default function App() {
+export default function App({
+  client = serverClient,
+  onDisconnect,
+}: {
+  client?: GlowClient;
+  onDisconnect?: () => void;
+}) {
   const [home, setHome] = useState<Home | null>(null);
   const [streamOnline, setStreamOnline] = useState(false);
   const [loadError, setLoadError] = useState("");
@@ -94,24 +99,18 @@ export default function App() {
     return () => window.removeEventListener("hashchange", updateRoute);
   }, []);
   useEffect(() => {
-    const events = new EventSource(endpoint("events"));
-    events.onmessage = (event) => {
-      try {
-        setHome(JSON.parse(event.data));
+    return client.subscribe(
+      (next) => {
+        setHome(next);
         setStreamOnline(true);
         setLoadError("");
-      } catch {
-        setLoadError(
-          "Glow received an unexpected response. Refresh to try again.",
-        );
-      }
-    };
-    events.onerror = () => {
-      setStreamOnline(false);
-      setLoadError("Connection interrupted. Reconnecting automatically…");
-    };
-    return () => events.close();
-  }, []);
+      },
+      (message) => {
+        setStreamOnline(false);
+        setLoadError(message);
+      },
+    );
+  }, [client]);
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(null), toast.error ? 8000 : 3500);
@@ -126,17 +125,7 @@ export default function App() {
     ) => {
       setBusy(true);
       try {
-        const response = await fetch(endpoint(path), {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-          signal: AbortSignal.timeout(20000),
-        });
-        const result = await response.json();
-        if (!response.ok)
-          throw new Error(
-            result.error ?? "Something went wrong. Please try again.",
-          );
+        await client.execute(method, path, body);
         if (success) setToast({ message: success, error: false });
         return true;
       } catch (error) {
@@ -152,7 +141,7 @@ export default function App() {
         setBusy(false);
       }
     },
-    [],
+    [client],
   );
   const lightsAction = (lights: Light[], settings: Partial<LightSettings>) =>
     action("lights", {
@@ -874,9 +863,21 @@ export default function App() {
             <div>
               <Sparkles size={18} />
               <p>
-                <strong>Scenes sync across devices.</strong> Glow scenes are
-                stored in the app and shared across your devices. Existing Home
-                Assistant scenes appear too; edit those in Home Assistant.
+                {client.sceneStorage === "device" ? (
+                  <>
+                    <strong>Glow scenes stay on this device.</strong> Custom
+                    scenes and favorites are saved here for this Home Assistant
+                    address. Existing Home Assistant scenes appear on all
+                    devices; edit those in Home Assistant.
+                  </>
+                ) : (
+                  <>
+                    <strong>Scenes sync across devices.</strong> Glow scenes are
+                    stored in the add-on and shared by browsers using it.
+                    Existing Home Assistant scenes appear too; edit those in
+                    Home Assistant.
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -890,6 +891,11 @@ export default function App() {
             <ExternalLink size={14} />
           </a>
           <div className="modal-footer">
+            {onDisconnect && (
+              <button className="button" onClick={onDisconnect}>
+                Disconnect
+              </button>
+            )}
             <button
               className="button primary"
               onClick={() => setConnectionOpen(false)}

@@ -7,3 +7,8 @@ artifacts
 tests
 test-results
 playwright-report
+
+dist-mobile/
+src-tauri/target/
+src-tauri/gen/
+src-tauri/
