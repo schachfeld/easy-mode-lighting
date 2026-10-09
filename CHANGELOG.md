@@ -1,10 +1,14 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.0] - 2026-10-09
 
-- Share the lighting controller, Home Assistant protocol, and React UI between the add-on and a Tauri mobile app.
-- Add direct mobile connection setup, optional encrypted credentials, and device-local scenes.
-- Add mobile browser coverage, native shell checks, and an Android debug build workflow.
+- Choose grouped or individual light controls through **Room → Customize lights**. Group cards expand to reveal their lamps, and display preferences persist for each home.
+- Resolve known, same-room light groups so room counts, commands, and scenes use each lamp once. Existing group-based scenes preserve individual lamp overrides.
+- Add a Tauri mobile app that shares the add-on's lighting interface and connects directly to Home Assistant, with account sign-in, manual-token support, optional encrypted credentials, and device-local scenes.
+- Prefill the default Home Assistant address and remove unnecessary scrolling from Android connection setup.
+- Add automated coverage for group controls, preference persistence, mobile authentication, and native builds.
+
+The downloadable release assets are Home Assistant add-on packages. Mobile builds are available from source or through the Android debug build workflow; see the mobile guide.
 
 ## [1.0.1] - 2026-10-08
 

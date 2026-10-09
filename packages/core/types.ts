@@ -17,6 +17,11 @@ export type Light = LightSettings & {
   maxKelvin: number;
 };
 export type Room = { id: string; name: string; style: string };
+export type GroupDisplay = "group" | "individual";
+export type LightGroup = Light & {
+  memberIds: string[];
+  display: GroupDisplay;
+};
 export type Scene = {
   id: string;
   name: string;
@@ -36,6 +41,7 @@ export type Palette = {
 export type Home = {
   rooms: Room[];
   lights: Light[];
+  groups?: LightGroup[];
   scenes: Scene[];
   palettes: Palette[];
   mode: "demo" | "live";

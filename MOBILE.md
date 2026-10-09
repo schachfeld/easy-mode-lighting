@@ -56,6 +56,12 @@ Deployment is manual. Account login cannot complete while this URL returns 404. 
 
 Tauri registers the custom URL scheme in native builds. Test browser return links on installed Android/iOS builds; an ordinary browser preview cannot receive native callbacks. Desktop development may require installing a packaged build to register the scheme. Pending login state expires after ten minutes and survives an app restart. Cancelled, expired, and mismatched callbacks cannot exchange a code. This login change does not affect add-on ingress authentication.
 
+## Light groups
+
+Open a room and choose **Customize lights** to choose **Show as a group** or **Show individual lights** for each Home Assistant light group. Groups initially appear as one card with expandable individual controls. Your choice is saved on this device, separately for each Home Assistant address. It changes presentation only: room counts, room controls, and new Glow scenes use each underlying lamp once. Existing scenes containing group entities are expanded when read, with individual settings taking precedence.
+
+Glow recognizes groups when every member can be resolved to a visible light in the same room. Groups with missing, hidden, cyclic, or cross-room membership retain their existing controls. Selected outer groups contain nested groups; partially overlapping groups appear as individual lights to avoid duplicate cards.
+
 ## Where scenes live
 
 - The add-on keeps custom scenes and favorites in its existing `/data/scenes.json`, shared by browsers using that add-on.

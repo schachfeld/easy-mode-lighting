@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 import { Brightness, Modal, RoomIcon, SceneOrb, Toggle } from "./components";
 import { SceneEditor } from "./SceneEditor";
+import { LightCard } from "./LightCard";
+import { LightGroupSettings } from "./LightGroupSettings";
+import { lightTargets, roomLightLayout } from "../packages/core/groups.mjs";
 import type { Home, Light, LightSettings, Room, Scene } from "./types";
 
 import { serverClient, type GlowClient } from "./platform/client";
@@ -83,6 +86,7 @@ export default function App({
     scene?: Scene;
   } | null>(null);
   const [lightEditor, setLightEditor] = useState<string | null>(null);
+  const [customizeRoom, setCustomizeRoom] = useState<string | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     error: boolean;
@@ -145,7 +149,15 @@ export default function App({
   );
   const lightsAction = (lights: Light[], settings: Partial<LightSettings>) =>
     action("lights", {
-      ids: lights.filter((l) => l.available).map((l) => l.id),
+      ids: (home
+        ? lightTargets(
+            home,
+            lights.map((l) => l.id),
+          )
+        : lights
+      )
+        .filter((l) => l.available)
+        .map((l) => l.id),
       settings,
     });
   function navigate(next: "rooms" | "scenes", nextRoom: string | null = null) {
@@ -158,7 +170,15 @@ export default function App({
   const roomLights = home?.lights.filter((l) => l.roomId === roomId) ?? [];
   const lightsOn = home?.lights.filter((l) => l.on && l.available).length ?? 0;
   const disabled = busy || !home?.connected || !streamOnline;
-  const currentLight = home?.lights.find((l) => l.id === lightEditor);
+  const currentGroup = home?.groups?.find((group) => group.id === lightEditor);
+  const currentLight =
+    home?.lights.find((l) => l.id === lightEditor) ?? currentGroup;
+  const roomGroups =
+    home?.groups?.filter((group) => group.roomId === roomId) ?? [];
+  const layout =
+    home && roomId
+      ? roomLightLayout(home, roomId)
+      : { items: [], overlapping: [] };
 
   function sceneCard(scene: Scene, compact = false) {
     const sceneRoom = home?.rooms.find((r) => r.id === scene.roomId);
@@ -462,67 +482,35 @@ export default function App({
                           </span>
                         </h2>
                       </div>
-                    </div>
-                    <div className="lights-grid">
-                      {roomLights.map((light) => (
-                        <article
-                          className={`light-card ${light.on ? "light-on" : ""}`}
-                          key={light.id}
+                      {roomGroups.length > 0 && (
+                        <button
+                          className="text-button customize-lights"
+                          onClick={() => setCustomizeRoom(roomId)}
                         >
-                          <div className="light-card-heading">
-                            <button
-                              className="light-name-button"
-                              onClick={() => setLightEditor(light.id)}
-                            >
-                              <span
-                                className="bulb-icon"
-                                style={{
-                                  color: light.on ? light.color : undefined,
-                                }}
-                              >
-                                <Lightbulb size={23} strokeWidth={1.5} />
-                              </span>
-                              <span>
-                                <h3>{light.name}</h3>
-                                <small>
-                                  {!light.available
-                                    ? "Unavailable"
-                                    : light.on
-                                      ? light.colorMode === "color_temp"
-                                        ? `${light.kelvin} K · White light`
-                                        : "Color light"
-                                      : "Off"}
-                                </small>
-                              </span>
-                            </button>
-                            <Toggle
-                              label={`${light.name} power`}
-                              on={light.on}
-                              disabled={disabled || !light.available}
-                              onChange={() =>
-                                lightsAction([light], { on: !light.on })
-                              }
-                            />
-                          </div>
-                          {light.dimmable && (
-                            <Brightness
-                              value={light.brightness}
-                              disabled={disabled || !light.available}
-                              label={`${light.name} brightness`}
-                              onChange={(brightness) =>
-                                lightsAction([light], { brightness, on: true })
-                              }
-                              compact
-                            />
-                          )}
-                          <button
-                            className="light-adjust-link"
-                            onClick={() => setLightEditor(light.id)}
-                          >
-                            Adjust light
-                            <ChevronRight size={13} />
-                          </button>
-                        </article>
+                          <Settings2 size={16} /> Customize lights
+                        </button>
+                      )}
+                    </div>
+                    {layout.overlapping.length > 0 && (
+                      <p className="group-settings-note">
+                        Some groups share lights. Their lamps are shown
+                        individually so each appears once.
+                      </p>
+                    )}
+                    <div className="lights-grid">
+                      {layout.items.map((light) => (
+                        <LightCard
+                          key={light.id}
+                          light={light}
+                          members={
+                            "memberIds" in light
+                              ? lightTargets(home, light.memberIds)
+                              : undefined
+                          }
+                          disabled={disabled}
+                          onChange={lightsAction}
+                          onAdjust={setLightEditor}
+                        />
                       ))}
                     </div>
                   </section>
@@ -786,6 +774,23 @@ export default function App({
           )}
         </main>
       </div>
+      {home && customizeRoom && (
+        <LightGroupSettings
+          groups={
+            home.groups?.filter((group) => group.roomId === customizeRoom) ?? []
+          }
+          lights={home.lights}
+          roomName={
+            home.rooms.find((item) => item.id === customizeRoom)?.name ?? ""
+          }
+          busy={busy}
+          deviceLocal={client.sceneStorage === "device"}
+          onClose={() => setCustomizeRoom(null)}
+          onChange={(groupId, display) =>
+            action("group-display", { groupId, display }, "PUT")
+          }
+        />
+      )}
       {connectionOpen && (
         <Modal
           title="Connection & help"
@@ -934,7 +939,12 @@ export default function App({
       {currentLight && (
         <Modal
           title={currentLight.name}
-          subtitle={home?.rooms.find((r) => r.id === currentLight.roomId)?.name}
+          subtitle={[
+            home?.rooms.find((r) => r.id === currentLight.roomId)?.name,
+            currentGroup ? `${currentGroup.memberIds.length} lights` : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
           onClose={() => setLightEditor(null)}
         >
           <div className="light-modal-power">

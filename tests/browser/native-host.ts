@@ -1,7 +1,10 @@
 import type { Page } from "@playwright/test";
 
-export async function nativeHost(page: Page) {
-  await page.addInitScript(() => {
+export async function nativeHost(
+  page: Page,
+  options: { groups?: boolean } = {},
+) {
+  await page.addInitScript(({ groups }) => {
     const host = window as any;
     host.isTauri = true;
     let nextId = 1;
@@ -34,18 +37,71 @@ export async function nativeHost(page: Page) {
     let vaultRecord: number[] | null = null;
     let unloads = 0;
     host.__vaultUnloads = () => unloads;
-    const states = [
-      {
-        entity_id: "light.floor",
-        state: "on",
-        attributes: {
-          friendly_name: "Floor lamp",
-          supported_color_modes: ["rgb"],
-          brightness: 150,
-          rgb_color: [250, 180, 90],
-        },
-      },
-    ];
+    const states: any[] = groups
+      ? [
+          ...[1, 2, 3].map((n) => ({
+            entity_id: `light.kranbalk_${n}`,
+            state: "on",
+            attributes: {
+              friendly_name: `Kranbalk ${n}`,
+              supported_color_modes: ["brightness"],
+              brightness: 204,
+            },
+          })),
+          {
+            entity_id: "light.kranbalk",
+            state: "on",
+            attributes: {
+              friendly_name: "Kranbalk",
+              supported_color_modes: ["brightness"],
+              brightness: 204,
+              entity_id: [
+                "light.kranbalk_1",
+                "light.kranbalk_2",
+                "light.kranbalk_3",
+              ],
+            },
+          },
+          {
+            entity_id: "light.stehlampe",
+            state: "off",
+            attributes: {
+              friendly_name: "Stehlampe",
+              supported_color_modes: ["onoff"],
+            },
+          },
+          {
+            entity_id: "light.stockholm",
+            state: "off",
+            attributes: {
+              friendly_name: "Stockholm Lampe",
+              supported_color_modes: ["brightness"],
+              brightness: 255,
+            },
+          },
+          {
+            entity_id: "light.schlafzimmer",
+            state: "off",
+            attributes: {
+              friendly_name: "Schlafzimmer",
+              supported_color_modes: ["brightness"],
+              brightness: 255,
+              entity_id: ["light.stehlampe", "light.stockholm"],
+            },
+          },
+        ]
+      : [
+          {
+            entity_id: "light.floor",
+            state: "on",
+            attributes: {
+              friendly_name: "Floor lamp",
+              supported_color_modes: ["rgb"],
+              brightness: 150,
+              rgb_color: [250, 180, 90],
+            },
+          },
+        ];
     host.__nativeCalls = [];
     host.__failSave = () => {
       failSave = true;
@@ -183,25 +239,37 @@ export async function nativeHost(page: Page) {
           }
           const responses: Record<string, unknown> = {
             get_states: states,
-            "config/area_registry/list": [
-              { area_id: "living", name: "Living room" },
-            ],
+            "config/area_registry/list": groups
+              ? [
+                  { area_id: "office", name: "Arbeitszimmer" },
+                  { area_id: "bedroom", name: "Schlafzimmer" },
+                ]
+              : [{ area_id: "living", name: "Living room" }],
             "config/device_registry/list": [],
-            "config/entity_registry/list": [
-              { entity_id: "light.floor", area_id: "living" },
-            ],
+            "config/entity_registry/list": states.map((state) => ({
+              entity_id: state.entity_id,
+              area_id: groups
+                ? state.entity_id.startsWith("light.kranbalk")
+                  ? "office"
+                  : "bedroom"
+                : "living",
+            })),
           };
           if (message.type === "call_service" && message.domain === "light") {
-            states[0].state = message.service === "turn_off" ? "off" : "on";
-            if (message.service_data.brightness !== undefined)
-              states[0].attributes.brightness = message.service_data.brightness;
-            send({
-              type: "event",
-              event: {
-                event_type: "state_changed",
-                data: { entity_id: "light.floor", new_state: states[0] },
-              },
-            });
+            for (const state of states.filter((state) =>
+              message.target.entity_id.includes(state.entity_id),
+            )) {
+              state.state = message.service === "turn_off" ? "off" : "on";
+              if (message.service_data.brightness !== undefined)
+                state.attributes.brightness = message.service_data.brightness;
+              send({
+                type: "event",
+                event: {
+                  event_type: "state_changed",
+                  data: { entity_id: state.entity_id, new_state: state },
+                },
+              });
+            }
           }
           send({
             type: message.type === "ping" ? "pong" : "result",
@@ -214,5 +282,5 @@ export async function nativeHost(page: Page) {
         throw new Error(`Unexpected native command: ${command}`);
       },
     };
-  });
+  }, options);
 }
