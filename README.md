@@ -66,7 +66,7 @@ For development against a real instance, set `HA_URL` and `HA_TOKEN` on the serv
 
 ## Standalone mobile app
 
-The same React interface and lighting core also power a Tauri 2 app for Android and iOS. Mobile connects directly to Home Assistant over its WebSocket API, without installing the Glow add-on. It includes connection setup, optional encrypted credential storage, and device-local scenes.
+The same React interface and lighting core also power a Tauri 2 app for Android and iOS. Mobile connects directly to Home Assistant over its WebSocket API, without installing the Glow add-on. It includes Home Assistant account sign-in through your browser, optional encrypted credential storage, and device-local scenes. Manual access tokens remain supported. Account sign-in requires publishing the public identity page described in the mobile guide.
 
 See [the mobile guide](MOBILE.md) for prerequisites, build commands, architecture, and storage behavior. Preview its connection screen with `npm run dev:mobile`; build its frontend with `npm run build:mobile`. Custom Glow scenes are currently separate between mobile and the add-on; existing Home Assistant scenes appear in both.
 

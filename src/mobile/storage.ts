@@ -4,7 +4,8 @@ import { appLocalDataDir, join } from "@tauri-apps/api/path";
 import { Stronghold } from "@tauri-apps/plugin-stronghold";
 import type { SceneData, SceneStore } from "../../packages/core/controller.mjs";
 
-export type Connection = { url: string; token: string };
+import type { Connection } from "../../packages/core/auth.mjs";
+export type { Connection } from "../../packages/core/auth.mjs";
 export const hasSavedConnection = () => invoke<boolean>("has_saved_connection");
 export const forgetConnection = () => invoke<void>("forget_connection");
 
@@ -46,7 +47,11 @@ export async function unlockConnection(password: string): Promise<Connection> {
     );
     if (
       typeof connection.url !== "string" ||
-      typeof connection.token !== "string"
+      !(
+        typeof connection.token === "string" ||
+        (typeof connection.refreshToken === "string" &&
+          typeof connection.clientId === "string")
+      )
     )
       throw new Error("Invalid saved connection.");
     return connection;

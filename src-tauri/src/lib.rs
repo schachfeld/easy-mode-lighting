@@ -1,3 +1,4 @@
+mod auth;
 use tauri::Manager;
 
 #[tauri::command]
@@ -18,7 +19,16 @@ fn forget_connection(app: tauri::AppHandle) -> Result<(), String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    #[cfg(desktop)]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _, _| {
+        if let Some(window) = app.get_webview_window("main") {
+            let _ = window.set_focus();
+        }
+    }));
+    builder
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_websocket::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
@@ -32,7 +42,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             has_saved_connection,
-            forget_connection
+            forget_connection,
+            auth::ha_token_request
         ])
         .run(tauri::generate_context!())
         .expect("could not start Glow");

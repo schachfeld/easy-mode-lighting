@@ -1,11 +1,19 @@
 import { Events } from "./events.mjs";
 
 export class HomeAssistant extends Events {
-  constructor({ url, token, retryMs = 3000, timeoutMs = 12000, createSocket }) {
+  constructor({
+    url,
+    token,
+    retryMs = 3000,
+    timeoutMs = 12000,
+    createSocket,
+    getToken,
+  }) {
     super();
     this.createSocket = createSocket;
     this.url = url;
     this.token = token;
+    this.getToken = getToken ?? (() => this.token);
     this.retryMs = retryMs;
     this.timeoutMs = timeoutMs;
     this.pending = new Map();
@@ -29,10 +37,13 @@ export class HomeAssistant extends Events {
       if (this.socket !== socket || this.stopped) return;
       try {
         const message = JSON.parse(raw.toString());
-        if (message.type === "auth_required")
+        if (message.type === "auth_required") {
+          const accessToken = await this.getToken();
+          if (this.socket !== socket || this.stopped) return;
           await socket.send(
-            JSON.stringify({ type: "auth", access_token: this.token }),
+            JSON.stringify({ type: "auth", access_token: accessToken }),
           );
+        }
         if (message.type === "auth_invalid") {
           this.error =
             "Home Assistant rejected the connection. Check the app permissions or access token.";
@@ -95,6 +106,7 @@ export class HomeAssistant extends Events {
       } catch (error) {
         if (this.socket !== socket || this.stopped) return;
         this.error = error.message;
+        if (error.reauthenticate) this.stopped = true;
         if (!this.connected) socket.close();
         this.emit("change");
       }

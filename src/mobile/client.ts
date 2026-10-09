@@ -1,3 +1,5 @@
+import { tokenProvider, type AccessGrant } from "../../packages/core/auth.mjs";
+import { requestToken } from "./auth";
 import { HomeAssistant } from "../../packages/core/home-assistant.mjs";
 import { createCore } from "../../packages/core/controller.mjs";
 import {
@@ -15,13 +17,15 @@ export interface MobileClient extends GlowClient {
 export async function connectMobile(
   connection: Connection,
   signal: AbortSignal,
+  initialGrant?: AccessGrant,
 ): Promise<MobileClient> {
   const url = connectionUrl(connection.url);
   const store = await sceneStore(url);
   if (signal.aborted) throw new Error("Connection cancelled.");
   const ha = new HomeAssistant({
     url: websocketUrl(url),
-    token: connection.token.trim(),
+    getToken: tokenProvider(connection, requestToken, initialGrant),
+    timeoutMs: 25000,
     createSocket,
   });
   const core = createCore({ ha, store });
@@ -36,10 +40,10 @@ export async function connectMobile(
         () =>
           finish(
             new Error(
-              "Cannot connect. Check your address, network, and access token.",
+              "Cannot connect. Check your address, network, and sign-in.",
             ),
           ),
-        20000,
+        40000,
       );
       const check = () => {
         if (ha.connected) finish();

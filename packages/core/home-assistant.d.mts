@@ -8,7 +8,8 @@ export interface Socket {
 export class HomeAssistant {
   constructor(options: {
     url: string;
-    token: string;
+    token?: string;
+    getToken?: () => Promise<string>;
     retryMs?: number;
     timeoutMs?: number;
     createSocket: (url: string) => Socket;
