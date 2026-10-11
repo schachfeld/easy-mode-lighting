@@ -152,8 +152,10 @@ export function createCore({
         throw new Error("Scenes can only contain lights in their room.");
       lights[id] = validateSettings(settings);
     }
+    const id = existing?.id ?? randomUUID();
     return {
-      id: existing?.id ?? randomUUID(),
+      id,
+      ...(!demo ? { haSceneId: existing?.haSceneId ?? `glow_${id}` } : {}),
       name: body.name.trim(),
       roomId: room.id,
       palette: body.palette,
@@ -162,33 +164,87 @@ export function createCore({
       source: "glow",
     };
   }
-  handlers.set("POST scenes", async (body, id) => {
-    const scene = sceneInput(body);
-    await store.save({ ...store.data, scenes: [...store.data.scenes, scene] });
+  function sceneEntities(scene) {
+    const home = state();
+    return Object.fromEntries(
+      Object.entries(scene.lights).map(([id, settings]) => [
+        id,
+        {
+          state: settings.on === false ? "off" : "on",
+          ...(settings.on === false
+            ? {}
+            : serviceSettings(
+                settings,
+                home.lights.find((light) => light.id === id),
+              )),
+        },
+      ]),
+    );
+  }
+
+  // Keep the editor metadata durable before writing to HA. A rejected remote
+  // write restores the previous local scene, and never falls back to scene.apply.
+  async function saveSceneChange(data, remoteWrite) {
+    const previous = store.data;
+    await store.save(data);
+    try {
+      if (!demo) await remoteWrite();
+    } catch (error) {
+      try {
+        await store.save(previous);
+      } catch {
+        throw new Error(
+          `${error.message} Glow could not restore its local scene data. Check available storage before retrying.`,
+        );
+      }
+      broadcast();
+      throw error;
+    }
     broadcast();
+  }
+  const publishScene = (scene) =>
+    ha.sceneConfig("POST", scene.haSceneId, {
+      name: scene.name,
+      entities: sceneEntities(scene),
+    });
+  handlers.set("POST scenes", async (body, id) => {
+    requireConnection();
+    const scene = sceneInput(body);
+    await saveSceneChange(
+      { ...store.data, scenes: [...store.data.scenes, scene] },
+      () => publishScene(scene),
+    );
     return scene;
   });
   handlers.set("PUT scenes/:id", async (body, id) => {
+    requireConnection();
     const existing = findScene(id);
     if (existing.source !== "glow")
       throw new Error("Edit this scene in Home Assistant.");
     const scene = sceneInput(body, existing);
-    await store.save({
-      ...store.data,
-      scenes: store.data.scenes.map((s) => (s.id === scene.id ? scene : s)),
-    });
-    broadcast();
+    await saveSceneChange(
+      {
+        ...store.data,
+        scenes: store.data.scenes.map((s) => (s.id === scene.id ? scene : s)),
+      },
+      () => publishScene(scene),
+    );
     return scene;
   });
   handlers.set("DELETE scenes/:id", async (body, id) => {
     const scene = findScene(id);
     if (scene.source !== "glow")
       throw new Error("Delete this scene in Home Assistant.");
-    await store.save({
-      ...store.data,
-      scenes: store.data.scenes.filter((s) => s.id !== scene.id),
-    });
-    broadcast();
+    if (scene.haSceneId) requireConnection();
+    await saveSceneChange(
+      {
+        ...store.data,
+        scenes: store.data.scenes.filter((s) => s.id !== scene.id),
+      },
+      async () => {
+        if (scene.haSceneId) await ha.sceneConfig("DELETE", scene.haSceneId);
+      },
+    );
     return { ok: true };
   });
   handlers.set("POST scenes/:id/favorite", async (body, id) => {
@@ -213,7 +269,18 @@ export function createCore({
   handlers.set("POST scenes/:id/activate", async (body, id) => {
     requireConnection();
     const scene = findScene(id);
-    if (scene.source === "home-assistant")
+    if (scene.haSceneId) {
+      const native = Object.values(ha.states).find(
+        (s) =>
+          s.entity_id.startsWith("scene.") &&
+          s.attributes?.id === scene.haSceneId,
+      );
+      if (!native)
+        throw new Error(
+          "This scene is not loaded in Home Assistant yet. Check that scenes.yaml is included in your configuration, then reload scenes and try again.",
+        );
+      await ha.call("scene", "turn_on", {}, { entity_id: native.entity_id });
+    } else if (scene.source === "home-assistant")
       await ha.call("scene", "turn_on", {}, { entity_id: scene.entityId });
     else {
       const home = state();

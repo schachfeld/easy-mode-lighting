@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { once } from "node:events";
+import { createServer } from "node:http";
 import { WebSocketServer } from "ws";
 import { createApp } from "../server/app.mjs";
 import { HomeAssistant } from "../server/home-assistant.mjs";
@@ -196,6 +197,59 @@ test("discovers entity and device Areas, unassigned lights, capabilities, and na
 });
 
 async function mockHa(t) {
+  const states = structuredClone(haStates);
+  const sceneConfigs = new Map();
+  const configCalls = [];
+  let configStatus = 200;
+  const http = createServer(async (req, res) => {
+    assert.equal(req.headers.authorization, "Bearer test-token");
+    assert.match(req.url, /^\/proxy\/api\/config\/scene\/config\/glow_/);
+    let raw = "";
+    for await (const chunk of req) raw += chunk;
+    const body = raw ? JSON.parse(raw) : undefined;
+    const id = decodeURIComponent(req.url.split("/").at(-1));
+    configCalls.push({ method: req.method, id, body });
+    res.setHeader("Content-Type", "application/json");
+    if (configStatus !== 200) {
+      res
+        .writeHead(configStatus)
+        .end(JSON.stringify({ message: "Scene configuration rejected" }));
+      return;
+    }
+    const entityId = `scene.${id}`;
+    const index = states.findIndex((s) => s.attributes?.id === id);
+    let next = null;
+    if (req.method === "POST") {
+      sceneConfigs.set(id, body);
+      next = {
+        entity_id: index < 0 ? entityId : states[index].entity_id,
+        state: "unknown",
+        attributes: {
+          id,
+          friendly_name: body.name,
+          entity_id: Object.keys(body.entities),
+        },
+      };
+      if (index < 0) states.push(next);
+      else states[index] = next;
+    } else {
+      sceneConfigs.delete(id);
+      if (index >= 0) states.splice(index, 1);
+    }
+    for (const socket of wss.clients)
+      socket.send(
+        JSON.stringify({
+          type: "event",
+          event: {
+            event_type: "state_changed",
+            data: { entity_id: next?.entity_id ?? entityId, new_state: next },
+          },
+        }),
+      );
+    res.end(JSON.stringify({ result: "ok" }));
+  });
+  http.listen(0, "127.0.0.1");
+  await once(http, "listening");
   const wss = new WebSocketServer({ port: 0, host: "127.0.0.1" });
   await once(wss, "listening");
   const calls = [];
@@ -212,7 +266,7 @@ async function mockHa(t) {
         );
       if (m.type === "call_service") calls.push(m);
       const responses = {
-        get_states: haStates,
+        get_states: states,
         "config/area_registry/list": areas,
         "config/device_registry/list": devices,
         "config/entity_registry/list": entities,
@@ -230,6 +284,7 @@ async function mockHa(t) {
   });
   const ha = new HomeAssistant({
     url: `ws://127.0.0.1:${wss.address().port}`,
+    apiUrl: `http://127.0.0.1:${http.address().port}/proxy/api/`,
     token: "test-token",
     retryMs: 20,
     timeoutMs: 1000,
@@ -238,6 +293,7 @@ async function mockHa(t) {
     ha.stop();
     for (const client of wss.clients) client.terminate();
     await new Promise((resolve) => wss.close(resolve));
+    await new Promise((resolve) => http.close(resolve));
   });
   const ready = once(ha, "change");
   ha.start();
@@ -247,6 +303,11 @@ async function mockHa(t) {
     ha,
     calls,
     wss,
+    sceneConfigs,
+    configCalls,
+    configStatus(status) {
+      configStatus = status;
+    },
     fail() {
       failServices = true;
     },
@@ -299,13 +360,20 @@ test("real WebSocket handshake, service targeting, capability filtering, scene a
   await request(`scenes/${saved.id}/activate`, "POST", {});
   const call = mock.calls.at(-1);
   assert.equal(call.domain, "scene");
-  assert.equal(call.service, "apply");
-  assert.deepEqual(call.service_data.entities["light.color"], {
-    state: "on",
-    brightness: 153,
-    rgb_color: [170, 187, 204],
-  });
-  assert.deepEqual(call.service_data.entities["light.white"], { state: "off" });
+  assert.equal(call.service, "turn_on");
+  assert.equal(call.target.entity_id, `scene.${saved.haSceneId}`);
+  assert.deepEqual(
+    mock.sceneConfigs.get(saved.haSceneId).entities["light.color"],
+    {
+      state: "on",
+      brightness: 153,
+      rgb_color: [170, 187, 204],
+    },
+  );
+  assert.deepEqual(
+    mock.sceneConfigs.get(saved.haSceneId).entities["light.white"],
+    { state: "off" },
+  );
   await request("scenes/scene.evening/activate", "POST", {});
   assert.equal(mock.calls.at(-1).service, "turn_on");
   assert.equal(mock.calls.at(-1).target.entity_id, "scene.evening");
@@ -384,4 +452,131 @@ test("ingress blocks direct access; mutations reject cross-site and non-JSON req
     body: "on=true",
   });
   assert.equal(form.status, 415);
+});
+
+test("published scenes persist, deduplicate, update and delete in Home Assistant", async (t) => {
+  const mock = await mockHa(t);
+  const app = await fixture(t, { ha: mock.ha });
+  const payload = {
+    name: "Persistent evening",
+    roomId: "living",
+    palette: "warm",
+    lights: {
+      "light.color": {
+        on: true,
+        brightness: 45,
+        color: "#123456",
+        colorMode: "rgb",
+      },
+      "light.white": { on: true, kelvin: 2000, colorMode: "color_temp" },
+    },
+  };
+  const created = await app.request("scenes", "POST", payload);
+  assert.equal(created.status, 201);
+  const scene = created.data;
+  assert.equal(mock.calls.length, 0, "Saving must not activate lights");
+  assert.equal(mock.configCalls.length, 1);
+  assert.equal(
+    mock.sceneConfigs.get(scene.haSceneId).entities["light.white"]
+      .color_temp_kelvin,
+    2500,
+  );
+  const matching = () =>
+    app.state().scenes.filter((s) => s.haSceneId === scene.haSceneId);
+  assert.equal(matching().length, 1);
+  await app.request(`scenes/${scene.id}/favorite`, "POST", { favorite: true });
+  assert.equal(
+    (
+      await app.request(`scenes/${scene.id}`, "PUT", {
+        ...payload,
+        name: "Renamed evening",
+      })
+    ).status,
+    200,
+  );
+  assert.equal(mock.sceneConfigs.size, 1);
+  assert.equal(mock.sceneConfigs.get(scene.haSceneId).name, "Renamed evening");
+  assert.equal(matching()[0].favorite, true);
+  const restored = await fixture(t, { dataDir: app.dataDir, ha: mock.ha });
+  assert.equal(
+    restored.state().scenes.filter((s) => s.haSceneId === scene.haSceneId)
+      .length,
+    1,
+  );
+  // A client without Glow metadata still discovers a real, activatable scene.
+  const other = await fixture(t, { ha: mock.ha });
+  const native = other
+    .state()
+    .scenes.find((s) => s.haSceneId === scene.haSceneId);
+  assert.equal(native.source, "home-assistant");
+  assert.equal(native.roomId, "living");
+  assert.equal(
+    (await other.request(`scenes/${native.id}/activate`, "POST", {})).status,
+    200,
+  );
+  // Entity names can change independently of a scene's stable config ID.
+  const state = mock.ha.states[native.entityId];
+  delete mock.ha.states[native.entityId];
+  mock.ha.states["scene.renamed_by_user"] = {
+    ...state,
+    entity_id: "scene.renamed_by_user",
+  };
+  await app.request(`scenes/${scene.id}/activate`, "POST", {});
+  assert.equal(mock.calls.at(-1).target.entity_id, "scene.renamed_by_user");
+  assert.equal(
+    (await app.request(`scenes/${scene.id}`, "DELETE", {})).status,
+    200,
+  );
+  assert.equal(mock.sceneConfigs.size, 0);
+  assert.equal(matching().length, 0);
+  assert.equal(mock.configCalls.at(-1).method, "DELETE");
+});
+
+test("rejected scene writes restore local state and disconnected saves do not pretend to succeed", async (t) => {
+  const mock = await mockHa(t);
+  const app = await fixture(t, { ha: mock.ha });
+  const payload = {
+    name: "Keep my scene",
+    roomId: "living",
+    palette: "warm",
+    lights: { "light.color": { on: true } },
+  };
+  mock.configStatus(403);
+  const failure = await app.request("scenes", "POST", payload);
+  assert.equal(failure.status, 400);
+  assert.match(failure.data.error, /administrator/);
+  assert.equal(app.state().scenes.filter((s) => s.source === "glow").length, 0);
+  mock.configStatus(200);
+  const { data: scene } = await app.request("scenes", "POST", payload);
+  mock.configStatus(500);
+  assert.equal(
+    (
+      await app.request(`scenes/${scene.id}`, "PUT", {
+        ...payload,
+        name: "Should not stick",
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (await app.request(`scenes/${scene.id}`, "DELETE", {})).status,
+    400,
+  );
+  assert.equal(
+    app.state().scenes.find((s) => s.id === scene.id).name,
+    payload.name,
+  );
+  assert.equal(mock.sceneConfigs.get(scene.haSceneId).name, payload.name);
+  const count = mock.configCalls.length;
+  mock.ha.connected = false;
+  assert.equal((await app.request("scenes", "POST", payload)).status, 503);
+  assert.equal(
+    (await app.request(`scenes/${scene.id}`, "PUT", payload)).status,
+    503,
+  );
+  assert.equal(
+    (await app.request(`scenes/${scene.id}`, "DELETE", {})).status,
+    503,
+  );
+  assert.equal(mock.configCalls.length, count);
 });

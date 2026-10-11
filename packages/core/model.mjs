@@ -308,6 +308,7 @@ export function mapHome(
       const explicitArea = getArea(s.entity_id);
       return {
         id: s.entity_id,
+        haSceneId: s.attributes?.id,
         entityId: s.entity_id,
         name: s.attributes?.friendly_name ?? s.entity_id.replace("scene.", ""),
         roomId:
@@ -327,11 +328,22 @@ export function mapHome(
     lights,
     groups,
     scenes: [
-      ...savedScenes.map((scene) => ({
-        ...scene,
-        lights: expandSceneLights({ groups }, scene.lights),
-      })),
-      ...nativeScenes,
+      ...savedScenes.map((scene) => {
+        const native =
+          scene.haSceneId &&
+          nativeScenes.find((s) => s.haSceneId === scene.haSceneId);
+        return {
+          ...scene,
+          ...(native ? { entityId: native.entityId, name: native.name } : {}),
+          lights: expandSceneLights({ groups }, scene.lights),
+        };
+      }),
+      ...nativeScenes.filter(
+        (native) =>
+          !savedScenes.some(
+            (scene) => scene.haSceneId && scene.haSceneId === native.haSceneId,
+          ),
+      ),
     ],
   };
 }

@@ -238,7 +238,7 @@ export default function App({
             <Pencil size={15} />
           </button>
         )}
-        {!compact && scene.source === "home-assistant" && (
+        {!compact && (scene.source === "home-assistant" || scene.haSceneId) && (
           <span className="native-badge">Home Assistant</span>
         )}
       </article>
@@ -866,19 +866,21 @@ export default function App({
             <div>
               <Sparkles size={18} />
               <p>
-                {client.sceneStorage === "device" ? (
+                {home?.mode === "demo" ? (
                   <>
-                    <strong>Glow scenes stay on this device.</strong> Custom
-                    scenes and favorites are saved here for this Home Assistant
-                    address. Existing Home Assistant scenes appear on all
-                    devices; edit those in Home Assistant.
+                    <strong>Demo scenes stay in Glow.</strong> Connect to Home
+                    Assistant to save scenes for your home.
                   </>
                 ) : (
                   <>
-                    <strong>Scenes sync across devices.</strong> Glow scenes are
-                    stored in the add-on and shared by browsers using it.
-                    Existing Home Assistant scenes appear too; edit those in
-                    Home Assistant.
+                    <strong>Scenes are saved in Home Assistant.</strong> New
+                    scenes are available on all devices and in automations. Save
+                    an older Glow scene to publish it. Favorites and Glow editor
+                    settings stay{" "}
+                    {client.sceneStorage === "device"
+                      ? "on this device"
+                      : "in this add-on"}
+                    .
                   </>
                 )}
               </p>
@@ -915,6 +917,7 @@ export default function App({
           roomId={editor.roomId}
           scene={editor.scene}
           busy={busy}
+          errorMessage={toast?.error ? toast.message : undefined}
           onClose={() => setEditor(null)}
           onSave={(body, id) =>
             action(

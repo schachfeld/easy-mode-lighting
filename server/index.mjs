@@ -16,6 +16,9 @@ if (supervisor || process.env.HA_URL || process.env.HA_TOKEN) {
       ).href.replace(/^http/, "ws");
   ha = new HomeAssistant({
     url,
+    apiUrl: supervisor
+      ? "http://supervisor/core/api/"
+      : new URL("api/", process.env.HA_URL.replace(/\/?$/, "/")).href,
     token: supervisor ? process.env.SUPERVISOR_TOKEN : process.env.HA_TOKEN,
   });
   ha.start();

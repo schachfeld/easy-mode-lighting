@@ -195,3 +195,58 @@ test("connection URLs preserve proxy prefixes and reject embedded secrets or uns
   ])
     assert.throws(() => connectionUrl(url));
 });
+
+test("scene configuration uses current credentials, preserves proxy paths, and handles missing configuration", async () => {
+  const requests = [];
+  let status = 200;
+  let sequence = 0;
+  const ha = new HomeAssistant({
+    url: "wss://home.example/proxy/api/websocket",
+    apiUrl: "https://home.example/proxy/api/",
+    getToken: async () => `renewed-token-${++sequence}`,
+    sceneRequest: async (request) => {
+      requests.push(request);
+      return { status, body: { result: "ok" } };
+    },
+  });
+  ha.connected = true;
+  await ha.sceneConfig("POST", "glow_example", {
+    name: "Evening",
+    entities: { "light.lamp": { state: "off" } },
+  });
+  await ha.sceneConfig("DELETE", "glow_example");
+  assert.equal(
+    requests[0].url,
+    "https://home.example/proxy/api/config/scene/config/glow_example",
+  );
+  assert.equal(requests[0].token, "renewed-token-1");
+  assert.equal(requests[1].token, "renewed-token-2");
+  status = 404;
+  await assert.rejects(
+    ha.sceneConfig("POST", "glow_example", {}),
+    /configuration API is unavailable/,
+  );
+});
+
+test("deleting an already removed HA scene clears its stale local state", async () => {
+  const ha = new HomeAssistant({
+    url: "ws://home/api/websocket",
+    apiUrl: "http://home/api/",
+    token: "test-token",
+    sceneRequest: async () => ({
+      status: 400,
+      body: { message: "Resource not found" },
+    }),
+  });
+  ha.connected = true;
+  ha.states["scene.old"] = {
+    entity_id: "scene.old",
+    attributes: { id: "glow_old" },
+  };
+  await ha.sceneConfig("DELETE", "glow_old");
+  assert.equal(ha.states["scene.old"], undefined);
+  await assert.rejects(
+    ha.sceneConfig("POST", "glow_old", {}),
+    /could not save/,
+  );
+});

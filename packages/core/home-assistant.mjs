@@ -8,12 +8,16 @@ export class HomeAssistant extends Events {
     timeoutMs = 12000,
     createSocket,
     getToken,
+    apiUrl,
+    sceneRequest,
   }) {
     super();
     this.createSocket = createSocket;
     this.url = url;
     this.token = token;
     this.getToken = getToken ?? (() => this.token);
+    this.apiUrl = apiUrl;
+    this.sceneRequest = sceneRequest;
     this.retryMs = retryMs;
     this.timeoutMs = timeoutMs;
     this.pending = new Map();
@@ -189,6 +193,43 @@ export class HomeAssistant extends Events {
       service_data,
       ...(target ? { target } : {}),
     });
+  }
+
+  async sceneConfig(method, id, config) {
+    if (!this.connected) throw new Error("Home Assistant is disconnected.");
+    if (!this.apiUrl || !this.sceneRequest)
+      throw new Error("This connection cannot save Home Assistant scenes.");
+    const response = await this.sceneRequest({
+      url: new URL(`config/scene/config/${encodeURIComponent(id)}`, this.apiUrl)
+        .href,
+      method,
+      token: await this.getToken(),
+      body: config,
+      timeoutMs: this.timeoutMs,
+    });
+    const alreadyDeleted =
+      method === "DELETE" &&
+      response.status === 400 &&
+      response.body?.message === "Resource not found";
+    if (!alreadyDeleted && (response.status < 200 || response.status >= 300)) {
+      const message =
+        response.status === 401 || response.status === 403
+          ? "Saving Home Assistant scenes requires an administrator connection. Check your account or app permissions."
+          : response.status === 404
+            ? "Home Assistant's scene configuration API is unavailable. Enable the config integration and include scenes.yaml in your configuration."
+            : `Home Assistant could not ${method === "DELETE" ? "delete" : "save"} the scene. ${response.body?.message ?? "Please try again."}`;
+      throw new Error(message);
+    }
+    if (method === "DELETE") {
+      // The config endpoint removes the entity asynchronously. Do not briefly
+      // rediscover the deleted scene as an unrelated native scene.
+      for (const state of Object.values(this.states)) {
+        if (state.entity_id.startsWith("scene.") && state.attributes?.id === id)
+          delete this.states[state.entity_id];
+      }
+      this.emit("change");
+    }
+    return response.body;
   }
 
   reconnect() {

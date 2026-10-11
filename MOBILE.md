@@ -64,11 +64,11 @@ Glow recognizes groups when every member can be resolved to a visible light in t
 
 ## Where scenes live
 
-- The add-on keeps custom scenes and favorites in its existing `/data/scenes.json`, shared by browsers using that add-on.
-- Mobile keeps custom scenes and favorites in its own app data, separated by normalized Home Assistant base URL. Changing to a different URL creates a separate scene library, even if both URLs reach the same instance.
-- Existing Home Assistant scenes are discovered and activated by both versions. Edit those scenes in Home Assistant.
-
-Custom Glow scenes are **not synchronized between the add-on and mobile**, and do not become Home Assistant scene entities. This preserves the existing add-on data and lets mobile operate independently. Scenes on a mobile device can be lost when its app data is cleared or the app is removed.
+- New scenes are saved persistently in Home Assistant through its scene configuration API. They appear on all clients and can be used in automations, including after a Home Assistant restart.
+- Saving requires an administrator account, the `config` integration, and `scene: !include scenes.yaml` (the standard setup). Mobile uses native HTTP with the current access token, including renewed account tokens.
+- Glow editor settings and favorites remain in the add-on's `/data/scenes.json` or mobile app data, separated by Home Assistant address. A scene published on another client appears as a Home Assistant scene; edit it in Home Assistant.
+- Older local scenes still work. Saving one again publishes it; there is no automatic migration. Clearing mobile app data removes local settings and unpublished scenes, but does not delete published Home Assistant scenes.
+- Editing or deleting a published scene in its originating Glow client updates or deletes the Home Assistant scene too.
 
 ## Shared architecture
 

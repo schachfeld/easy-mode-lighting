@@ -42,6 +42,8 @@ function fixture() {
   );
   const calls = [];
   ha.call = async (...args) => calls.push(args);
+  const sceneConfigs = [];
+  ha.sceneConfig = async (...args) => sceneConfigs.push(args);
   const store = {
     data: { scenes: [], favorites: {} },
     async save(data) {
@@ -58,7 +60,7 @@ function fixture() {
       {},
       preferences,
     );
-  return { ha, calls, store, add, home };
+  return { ha, calls, sceneConfigs, store, add, home };
 }
 
 test("group preferences change presentation without changing unique room lights", () => {
@@ -195,7 +197,7 @@ test("preferences survive core recreation, validate input, and recover from a fa
 });
 
 test("commands deduplicate group members and existing scenes preserve individual overrides", async () => {
-  const { ha, store, calls } = fixture();
+  const { ha, store, calls, sceneConfigs } = fixture();
   store.data.scenes = [
     {
       id: "legacy",
@@ -210,6 +212,11 @@ test("commands deduplicate group members and existing scenes preserve individual
     },
   ];
   const core = createCore({ ha, store });
+  assert.equal(
+    sceneConfigs.length,
+    0,
+    "Existing scenes are not automatically published",
+  );
   await core.execute("POST", "lights", {
     ids: ["light.kranbalk", "light.one", "light.two"],
     settings: { on: true, brightness: 50 },
@@ -227,6 +234,11 @@ test("commands deduplicate group members and existing scenes preserve individual
   ]);
   assert.equal(calls[1][2].entities["light.one"].brightness, 51);
   assert.equal(calls[1][2].entities["light.two"].brightness, 204);
+  const legacy = core.state().scenes.find((s) => s.id === "legacy");
+  const migrated = await core.execute("PUT", "scenes/legacy", legacy);
+  assert.equal(migrated.haSceneId, "glow_legacy");
+  assert.equal(sceneConfigs[0][0], "POST");
+  assert.deepEqual(sceneConfigs[0][2].entities, calls[1][2].entities);
   const saved = await core.execute("POST", "scenes", {
     name: "New",
     roomId: "office",
@@ -238,6 +250,11 @@ test("commands deduplicate group members and existing scenes preserve individual
     "light.three",
     "light.two",
   ]);
+  assert.deepEqual(sceneConfigs[1][2].entities, {
+    "light.one": { state: "off" },
+    "light.two": { state: "off" },
+    "light.three": { state: "off" },
+  });
   ha.states["light.two"].state = "unavailable";
   await assert.rejects(
     core.execute("POST", "lights", {

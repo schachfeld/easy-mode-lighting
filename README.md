@@ -66,13 +66,15 @@ For development against a real instance, set `HA_URL` and `HA_TOKEN` on the serv
 
 ## Standalone mobile app
 
-The same React interface and lighting core also power a Tauri 2 app for Android and iOS. Mobile connects directly to Home Assistant over its WebSocket API, without installing the Glow add-on. It includes Home Assistant account sign-in through your browser, optional encrypted credential storage, and device-local scenes. Manual access tokens remain supported. Account sign-in requires publishing the public identity page described in the mobile guide.
+The same React interface and lighting core also power a Tauri 2 app for Android and iOS. Mobile connects directly to Home Assistant over its WebSocket API, without installing the Glow add-on. It includes Home Assistant account sign-in through your browser, optional encrypted credential storage, and scenes saved in Home Assistant. Manual access tokens remain supported. Account sign-in requires publishing the public identity page described in the mobile guide.
 
-See [the mobile guide](MOBILE.md) for prerequisites, build commands, architecture, and storage behavior. Preview its connection screen with `npm run dev:mobile`; build its frontend with `npm run build:mobile`. Custom Glow scenes are currently separate between mobile and the add-on; existing Home Assistant scenes appear in both.
+See [the mobile guide](MOBILE.md) for prerequisites, build commands, architecture, and storage behavior. Preview its connection screen with `npm run dev:mobile`; build its frontend with `npm run build:mobile`. New scenes are saved in Home Assistant and appear in both mobile and the add-on.
 
 ## Scene storage
 
-Glow scenes are saved atomically in `/data/scenes.json` inside the app. They survive app and Home Assistant restarts and are shared by all browsers. Include Glow when creating a Home Assistant backup. Demo data is isolated in `demo.json`.
+In live mode, saving a scene writes a persistent Home Assistant scene to `scenes.yaml`, available to dashboards, automations, mobile, and the add-on. This uses the Home Assistant scene editor API and requires an administrator connection, the `config` integration, and `scene: !include scenes.yaml` (standard Home Assistant defaults). Editing or deleting a published scene in Glow updates or deletes it in Home Assistant.
+
+Glow keeps editor settings, favorites, and older local scenes in `/data/scenes.json` (or mobile app storage). Older scenes continue to work and are published when next saved; they are not migrated automatically. On another client, a published scene appears as a Home Assistant scene and can be edited in Home Assistant. Include both Home Assistant and Glow in backups. Demo data remains isolated in `demo.json`.
 
 Glow applies its scenes through Home Assistant’s `scene.apply` service. They are **not added to Home Assistant’s scene registry**, and therefore do not appear in its automation scene picker. Existing Home Assistant scenes can be activated and favorited in Glow; edit or delete those in Home Assistant. Multi-room native scenes appear in All scenes. If a saved scene references a removed or unavailable bulb, Glow asks you to fix or edit it rather than silently applying an incomplete scene.
 

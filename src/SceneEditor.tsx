@@ -21,6 +21,7 @@ export function SceneEditor({
   onSave,
   onDelete,
   busy,
+  errorMessage,
 }: {
   home: Home;
   roomId: string;
@@ -29,6 +30,7 @@ export function SceneEditor({
   onSave: (data: object, id?: string) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
   busy: boolean;
+  errorMessage?: string;
 }) {
   const room = home.rooms.find((r) => r.id === roomId)!;
   const roomLights = home.lights.filter((l) => l.roomId === roomId);
@@ -88,6 +90,11 @@ export function SceneEditor({
       wide
     >
       <form onSubmit={save}>
+        {home.mode === "live" && (
+          <p className="help-note">
+            Saved to Home Assistant and available in your automations.
+          </p>
+        )}
         <label className="field-label" htmlFor="scene-name">
           Scene name
         </label>
@@ -228,7 +235,7 @@ export function SceneEditor({
         </div>
         {error && (
           <p className="form-error" role="alert">
-            {error}
+            {errorMessage || error}
           </p>
         )}
         <div className="modal-footer">
@@ -257,7 +264,11 @@ export function SceneEditor({
         </div>
         {deleteConfirm && (
           <div className="delete-confirm" role="alert">
-            <p>Delete “{scene?.name}”? This cannot be undone.</p>
+            <p>
+              Delete “{scene?.name}”
+              {scene?.haSceneId ? " from Home Assistant" : ""}? This cannot be
+              undone.
+            </p>
             <button
               type="button"
               className="text-button"

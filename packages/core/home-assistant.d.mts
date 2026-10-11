@@ -13,6 +13,10 @@ export class HomeAssistant {
     retryMs?: number;
     timeoutMs?: number;
     createSocket: (url: string) => Socket;
+    apiUrl?: string;
+    sceneRequest?: (
+      request: SceneRequest,
+    ) => Promise<{ status: number; body: any }>;
   });
   connected: boolean;
   stopped: boolean;
@@ -22,10 +26,23 @@ export class HomeAssistant {
   start(): void;
   stop(): void;
   reconnect(): void;
+  sceneConfig(
+    method: "POST" | "DELETE",
+    id: string,
+    config?: object,
+  ): Promise<unknown>;
   call(
     domain: string,
     service: string,
     data?: object,
     target?: object,
   ): Promise<unknown>;
+}
+
+export interface SceneRequest {
+  url: string;
+  method: "POST" | "DELETE";
+  token: string;
+  body?: object;
+  timeoutMs: number;
 }

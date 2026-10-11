@@ -1,4 +1,5 @@
 import { tokenProvider, type AccessGrant } from "../../packages/core/auth.mjs";
+import { invoke } from "@tauri-apps/api/core";
 import { requestToken } from "./auth";
 import { HomeAssistant } from "../../packages/core/home-assistant.mjs";
 import { createCore } from "../../packages/core/controller.mjs";
@@ -24,6 +25,19 @@ export async function connectMobile(
   if (signal.aborted) throw new Error("Connection cancelled.");
   const ha = new HomeAssistant({
     url: websocketUrl(url),
+    apiUrl: new URL("api/", url).href,
+    sceneRequest: async (request) => {
+      try {
+        return await invoke<{ status: number; body: unknown }>(
+          "ha_scene_request",
+          { request },
+        );
+      } catch {
+        throw new Error(
+          "Could not reach Home Assistant to save the scene. Check your connection and try again.",
+        );
+      }
+    },
     getToken: tokenProvider(connection, requestToken, initialGrant),
     timeoutMs: 25000,
     createSocket,

@@ -1,4 +1,5 @@
 mod auth;
+mod scenes;
 use tauri::Manager;
 
 #[tauri::command]
@@ -43,7 +44,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             has_saved_connection,
             forget_connection,
-            auth::ha_token_request
+            auth::ha_token_request,
+            scenes::ha_scene_request
         ])
         .run(tauri::generate_context!())
         .expect("could not start Glow");

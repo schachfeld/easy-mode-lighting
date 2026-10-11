@@ -9,6 +9,20 @@ export async function nativeHost(
     host.isTauri = true;
     let nextId = 1;
     const sockets = new Map<number, any>();
+    const socketHomes = new Map<number, string>();
+    const haScenes = JSON.parse(localStorage.getItem("test-ha-scenes") ?? "{}");
+    const sceneStates = (home: string) =>
+      Object.entries(haScenes[home] ?? {}).map(
+        ([id, config]: [string, any]) => ({
+          entity_id: `scene.${id}`,
+          state: "unknown",
+          attributes: {
+            id,
+            friendly_name: config.name,
+            entity_id: Object.keys(config.entities),
+          },
+        }),
+      );
     const sceneDisk = JSON.parse(
       localStorage.getItem("test-native-scenes") ?? "{}",
     );
@@ -103,6 +117,8 @@ export async function nativeHost(
           },
         ];
     host.__nativeCalls = [];
+    host.__sceneRequests = [];
+    host.__sceneStatus = 200;
     host.__failSave = () => {
       failSave = true;
     };
@@ -114,6 +130,36 @@ export async function nativeHost(
       },
       unregisterCallback: (id: number) => callbacks.delete(id),
       invoke: async (command: string, args: any = {}) => {
+        if (command === "ha_scene_request") {
+          const request = args.request;
+          host.__sceneRequests.push(request);
+          if (host.__sceneStatus !== 200)
+            return {
+              status: host.__sceneStatus,
+              body: { message: "Scene save rejected" },
+            };
+          const [home, id] = request.url.split("config/scene/config/");
+          haScenes[home] ??= {};
+          if (request.method === "DELETE") delete haScenes[home][id];
+          else haScenes[home][id] = request.body;
+          localStorage.setItem("test-ha-scenes", JSON.stringify(haScenes));
+          const next =
+            sceneStates(home).find((s) => s.attributes.id === id) ?? null;
+          for (const [socketId, channel] of sockets) {
+            if (socketHomes.get(socketId) === home)
+              channel.onmessage({
+                type: "Text",
+                data: JSON.stringify({
+                  type: "event",
+                  event: {
+                    event_type: "state_changed",
+                    data: { entity_id: `scene.${id}`, new_state: next },
+                  },
+                }),
+              });
+          }
+          return { status: 200, body: { result: "ok" } };
+        }
         if (command === "plugin:event|listen") {
           const id = nextId++;
           eventListeners.set(id, args.handler);
@@ -210,6 +256,10 @@ export async function nativeHost(
         if (command === "plugin:websocket|connect") {
           const id = nextId++;
           sockets.set(id, args.onMessage);
+          socketHomes.set(
+            id,
+            args.url.replace(/^ws/, "http").replace(/websocket$/, ""),
+          );
           // Deliver before connect resolves, as native IPC is allowed to do.
           args.onMessage.onmessage({
             type: "Text",
@@ -238,7 +288,7 @@ export async function nativeHost(
             return;
           }
           const responses: Record<string, unknown> = {
-            get_states: states,
+            get_states: [...states, ...sceneStates(socketHomes.get(args.id)!)],
             "config/area_registry/list": groups
               ? [
                   { area_id: "office", name: "Arbeitszimmer" },

@@ -75,7 +75,7 @@ test("mobile connects directly, controls lights, persists scenes per home and di
   ).toBeVisible();
   await page.getByRole("button", { name: /connected/ }).click();
   await expect(
-    page.getByText("Glow scenes stay on this device.", { exact: true }),
+    page.getByText("Scenes are saved in Home Assistant.", { exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Disconnect", exact: true }).click();
   await expect(page.getByLabel("Long-lived access token")).toHaveValue("");
@@ -109,9 +109,11 @@ test("mobile reports invalid tokens and failed saves without losing the editor",
   await page.getByRole("button", { name: "Save scene", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(
-    page.getByText(
-      "Could not save your changes. Check the device’s available storage.",
-    ),
+    page
+      .getByRole("dialog")
+      .getByText(
+        "Could not save your changes. Check the device’s available storage.",
+      ),
   ).toBeVisible();
   await page.getByRole("button", { name: "Save scene", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
@@ -186,4 +188,69 @@ test("remembered credentials use the native vault, unlock errors are recoverable
     page.getByRole("heading", { name: "A little closer to home." }),
   ).toBeVisible();
   await expect(page.getByLabel("Long-lived access token")).toHaveValue("");
+});
+
+test("mobile publishes persistent Home Assistant scenes and preserves the editor on permission errors", async ({
+  page,
+}) => {
+  await nativeHost(page);
+  await page.goto("/mobile/");
+  await connect(page);
+  await page
+    .getByRole("button", { name: "Open Living room", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Create scene", exact: true }).click();
+  await page.getByLabel("Scene name", { exact: true }).fill("Shared evening");
+  await page.evaluate(() => {
+    (window as any).__sceneStatus = 403;
+  });
+  await page.getByRole("button", { name: "Save scene", exact: true }).click();
+  await expect(page.getByRole("dialog").getByRole("alert")).toContainText(
+    "administrator",
+  );
+  await expect(page.getByLabel("Scene name", { exact: true })).toHaveValue(
+    "Shared evening",
+  );
+  await page.evaluate(() => {
+    (window as any).__sceneStatus = 200;
+  });
+  await page.getByRole("button", { name: "Save scene", exact: true }).click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  const activate = page.getByRole("button", {
+    name: "Activate Shared evening in Living room",
+    exact: true,
+  });
+  await expect(activate).toHaveCount(1);
+  const saved = await page.evaluate(() =>
+    (window as any).__sceneRequests.at(-1),
+  );
+  expect(saved.url).toMatch(/\/api\/config\/scene\/config\/glow_/);
+  expect(saved.token).toBe("test-token");
+  expect(saved.body.entities["light.floor"].state).toBe("on");
+  await activate.click();
+  expect(
+    await page.evaluate(() => (window as any).__nativeCalls.at(-1).service),
+  ).toBe("turn_on");
+  await page
+    .getByRole("button", { name: "Edit Shared evening", exact: true })
+    .click();
+  await page.getByLabel("Scene name", { exact: true }).fill("Renamed evening");
+  await page.getByRole("button", { name: "Save scene", exact: true }).click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  expect(
+    await page.evaluate(() => (window as any).__sceneRequests.at(-1).url),
+  ).toBe(saved.url);
+  // Clearing Glow's local metadata does not remove the HA scene.
+  await page.evaluate(() => localStorage.removeItem("test-native-scenes"));
+  await page.reload();
+  await connect(page);
+  await expect(
+    page.getByRole("button", {
+      name: "Activate Renamed evening in Living room",
+      exact: true,
+    }),
+  ).toHaveCount(1);
+  await expect(
+    page.getByRole("button", { name: "Edit Renamed evening", exact: true }),
+  ).toHaveCount(0);
 });

@@ -427,7 +427,7 @@ export default function MobileApp() {
           <Wifi size={18} />
           <p>
             Connect directly to your Home Assistant. No Glow add-on required.
-            Custom Glow scenes stay on this device.
+            Save scenes to Home Assistant for use on all your devices.
           </p>
         </div>
       </section>

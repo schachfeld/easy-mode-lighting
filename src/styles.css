@@ -1014,6 +1014,10 @@ h1 {
   bottom: 8px;
   right: 10px;
 }
+.scene-edit + .native-badge {
+  right: 44px;
+  bottom: 13px;
+}
 .empty-favorites {
   width: 100%;
   display: flex;

@@ -48,7 +48,9 @@ Scenes already created in Home Assistant appear automatically when their Area or
 
 ## Storage and backups
 
-Glow stores scenes in its persistent `/data` directory. Include this app in your Home Assistant backups. Glow scenes are local to this app and do not become Home Assistant scene entities for automations.
+New scenes are saved persistently in Home Assistant and can be used in automations and dashboards. Editing or deleting a published scene in Glow also changes it in Home Assistant. Saving requires an administrator connection, the `config` integration, and the usual `scene: !include scenes.yaml` configuration.
+
+Glow keeps editor settings, favorites, and older local scenes in `/data`. Save an older scene again to publish it to Home Assistant. Include both Home Assistant and this app in backups.
 
 ## If something looks wrong
 

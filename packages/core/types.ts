@@ -24,6 +24,8 @@ export type LightGroup = Light & {
 };
 export type Scene = {
   id: string;
+  haSceneId?: string;
+  entityId?: string;
   name: string;
   roomId: string | null;
   palette: string;
