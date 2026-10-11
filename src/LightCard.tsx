@@ -60,7 +60,7 @@ export function LightCard({
       </div>
       {light.dimmable && (
         <Brightness
-          value={light.brightness}
+          value={light.on ? light.brightness : 0}
           disabled={disabled || !light.available}
           label={`${light.name} brightness`}
           compact

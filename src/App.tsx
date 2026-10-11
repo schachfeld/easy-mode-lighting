@@ -293,7 +293,7 @@ export default function App({
           </div>
           {lights.some((l) => l.dimmable) && (
             <Brightness
-              value={brightness || 50}
+              value={on ? brightness : 0}
               label={`${item.name} brightness`}
               disabled={disabled || !available.length}
               compact
@@ -453,15 +453,13 @@ export default function App({
                     <div className="room-master-brightness">
                       <span>Room brightness</span>
                       <Brightness
-                        value={
-                          Math.round(
-                            roomLights
-                              .filter((l) => l.on && l.dimmable)
-                              .reduce((sum, l) => sum + l.brightness, 0) /
-                              (roomLights.filter((l) => l.on && l.dimmable)
-                                .length || 1),
-                          ) || 50
-                        }
+                        value={Math.round(
+                          roomLights
+                            .filter((l) => l.on && l.dimmable)
+                            .reduce((sum, l) => sum + l.brightness, 0) /
+                            (roomLights.filter((l) => l.on && l.dimmable)
+                              .length || 1),
+                        )}
                         label="Room brightness"
                         disabled={
                           disabled || !roomLights.some((l) => l.available)
@@ -981,7 +979,7 @@ export default function App({
             <>
               <span className="field-label">Brightness</span>
               <Brightness
-                value={currentLight.brightness}
+                value={currentLight.on ? currentLight.brightness : 0}
                 onChange={(brightness) =>
                   lightsAction([currentLight], { brightness, on: true })
                 }

@@ -94,7 +94,7 @@ export function Brightness({
       <Sun size={compact ? 16 : 19} strokeWidth={1.6} />
       <input
         type="range"
-        min="1"
+        min={value === 0 ? 0 : 1}
         max="100"
         value={draft}
         disabled={disabled}
