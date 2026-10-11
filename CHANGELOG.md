@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.0] - 2026-10-11
+
+- Save new scenes as persistent Home Assistant scenes from both the add-on and mobile app, making them available to automations, dashboards, and other clients.
+- Update and delete published scenes in Home Assistant when editing or deleting them in Glow. Keep a single scene card and follow Home Assistant entity renames.
+- Publish older Glow scenes when they are next saved; existing local scenes continue to work without automatic migration.
+- Show clear scene-save permission errors and keep the editor open without losing your work. Saving requires an administrator connection and Home Assistant's standard scene configuration.
+- Show 0% on light, group, and room brightness sliders when the lights are off, while preserving their remembered brightness.
+
+Automated tests cover the Home Assistant scene API and mobile flows using a simulated server. Validation against a real Home Assistant installation with physical lights is still pending.
+
 ## [1.1.0] - 2026-10-09
 
 - Choose grouped or individual light controls through **Room → Customize lights**. Group cards expand to reveal their lamps, and display preferences persist for each home.
