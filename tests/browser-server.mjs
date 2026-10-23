@@ -8,6 +8,9 @@ app.use("/mobile", express.static("dist-mobile"));
 app.use("/api/hassio_ingress/glow-test", instance.app);
 app.use(instance.app);
 const server = app.listen(Number(process.env.PORT), "127.0.0.1");
+server.on("upgrade", (req, socket, head) => {
+  if (!instance.upgrade(req, socket, head)) socket.destroy();
+});
 process.on("SIGTERM", () => {
   instance.close();
   server.close(() => process.exit(0));

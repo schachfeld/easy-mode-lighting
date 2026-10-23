@@ -35,6 +35,9 @@ const server = instance.app.listen(port, host, () =>
     `Glow is ready at http://${host}:${port} (${ha ? "Home Assistant" : "demo"})`,
   ),
 );
+server.on("upgrade", (req, socket, head) => {
+  if (!instance.upgrade(req, socket, head)) socket.destroy();
+});
 function stop() {
   instance.close();
   ha?.stop();

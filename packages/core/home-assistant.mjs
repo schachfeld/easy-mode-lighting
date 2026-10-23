@@ -1,5 +1,10 @@
 import { Events } from "./events.mjs";
 
+// Glow only shows lights and scenes. Ignoring other entities keeps busy
+// sensors from remapping and rebroadcasting the whole home every second.
+const relevant = (entityId) =>
+  entityId.startsWith("light.") || entityId.startsWith("scene.");
+
 export class HomeAssistant extends Events {
   constructor({
     url,
@@ -10,6 +15,7 @@ export class HomeAssistant extends Events {
     getToken,
     apiUrl,
     sceneRequest,
+    registryDelayMs = 250,
   }) {
     super();
     this.createSocket = createSocket;
@@ -20,6 +26,7 @@ export class HomeAssistant extends Events {
     this.sceneRequest = sceneRequest;
     this.retryMs = retryMs;
     this.timeoutMs = timeoutMs;
+    this.registryDelayMs = registryDelayMs;
     this.pending = new Map();
     this.nextId = 1;
     this.states = {};
@@ -65,7 +72,11 @@ export class HomeAssistant extends Events {
             this.request("get_states"),
             this.loadRegistries(),
           ]);
-          this.states = Object.fromEntries(states.map((s) => [s.entity_id, s]));
+          this.states = Object.fromEntries(
+            states
+              .filter((s) => relevant(s.entity_id))
+              .map((s) => [s.entity_id, s]),
+          );
           for (const data of this.initialEvents ?? []) this.updateState(data);
           this.initialEvents = null;
           for (const event_type of [
@@ -100,12 +111,11 @@ export class HomeAssistant extends Events {
         if (message.type === "event") {
           if (message.event.event_type === "state_changed") {
             const data = message.event.data;
+            if (!relevant(data.entity_id)) return;
             if (this.initialEvents) this.initialEvents.push(data);
             else this.updateState(data);
-          } else {
-            await this.loadRegistries();
-          }
-          if (this.connected) this.emit("change");
+            if (this.connected) this.emit("change");
+          } else this.scheduleRegistryReload(socket);
         }
       } catch (error) {
         if (this.socket !== socket || this.stopped) return;
@@ -124,6 +134,7 @@ export class HomeAssistant extends Events {
       clearTimeout(authTimer);
       if (this.socket !== socket) return;
       clearInterval(this.heartbeat);
+      clearTimeout(this.registryTimer);
       this.socket = null;
       this.connected = false;
       for (const pending of this.pending.values()) {
@@ -144,6 +155,19 @@ export class HomeAssistant extends Events {
   updateState({ entity_id, new_state }) {
     if (new_state) this.states[entity_id] = new_state;
     else delete this.states[entity_id];
+  }
+
+  // Renaming or moving a device emits several registry events in a row.
+  scheduleRegistryReload(socket) {
+    clearTimeout(this.registryTimer);
+    this.registryTimer = setTimeout(async () => {
+      try {
+        await this.loadRegistries();
+        if (this.socket === socket && this.connected) this.emit("change");
+      } catch {
+        // A disconnect reloads every registry after reconnecting.
+      }
+    }, this.registryDelayMs);
   }
 
   async loadRegistries() {
@@ -242,6 +266,7 @@ export class HomeAssistant extends Events {
     this.stopped = true;
     clearTimeout(this.retryTimer);
     clearInterval(this.heartbeat);
+    clearTimeout(this.registryTimer);
     this.socket?.close();
   }
 }

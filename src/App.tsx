@@ -30,6 +30,7 @@ import { lightTargets, roomLightLayout } from "../packages/core/groups.mjs";
 import type { Home, Light, LightSettings, Room, Scene } from "./types";
 
 import { serverClient, type GlowClient } from "./platform/client";
+import { useLiveLights } from "./live";
 
 function readRoute(): { page: "rooms" | "scenes"; roomId: string | null } {
   const [, page, id] = window.location.hash.slice(1).split("/");
@@ -73,7 +74,7 @@ export default function App({
   client?: GlowClient;
   onDisconnect?: () => void;
 }) {
-  const [home, setHome] = useState<Home | null>(null);
+  const [liveHome, setHome] = useState<Home | null>(null);
   const [streamOnline, setStreamOnline] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [page, setPage] = useState<"rooms" | "scenes">(() => readRoute().page);
@@ -91,6 +92,7 @@ export default function App({
     message: string;
     error: boolean;
   } | null>(null);
+  // Only saving scenes and preferences blocks input. Light controls stay live.
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     const updateRoute = () => {
@@ -120,46 +122,75 @@ export default function App({
     const timer = setTimeout(() => setToast(null), toast.error ? 8000 : 3500);
     return () => clearTimeout(timer);
   }, [toast]);
+  const showError = useCallback(
+    (error: unknown) =>
+      setToast({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not complete that action.",
+        error: true,
+      }),
+    [],
+  );
   const action = useCallback(
     async (
       path: string,
       body: object = {},
       method = "POST",
       success?: string,
+      lock = true,
     ) => {
-      setBusy(true);
+      if (lock) setBusy(true);
       try {
         await client.execute(method, path, body);
         if (success) setToast({ message: success, error: false });
         return true;
       } catch (error) {
-        setToast({
-          message:
-            error instanceof Error
-              ? error.message
-              : "Could not complete that action.",
-          error: true,
-        });
+        showError(error);
         return false;
       } finally {
-        setBusy(false);
+        if (lock) setBusy(false);
       }
     },
+    [client, showError],
+  );
+  const sendLights = useCallback(
+    (ids: string[], settings: Partial<LightSettings>) =>
+      client.execute("POST", "lights", { ids, settings }),
     [client],
   );
-  const lightsAction = (lights: Light[], settings: Partial<LightSettings>) =>
-    action("lights", {
-      ids: (home
-        ? lightTargets(
-            home,
-            lights.map((l) => l.id),
-          )
-        : lights
-      )
-        .filter((l) => l.available)
-        .map((l) => l.id),
+  const { home, control, predict } = useLiveLights(
+    liveHome,
+    sendLights,
+    showError,
+  );
+  const lightsAction = (lights: Light[], settings: Partial<LightSettings>) => {
+    if (!home) return Promise.resolve(false);
+    const targets = lightTargets(
+      home,
+      lights.map((l) => l.id),
+    ).filter((l) => l.available);
+    return control(
+      targets.map((l) => l.id),
       settings,
-    });
+      [...targets, ...lights].map((l) => l.id),
+    );
+  };
+  async function activateScene(scene: Scene) {
+    const settle =
+      scene.source === "glow"
+        ? predict(Object.entries(scene.lights))
+        : () => {};
+    const ok = await action(
+      `scenes/${encodeURIComponent(scene.id)}/activate`,
+      {},
+      "POST",
+      `${scene.name} applied`,
+      false,
+    );
+    settle(ok);
+  }
   function navigate(next: "rooms" | "scenes", nextRoom: string | null = null) {
     window.location.hash = `/${next}${nextRoom ? `/${encodeURIComponent(nextRoom)}` : ""}`;
     setPage(next);
@@ -169,7 +200,7 @@ export default function App({
   const room = home?.rooms.find((r) => r.id === roomId);
   const roomLights = home?.lights.filter((l) => l.roomId === roomId) ?? [];
   const lightsOn = home?.lights.filter((l) => l.on && l.available).length ?? 0;
-  const disabled = busy || !home?.connected || !streamOnline;
+  const disabled = !home?.connected || !streamOnline;
   const currentGroup = home?.groups?.find((group) => group.id === lightEditor);
   const currentLight =
     home?.lights.find((l) => l.id === lightEditor) ?? currentGroup;
@@ -192,14 +223,7 @@ export default function App({
           className="scene-activate"
           disabled={disabled}
           aria-label={`Activate ${scene.name} in ${sceneRoom?.name ?? "your home"}`}
-          onClick={() =>
-            action(
-              `scenes/${encodeURIComponent(scene.id)}/activate`,
-              {},
-              "POST",
-              `${scene.name} applied`,
-            )
-          }
+          onClick={() => activateScene(scene)}
         >
           <SceneOrb palette={scene.palette} />
           <div className="scene-text">
@@ -220,11 +244,14 @@ export default function App({
           className={`scene-favorite icon-button ${scene.favorite ? "favorited" : ""}`}
           aria-label={`${scene.favorite ? "Unfavorite" : "Favorite"} ${scene.name}`}
           aria-pressed={scene.favorite}
-          disabled={busy}
           onClick={() =>
-            action(`scenes/${encodeURIComponent(scene.id)}/favorite`, {
-              favorite: !scene.favorite,
-            })
+            action(
+              `scenes/${encodeURIComponent(scene.id)}/favorite`,
+              { favorite: !scene.favorite },
+              "POST",
+              undefined,
+              false,
+            )
           }
         >
           <Heart size={15} fill={scene.favorite ? "currentColor" : "none"} />

@@ -148,6 +148,23 @@ test("rooms, light controls, complete scene lifecycle, persistence, and mobile l
 test("failed commands restore the slider and browser back returns to the room list", async ({
   page,
 }) => {
+  let failLights = false;
+  await page.routeWebSocket(/\/api\/websocket$/, (socket) => {
+    const server = socket.connectToServer();
+    socket.onMessage((raw) => {
+      const message = JSON.parse(String(raw));
+      if (failLights && message.path === "lights")
+        socket.send(
+          JSON.stringify({
+            type: "result",
+            id: message.id,
+            status: 503,
+            error: "Home Assistant is disconnected.",
+          }),
+        );
+      else server.send(raw);
+    });
+  });
   await page.goto("/");
   await page
     .getByRole("button", { name: "Open Living room", exact: true })
@@ -157,13 +174,7 @@ test("failed commands restore the slider and browser back returns to the room li
     exact: true,
   });
   const original = await slider.inputValue();
-  await page.route("**/api/lights", (route) =>
-    route.fulfill({
-      status: 503,
-      contentType: "application/json",
-      body: JSON.stringify({ error: "Home Assistant is disconnected." }),
-    }),
-  );
+  failLights = true;
   await slider.focus();
   await page.keyboard.press("End");
   await expect(page.getByRole("alert")).toContainText(
@@ -200,4 +211,54 @@ test("assets, live events, room links, and actions work below the Home Assistant
     await page.evaluate(() => document.fonts.check('12px "DM Sans Variable"')),
   ).toBe(true);
   expect(failed).toEqual([]);
+});
+
+test("controls stream over the WebSocket and other tabs update instantly", async ({
+  page,
+  context,
+}) => {
+  const sent: number[] = [];
+  await page.routeWebSocket(/\/api\/websocket$/, (socket) => {
+    const server = socket.connectToServer();
+    socket.onMessage((raw) => {
+      const message = JSON.parse(String(raw));
+      if (message.path === "lights" && message.body.settings.brightness)
+        sent.push(message.body.settings.brightness);
+      server.send(raw);
+    });
+  });
+  const other = await context.newPage();
+  await page.goto("/#/rooms/kitchen");
+  await other.goto("/#/rooms/kitchen");
+  const toggle = (target: typeof page) =>
+    target.getByRole("switch", { name: "Kitchen all lights", exact: true });
+  const on = await toggle(page).isChecked();
+  await toggle(page).click();
+  await expect(toggle(other)).toBeChecked({ checked: !on });
+
+  const slider = page.getByRole("slider", {
+    name: "Room brightness",
+    exact: true,
+  });
+  const box = (await slider.boundingBox())!;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(box.x + 4, y);
+  await page.mouse.down();
+  for (let step = 1; step <= 10; step++) {
+    await page.mouse.move(box.x + (box.width * step) / 12, y);
+    await page.waitForTimeout(60);
+  }
+  // The lights follow the drag before the slider is released.
+  expect(sent.length).toBeGreaterThan(1);
+  await page.mouse.up();
+  await expect
+    .poll(async () =>
+      Number(
+        await other
+          .getByRole("slider", { name: "Room brightness", exact: true })
+          .inputValue(),
+      ),
+    )
+    .toBe(Number(await slider.inputValue()));
+  await other.close();
 });

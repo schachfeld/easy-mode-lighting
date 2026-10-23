@@ -12,6 +12,7 @@ export function createCore({
   ha = null,
   store,
   randomUUID = () => globalThis.crypto.randomUUID(),
+  broadcastDelayMs = 16,
 }) {
   const demo = !ha;
   const subscribers = new Set();
@@ -37,10 +38,20 @@ export function createCore({
     error: ha?.error ?? null,
     palettes,
   });
+  let broadcastTimer = null;
   const broadcast = () => {
-    for (const callback of subscribers) callback(state());
+    clearTimeout(broadcastTimer);
+    broadcastTimer = null;
+    if (!subscribers.size) return;
+    const home = state();
+    for (const callback of subscribers) callback(home);
   };
-  ha?.on("change", broadcast);
+  // A room command produces one state_changed event per bulb. Coalesce bursts
+  // into a single update instead of remapping the whole home for every event.
+  const scheduleBroadcast = () => {
+    broadcastTimer ??= setTimeout(broadcast, broadcastDelayMs);
+  };
+  ha?.on("change", scheduleBroadcast);
   const findScene = (id) => {
     const scene = state().scenes.find((s) => s.id === id);
     if (!scene)
@@ -99,13 +110,18 @@ export function createCore({
         group.ids.push(light.id);
         groups.set(key, group);
       }
-      for (const group of groups.values())
-        await ha.call(
-          "light",
-          settings.on === false ? "turn_off" : "turn_on",
-          group.data,
-          { entity_id: group.ids },
-        );
+      // Send every call in the same tick, so commands reach Home Assistant in
+      // the order they were issued even while earlier ones are still running.
+      await Promise.all(
+        [...groups.values()].map((group) =>
+          ha.call(
+            "light",
+            settings.on === false ? "turn_off" : "turn_on",
+            group.data,
+            { entity_id: group.ids },
+          ),
+        ),
+      );
     }
     return { ok: true };
   });
@@ -329,7 +345,10 @@ export function createCore({
   });
 
   // Serialize writes so asynchronous mobile persistence cannot lose an edit.
+  // Live light commands do not touch storage. They skip the queue so a slow
+  // scene save or bulb never delays the next slider movement.
   let queue = Promise.resolve();
+  const immediate = new Set(demo ? [] : ["POST lights"]);
   return {
     state,
     subscribe(callback) {
@@ -354,12 +373,15 @@ export function createCore({
             status: 404,
           }),
         );
+      if (immediate.has(`${method} ${key}`))
+        return Promise.resolve().then(() => handler(body, id));
       const task = queue.then(() => handler(body, id));
       queue = task.catch(() => {});
       return task;
     },
     close() {
-      ha?.off("change", broadcast);
+      clearTimeout(broadcastTimer);
+      ha?.off("change", scheduleBroadcast);
       subscribers.clear();
     },
   };

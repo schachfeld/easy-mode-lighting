@@ -15,7 +15,9 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       ...(host ? { hmr: { host, port: 5182 } } : {}),
       watch: { ignored: ["**/src-tauri/**"] },
-      ...(mobile ? {} : { proxy: { "/api": "http://127.0.0.1:8099" } }),
+      ...(mobile
+        ? {}
+        : { proxy: { "/api": { target: "http://127.0.0.1:8099", ws: true } } }),
     },
   };
 });

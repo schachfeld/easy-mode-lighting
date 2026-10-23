@@ -77,14 +77,19 @@ export function Brightness({
 }) {
   const [draft, setDraft] = useState(value);
   const changing = useRef(false);
+  const latest = useRef(value);
+  const sent = useRef<Promise<boolean | void>>(Promise.resolve());
+  latest.current = value;
   useEffect(() => {
     if (!changing.current) setDraft(value);
   }, [value]);
+  // Lights follow the slider while it moves. The caller coalesces commands,
+  // and releasing it reports whether the final value was accepted.
   const commit = async () => {
     if (changing.current) {
       changing.current = false;
-      const accepted = await onChange(draft);
-      if (accepted === false) setDraft(value);
+      const accepted = await sent.current;
+      if (accepted === false && !changing.current) setDraft(latest.current);
     }
   };
   return (
@@ -101,16 +106,15 @@ export function Brightness({
         aria-label={label}
         style={{ "--fill": `${draft}%` } as CSSProperties}
         onChange={(e) => {
+          const next = Number(e.target.value);
           changing.current = true;
-          setDraft(Number(e.target.value));
+          setDraft(next);
+          sent.current = Promise.resolve(onChange(next));
         }}
         onPointerUp={commit}
         onKeyUp={commit}
         onBlur={commit}
-        onPointerCancel={() => {
-          changing.current = false;
-          setDraft(value);
-        }}
+        onPointerCancel={commit}
       />
       <span>
         {draft}

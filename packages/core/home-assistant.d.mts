@@ -17,6 +17,7 @@ export class HomeAssistant {
     sceneRequest?: (
       request: SceneRequest,
     ) => Promise<{ status: number; body: any }>;
+    registryDelayMs?: number;
   });
   connected: boolean;
   stopped: boolean;

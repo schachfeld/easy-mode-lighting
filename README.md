@@ -12,7 +12,7 @@ Open a room, set its brightness, tap a scene, or make one of your own. No dashbo
 - Create, edit, favorite, and delete scenes inside each room.
 - Start from six color palettes, or capture your current light settings.
 - Activate existing Home Assistant scenes alongside your Glow scenes.
-- See live changes from other devices and Home Assistant.
+- See changes from other devices and Home Assistant instantly, and watch your lights follow sliders and colors as you drag.
 - Use the same interface on a phone, tablet, or desktop.
 
 ## Install on Home Assistant OS

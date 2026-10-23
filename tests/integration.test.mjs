@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { once } from "node:events";
 import { createServer } from "node:http";
-import { WebSocketServer } from "ws";
+import WebSocket, { WebSocketServer } from "ws";
 import { createApp } from "../server/app.mjs";
 import { HomeAssistant } from "../server/home-assistant.mjs";
 import { mapHome } from "../server/model.mjs";
@@ -14,6 +14,9 @@ async function fixture(t, options = {}) {
   const dataDir = options.dataDir ?? mkdtempSync(join(tmpdir(), "glow-test-"));
   const instance = createApp({ dataDir, ...options });
   const server = instance.app.listen(0, "127.0.0.1");
+  server.on("upgrade", (req, socket, head) => {
+    if (!instance.upgrade(req, socket, head)) socket.destroy();
+  });
   await once(server, "listening");
   const url = `http://127.0.0.1:${server.address().port}`;
   t.after(async () => {
@@ -432,6 +435,146 @@ test("live state events are streamed to clients, and reconnect reloads discovery
   await once(ha, "change");
   assert.equal(ha.connected, true);
   assert.equal(ha.states["light.color"].state, "on");
+});
+
+async function openSocket(app, headers = {}, path = "/api/websocket") {
+  const socket = new WebSocket(`${app.url.replace(/^http/, "ws")}${path}`, {
+    headers,
+  });
+  const messages = [];
+  const waiters = [];
+  socket.on("message", (raw) => {
+    const message = JSON.parse(raw.toString());
+    const index = waiters.findIndex(({ match }) => match(message));
+    if (index >= 0) waiters.splice(index, 1)[0].resolve(message);
+    else messages.push(message);
+  });
+  const next = (match) => {
+    const index = messages.findIndex(match);
+    if (index >= 0) return Promise.resolve(messages.splice(index, 1)[0]);
+    return new Promise((resolve) => waiters.push({ match, resolve }));
+  };
+  let nextId = 1;
+  const command = (method, path, body) => {
+    const id = nextId++;
+    socket.send(JSON.stringify({ id, method, path, body }));
+    return next((m) => m.type === "result" && m.id === id);
+  };
+  await once(socket, "open");
+  return { socket, next, command };
+}
+
+test("WebSocket clients receive live state and run commands in order", async (t) => {
+  const mock = await mockHa(t);
+  const app = await fixture(t, { ha: mock.ha });
+  const client = await openSocket(
+    app,
+    {},
+    "/api/hassio_ingress/x/api/websocket",
+  );
+  t.after(() => client.socket.terminate());
+  const initial = await client.next((m) => m.type === "state");
+  assert.equal(
+    initial.home.lights.find((l) => l.id === "light.color").on,
+    true,
+  );
+
+  // A burst of state changes reaches clients as one coalesced update.
+  for (const socket of mock.wss.clients)
+    for (const brightness of [10, 20, 30])
+      socket.send(
+        JSON.stringify({
+          type: "event",
+          event: {
+            event_type: "state_changed",
+            data: {
+              entity_id: "light.color",
+              new_state: {
+                ...haStates[0],
+                attributes: { ...haStates[0].attributes, brightness },
+              },
+            },
+          },
+        }),
+      );
+  const burst = await client.next((m) => m.type === "state");
+  assert.equal(
+    burst.home.lights.find((l) => l.id === "light.color").brightness,
+    12,
+  );
+  // Unrelated entities never trigger an update.
+  for (const socket of mock.wss.clients)
+    socket.send(
+      JSON.stringify({
+        type: "event",
+        event: {
+          event_type: "state_changed",
+          data: {
+            entity_id: "sensor.power",
+            new_state: { entity_id: "sensor.power", state: "4" },
+          },
+        },
+      }),
+    );
+
+  const results = await Promise.all(
+    [20, 40, 60].map((brightness) =>
+      client.command("POST", "lights", {
+        ids: ["light.color"],
+        settings: { on: true, brightness },
+      }),
+    ),
+  );
+  assert.deepEqual(
+    results.map((r) => r.result),
+    [{ ok: true }, { ok: true }, { ok: true }],
+  );
+  assert.deepEqual(
+    mock.calls.map((c) => c.service_data.brightness),
+    [51, 102, 153],
+  );
+  assert.equal(client.socket.readyState, WebSocket.OPEN);
+  assert.equal(mock.ha.states["sensor.power"], undefined);
+
+  const missing = await client.command("POST", "scenes/nope/activate", {});
+  assert.equal(missing.status, 404);
+  assert.match(missing.error, /no longer exists/);
+  const invalid = await client.command("POST", "lights", { ids: [] });
+  assert.equal(invalid.status, 400);
+  mock.fail();
+  const failed = await client.command("POST", "lights", {
+    ids: ["light.color"],
+    settings: { on: false },
+  });
+  assert.match(failed.error, /failed/);
+  client.socket.send("not json");
+  const [code] = await once(client.socket, "close");
+  assert.equal(code, 1003);
+});
+
+test("WebSocket upgrades reject other sites and direct ingress access", async (t) => {
+  const app = await fixture(t);
+  const refused = async (headers, target = app) => {
+    const socket = new WebSocket(
+      `${target.url.replace(/^http/, "ws")}/api/websocket`,
+      { headers },
+    );
+    socket.on("error", () => {});
+    const [, response] = await once(socket, "unexpected-response");
+    socket.terminate();
+    return response.statusCode;
+  };
+  assert.equal(await refused({ Origin: "https://evil.example" }), 403);
+  assert.equal(await refused({ "Sec-Fetch-Site": "cross-site" }), 403);
+  const same = await openSocket(app, { Origin: app.url });
+  same.socket.terminate();
+  const proxied = await openSocket(app, {
+    Origin: "https://ha.example",
+    "X-Forwarded-Host": "ha.example",
+  });
+  proxied.socket.terminate();
+  const ingress = await fixture(t, { ingress: true });
+  assert.equal(await refused({}, ingress), 403);
 });
 
 test("ingress blocks direct access; mutations reject cross-site and non-JSON requests", async (t) => {

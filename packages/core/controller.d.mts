@@ -19,4 +19,5 @@ export function createCore(options: {
   ha?: HomeAssistant | null;
   store: SceneStore;
   randomUUID?: () => string;
+  broadcastDelayMs?: number;
 }): GlowCore;
