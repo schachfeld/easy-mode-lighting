@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.0] - 2026-10-23
+
+- Control lights in real time. Lights follow brightness sliders and color pickers while you drag, and toggles respond instantly instead of waiting for Home Assistant.
+- Keep every light control usable while other commands or scene saves are in progress.
+- Sync rooms, lights, and scenes between Glow tabs and Home Assistant over a single WebSocket that reconnects automatically after sleep or network changes. Glow falls back to its previous connection method if a proxy blocks WebSockets.
+- Stay responsive in large homes by ignoring updates from sensors and other non-light entities, and by combining bursts of changes into one update.
+
+Automated tests cover the WebSocket connection, command ordering, cross-site protection, and live updates between tabs using a simulated server. Validation of the WebSocket connection through Home Assistant ingress with physical lights is still pending.
+
 ## [1.2.0] - 2026-10-11
 
 - Save new scenes as persistent Home Assistant scenes from both the add-on and mobile app, making them available to automations, dashboards, and other clients.
