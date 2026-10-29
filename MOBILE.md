@@ -31,7 +31,45 @@ npm run mobile:ios
 
 The mobile dev server uses port 5181; the add-on dev server continues to use 5180. Tauri supplies `TAURI_DEV_HOST` for physical-device development. Android projects and Xcode projects are generated into `src-tauri/gen/` and are not committed. App icons and iOS local-network permission text are included. iOS requires version 16 or later; Android's minimum SDK is 24.
 
-The **Mobile Android build** GitHub Actions workflow can produce a debug ARM64 APK from a manually selected branch. Debug artifacts are for testing. Store distribution still needs platform signing, developer accounts, and release configuration. The normal CI also compiles the Rust shell on Linux. Local browser tests mock native IPC; they do not replace device testing or prove that a native package builds.
+The **Mobile Android build** GitHub Actions workflow can produce a debug ARM64 APK from a manually selected branch. Debug artifacts are for testing. The **Mobile iOS TestFlight** workflow builds a signed App Store build and uploads it to TestFlight; see below. Google Play distribution still needs signing and release configuration. The normal CI also compiles the Rust shell on Linux. Local browser tests mock native IPC; they do not replace device testing or prove that a native package builds.
+
+## Release to TestFlight
+
+The **Mobile iOS TestFlight** GitHub Actions workflow builds the iOS app on a macOS runner, signs it for App Store distribution, checks the packaged app, and uploads it to App Store Connect. The app version comes from `package.json`; the build number (`CFBundleVersion`) is derived from the workflow run, so every upload is unique. The signed IPA is also kept as a workflow artifact for seven days.
+
+### One-time Apple setup
+
+1. In the [Apple Developer portal](https://developer.apple.com/account/resources/identifiers/list), register the explicit App ID `io.github.schachfeld.glow`. No extra capabilities are required; the `glow-lighting://` return link is a custom URL scheme and needs no entitlement.
+2. In [App Store Connect](https://appstoreconnect.apple.com/apps), create a new iOS app named **Glow** with that bundle ID and any SKU.
+3. Create an **Apple Distribution** certificate and export it from Keychain Access as a password-protected `.p12`.
+4. Create an **App Store Connect** distribution provisioning profile for `io.github.schachfeld.glow` using that certificate, and download the `.mobileprovision` file.
+5. In App Store Connect → **Users and Access → Integrations → App Store Connect API**, create a team key with the **App Manager** role. Download the `.p8` file (only possible once) and note its key ID and the issuer ID.
+
+### Repository configuration
+
+In **Settings → Secrets and variables → Actions**, add:
+
+| Name                       | Type     | Value                                                         |
+| -------------------------- | -------- | ------------------------------------------------------------- |
+| `APPLE_DEVELOPMENT_TEAM`   | Variable | Your 10-character Apple team ID                               |
+| `IOS_CERTIFICATE`          | Secret   | `base64 -i distribution.p12` output                           |
+| `IOS_CERTIFICATE_PASSWORD` | Secret   | The `.p12` export password                                    |
+| `IOS_MOBILE_PROVISION`     | Secret   | `base64 -i Glow_App_Store.mobileprovision` output             |
+| `APPLE_API_ISSUER`         | Secret   | App Store Connect API issuer ID                               |
+| `APPLE_API_KEY_ID`         | Secret   | App Store Connect API key ID                                  |
+| `APPLE_API_KEY_P8`         | Secret   | Full contents of `AuthKey_<KEY_ID>.p8`, including its headers |
+
+The workflow stops before building if any value is missing.
+
+### Upload a build
+
+1. Make sure the [login identity page](#publish-the-login-identity-page) is published; account sign-in cannot work without it.
+2. Run **Mobile iOS TestFlight** from **Actions** on `main` or a release branch. Leave **Upload** enabled; disable it to only produce and check a signed IPA.
+3. After App Store Connect finishes processing (usually 5–30 minutes), the build appears under **TestFlight**. Add it to an internal testing group, or submit it for beta review to use external testers. Beta review needs test notes explaining that a reachable Home Assistant instance is required, plus a demo instance or a screen recording.
+
+The app declares `ITSAppUsesNonExemptEncryption = false`, because Glow only uses encryption for HTTPS/WSS connections and to protect saved sign-in credentials on the device. Confirm this matches your export-compliance assessment; if not, remove the key from `src-tauri/Info.ios.plist` and answer the encryption questions in App Store Connect instead. `src-tauri/PrivacyInfo.xcprivacy` declares no tracking or collected data, and the file-timestamp and elapsed-time APIs used by the Rust runtime. Fill in the App Store Connect privacy questionnaire as **Data Not Collected** to match. iOS app icons are opaque, as App Store Connect requires.
+
+To build locally on a Mac instead, run `npm run tauri -- ios init`, copy `src-tauri/PrivacyInfo.xcprivacy` into the generated `src-tauri/gen/apple/*_iOS/` folder and run `xcodegen generate` in `src-tauri/gen/apple`. Then run `APPLE_DEVELOPMENT_TEAM=<team id> npm run tauri -- ios build --export-method app-store-connect` and upload the IPA from `src-tauri/gen/apple/build/` with Transporter.
 
 ## Connect
 
