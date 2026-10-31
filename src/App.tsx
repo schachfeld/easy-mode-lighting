@@ -501,6 +501,33 @@ export default function App({
                     <div className="section-heading">
                       <div>
                         <h2>
+                          Scenes{" "}
+                          <span className="count-label">
+                            {
+                              home.scenes.filter((s) => s.roomId === room.id)
+                                .length
+                            }
+                          </span>
+                        </h2>
+                      </div>
+                      <button
+                        className="button primary"
+                        onClick={() => setEditor({ roomId: room.id })}
+                      >
+                        <Plus size={17} />
+                        Create scene
+                      </button>
+                    </div>
+                    <div className="scenes-grid">
+                      {home.scenes
+                        .filter((s) => s.roomId === room.id)
+                        .map((s) => sceneCard(s))}
+                    </div>
+                  </section>
+                  <section className="section">
+                    <div className="section-heading">
+                      <div>
+                        <h2>
                           Lights{" "}
                           <span className="count-label">
                             {roomLights.length}
@@ -537,33 +564,6 @@ export default function App({
                           onAdjust={setLightEditor}
                         />
                       ))}
-                    </div>
-                  </section>
-                  <section className="section">
-                    <div className="section-heading">
-                      <div>
-                        <h2>
-                          Scenes{" "}
-                          <span className="count-label">
-                            {
-                              home.scenes.filter((s) => s.roomId === room.id)
-                                .length
-                            }
-                          </span>
-                        </h2>
-                      </div>
-                      <button
-                        className="button primary"
-                        onClick={() => setEditor({ roomId: room.id })}
-                      >
-                        <Plus size={17} />
-                        Create scene
-                      </button>
-                    </div>
-                    <div className="scenes-grid">
-                      {home.scenes
-                        .filter((s) => s.roomId === room.id)
-                        .map((s) => sceneCard(s))}
                     </div>
                   </section>
                 </>
@@ -672,37 +672,6 @@ export default function App({
                           </button>
                         </div>
                       )
-                    )}
-                  </section>
-                  <section className="section favorites-section">
-                    <div className="section-heading">
-                      <h2>
-                        <Heart size={17} />
-                        Favorite scenes
-                      </h2>
-                      <button
-                        className="text-button"
-                        onClick={() => navigate("scenes")}
-                      >
-                        All scenes
-                        <ArrowRight size={15} />
-                      </button>
-                    </div>
-                    {home.scenes.some((s) => s.favorite) ? (
-                      <div className="favorites-grid">
-                        {home.scenes
-                          .filter((s) => s.favorite)
-                          .map((s) => sceneCard(s, true))}
-                      </div>
-                    ) : (
-                      <button
-                        className="empty-favorites"
-                        onClick={() => navigate("scenes")}
-                      >
-                        <Heart size={19} />
-                        <span>Tap the heart on a scene to keep it here.</span>
-                        <ArrowRight size={17} />
-                      </button>
                     )}
                   </section>
                 </>
