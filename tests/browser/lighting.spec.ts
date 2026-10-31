@@ -61,6 +61,12 @@ test("rooms, light controls, complete scene lifecycle, persistence, and mobile l
   const otherPage = await context.newPage();
   await otherPage.goto("/");
   await expect(
+    otherPage.getByRole("button", { name: "Favorite scenes" }),
+  ).toHaveCount(0);
+  await otherPage
+    .getByRole("button", { name: "Open Living room", exact: true })
+    .click();
+  await expect(
     otherPage.getByRole("button", {
       name: "Activate Movie night in Living room",
       exact: true,
