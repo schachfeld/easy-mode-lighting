@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Heart, Sparkles } from "lucide-react";
+import { RoomIcon } from "./components";
 import type { Home, Scene } from "./types";
 
 // "all", "favorites", or a room id.
@@ -23,23 +24,46 @@ export function ScenesPage({
       filter === "all" ||
       (filter === "favorites" ? s.favorite : s.roomId === filter),
   );
+  // Group by room, in the same order as the room list, then whole-home scenes.
+  const groups = [
+    ...home.rooms.map((room) => ({
+      id: room.id,
+      name: room.name,
+      style: room.style,
+      scenes: scenes.filter((s) => s.roomId === room.id),
+    })),
+    {
+      id: "home",
+      name: "Whole home",
+      style: "home",
+      scenes: scenes.filter(
+        (s) => !home.rooms.some((room) => room.id === s.roomId),
+      ),
+    },
+  ].filter((group) => group.scenes.length);
   return (
     <>
-      <div className="page-heading">
+      <header className="page-heading">
         <div>
+          <p className="eyebrow">
+            {home.scenes.length} {home.scenes.length === 1 ? "scene" : "scenes"}{" "}
+            · {home.scenes.filter((s) => s.favorite).length} favorites
+          </p>
           <h1>Scenes</h1>
         </div>
-      </div>
-      <div className="section-heading scene-page-heading">
-        <div className="room-filters" role="group" aria-label="Filter scenes">
+      </header>
+      <div className="scene-toolbar">
+        <div className="segmented" role="group" aria-label="Filter scenes">
           <button
             className={filter === "all" ? "selected" : ""}
+            aria-pressed={filter === "all"}
             onClick={() => onFilterChange("all")}
           >
             All scenes
           </button>
           <button
             className={filter === "favorites" ? "selected" : ""}
+            aria-pressed={filter === "favorites"}
             onClick={() => onFilterChange("favorites")}
           >
             <Heart size={14} />
@@ -60,14 +84,35 @@ export function ScenesPage({
           ))}
         </select>
       </div>
-      <div className="all-scenes-grid">{scenes.map((s) => renderScene(s))}</div>
+      {groups.map((group) => (
+        <section className="scene-group" key={group.id} aria-label={group.name}>
+          <h2>
+            <span className="room-icon small">
+              <RoomIcon style={group.style} size={16} />
+            </span>
+            {group.name}
+            <span className="count-label">{group.scenes.length}</span>
+          </h2>
+          <div className="scenes-grid">
+            {group.scenes.map((s) => renderScene(s))}
+          </div>
+        </section>
+      ))}
       {!scenes.length && (
         <div className="empty-state">
-          <Sparkles size={32} />
-          <h3>No scenes yet</h3>
+          <span className="empty-icon">
+            {filter === "favorites" ? (
+              <Heart size={28} />
+            ) : (
+              <Sparkles size={28} />
+            )}
+          </span>
+          <h3>
+            {filter === "favorites" ? "No favorites yet" : "No scenes yet"}
+          </h3>
           <p>
             {filter === "favorites"
-              ? "Tap the heart on any scene to make it a favorite."
+              ? "Tap the heart on any scene. Favorites also appear on their room’s card for one-tap access."
               : "Open a room to save your first scene."}
           </p>
           <button

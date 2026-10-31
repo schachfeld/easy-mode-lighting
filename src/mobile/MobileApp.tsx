@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { isTauri } from "@tauri-apps/api/core";
-import { ArrowRight, Lightbulb, LockKeyhole, Wifi } from "lucide-react";
+import { ArrowRight, Lightbulb, LockKeyhole, Sun, Wifi } from "lucide-react";
 import App from "../App";
 import { connectMobile, type MobileClient } from "./client";
 import {
@@ -222,10 +222,12 @@ export default function MobileApp() {
     <main className="connect-page">
       <section className="connect-card" aria-labelledby="connect-title">
         <div className="connect-brand">
+          <span className="brand-mark">
+            <Sun size={22} strokeWidth={2} />
+          </span>
           <span>
-            <Lightbulb size={26} />
-          </span>{" "}
-          glow
+            glow<span className="brand-period">.</span>
+          </span>
         </div>
         <div className="connect-art" aria-hidden="true">
           <div />
