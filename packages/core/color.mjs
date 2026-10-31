@@ -112,19 +112,22 @@ export function colorsClose(a, b) {
   return Math.min(hue, 360 - hue) <= 12 && Math.abs(x.s - y.s) <= 0.15;
 }
 
+// Upper hue bounds, tuned so Glow's swatches read back under their own names.
 const hueNames = [
-  [12, "Red"],
-  [35, "Orange"],
+  [8, "Red"],
+  [22, "Coral"],
+  [34, "Orange"],
   [50, "Amber"],
   [68, "Yellow"],
   [95, "Lime"],
   [155, "Green"],
   [185, "Teal"],
   [205, "Cyan"],
-  [250, "Blue"],
-  [275, "Indigo"],
+  [245, "Blue"],
+  [270, "Indigo"],
   [300, "Purple"],
   [335, "Pink"],
+  [350, "Rose"],
   [360, "Red"],
 ];
 

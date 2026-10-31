@@ -31,7 +31,7 @@ const swatches = [
   { name: "Coral", color: "#ff8466" },
   { name: "Rose", color: "#ff6f9c" },
   { name: "Orchid", color: "#c77dff" },
-  { name: "Indigo", color: "#7b83ff" },
+  { name: "Periwinkle", color: "#7b83ff" },
   { name: "Sky", color: "#5bb8ff" },
   { name: "Lagoon", color: "#4fd6c4" },
   { name: "Lime", color: "#a8e063" },

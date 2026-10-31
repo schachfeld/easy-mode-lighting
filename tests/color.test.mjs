@@ -86,6 +86,18 @@ test("colors and whites have friendly names", () => {
   assert.equal(colorName("#0000ff"), "Blue");
   assert.equal(colorName("#ffffff"), "White");
   assert.equal(colorName("#ffb3b3"), "Soft red");
+  // The sunset palette's salmon is coral, not red.
+  assert.equal(colorName("#ee947e"), "Coral");
+  // Light editor swatches read back under their own names.
+  for (const [hex, name] of [
+    ["#ffb347", "Amber"],
+    ["#ff8466", "Coral"],
+    ["#ff6f9c", "Rose"],
+    ["#c77dff", "Purple"],
+    ["#4fd6c4", "Teal"],
+    ["#a8e063", "Lime"],
+  ])
+    assert.equal(colorName(hex), name);
   assert.equal(whiteName(2200), "Candlelight");
   assert.equal(whiteName(2700), "Warm white");
   assert.equal(whiteName(4000), "Neutral white");
