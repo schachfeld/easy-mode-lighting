@@ -1,29 +1,56 @@
-import { Check, ExternalLink, House, Radio, Sparkles } from "lucide-react";
+import {
+  Check,
+  ExternalLink,
+  House,
+  Monitor,
+  Moon,
+  Radio,
+  Sparkles,
+  Sun,
+} from "lucide-react";
 import { Modal } from "./components";
 import type { GlowClient } from "./platform/client";
+import type { ThemePreference } from "./theme";
 import type { Home } from "./types";
+
+const themes = [
+  { id: "system", name: "System", Icon: Monitor },
+  { id: "light", name: "Light", Icon: Sun },
+  { id: "dark", name: "Dark", Icon: Moon },
+] as const;
 
 export function ConnectionHelp({
   home,
+  online = true,
   sceneStorage,
+  theme,
+  onThemeChange,
   onDisconnect,
   onClose,
 }: {
   home: Home | null;
+  online?: boolean;
   sceneStorage: GlowClient["sceneStorage"];
+  theme: ThemePreference;
+  onThemeChange: (theme: ThemePreference) => void;
   onDisconnect?: () => void;
   onClose: () => void;
 }) {
   const demo = home?.mode === "demo";
+  const connected = Boolean(home?.connected && online);
   return (
-    <Modal title="Connection & help" onClose={onClose}>
-      <div className={`connection-info ${home?.mode === "live" ? "live" : ""}`}>
-        <Radio size={23} />
+    <Modal title="Settings & help" onClose={onClose}>
+      <div
+        className={`connection-info ${demo ? "demo" : connected ? "live" : "offline"}`}
+      >
+        <span className="connection-icon">
+          <Radio size={22} />
+        </span>
         <div>
           <strong>
             {demo
               ? "You’re exploring a demo home"
-              : home?.connected
+              : connected
                 ? "Connected to Home Assistant"
                 : "Waiting for Home Assistant"}
           </strong>
@@ -34,6 +61,24 @@ export function ConnectionHelp({
           </p>
         </div>
       </div>
+      <fieldset className="settings-group">
+        <legend className="field-label">Appearance</legend>
+        <div className="segmented theme-picker">
+          {themes.map(({ id, name, Icon }) => (
+            <label key={id} className={theme === id ? "selected" : ""}>
+              <input
+                type="radio"
+                name="theme"
+                value={id}
+                checked={theme === id}
+                onChange={() => onThemeChange(id)}
+              />
+              <Icon size={16} aria-hidden="true" />
+              {name}
+            </label>
+          ))}
+        </div>
+      </fieldset>
       {demo && (
         <>
           <h3 className="help-heading">Connect to Home Assistant</h3>
@@ -118,7 +163,7 @@ export function ConnectionHelp({
       </a>
       <div className="modal-footer">
         {onDisconnect && (
-          <button className="button" onClick={onDisconnect}>
+          <button className="button secondary" onClick={onDisconnect}>
             Disconnect
           </button>
         )}

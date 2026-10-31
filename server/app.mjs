@@ -106,6 +106,18 @@ export function createApp({
       .status(req.method === "POST" && path === "scenes" ? 201 : 200)
       .json(result);
   });
+  // Vite names built assets by content hash, so browsers can keep them for good
+  // and skip revalidating every file each time Glow opens. The page itself
+  // stays revalidated so updates appear immediately.
+  app.use(
+    "/assets",
+    express.static(resolve(distDir, "assets"), {
+      immutable: true,
+      maxAge: "365d",
+      index: false,
+      fallthrough: false,
+    }),
+  );
   app.use(express.static(resolve(distDir), { index: "index.html" }));
   app.use((error, _req, res, _next) => {
     const { status, error: message } = publicError(error);

@@ -102,6 +102,8 @@ test("rooms, light controls, complete scene lifecycle, persistence, and mobile l
     }),
   ).toHaveCount(0);
   await page.getByRole("button", { name: "Adjust light" }).first().click();
+  // The scene left the lamp in color mode, so its editor opens on Color.
+  await page.getByRole("tab", { name: "White", exact: true }).click();
   await page.getByRole("button", { name: "Cool", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Cool", exact: true }),

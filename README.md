@@ -4,16 +4,25 @@
 
 Open a room, set its brightness, tap a scene, or make one of your own. No dashboard builder or YAML required.
 
+![Glow's rooms in the dark theme, each card glowing with the colors of its lights](docs/screenshots/rooms-dark.webp)
+
 ## What you can do
 
 - See your rooms automatically, using your Home Assistant Areas.
-- Turn a room on or off, dim all its lights, or adjust individual bulbs.
-- Set colors and white temperatures on supported lights.
-- Create, edit, favorite, and delete scenes inside each room.
+- See your home's light at a glance: every room and light card glows with the actual colors of its lights.
+- Turn a room on or off, dim all its lights, or adjust individual bulbs with large, touch-friendly sliders.
+- Pick any color on a color wheel or from swatches, or set a white from candlelight to daylight on supported lights.
+- Create, edit, favorite, and delete scenes inside each room. Favorite scenes sit on their room's card for one-tap moods.
 - Start from six color palettes, or capture your current light settings.
 - Activate existing Home Assistant scenes alongside your Glow scenes.
+- Undo **All lights off** to bring back each light's brightness and color.
 - See changes from other devices and Home Assistant instantly, and watch your lights follow sliders and colors as you drag.
-- Use the same interface on a phone, tablet, or desktop.
+- Use light or dark mode, following your device or chosen in Settings.
+- Use the same interface on a phone, tablet, or desktop. Phones get a bottom tab bar and sheet-style dialogs.
+
+| Room                                                                          | Light editor                                                          | Phone                                                                  |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| ![A living room with its scenes and lights](docs/screenshots/room-light.webp) | ![The light editor's color wheel](docs/screenshots/light-editor.webp) | ![Glow on a phone in the dark theme](docs/screenshots/phone-dark.webp) |
 
 ## Install on Home Assistant OS
 
@@ -76,7 +85,7 @@ In live mode, saving a scene writes a persistent Home Assistant scene to `scenes
 
 Glow keeps editor settings, favorites, and older local scenes in `/data/scenes.json` (or mobile app storage). Older scenes continue to work and are published when next saved; they are not migrated automatically. On another client, a published scene appears as a Home Assistant scene and can be edited in Home Assistant. Include both Home Assistant and Glow in backups. Demo data remains isolated in `demo.json`.
 
-Glow applies its scenes through Home Assistant’s `scene.apply` service. They are **not added to Home Assistant’s scene registry**, and therefore do not appear in its automation scene picker. Existing Home Assistant scenes can be activated and favorited in Glow; edit or delete those in Home Assistant. Multi-room native scenes appear in All scenes. If a saved scene references a removed or unavailable bulb, Glow asks you to fix or edit it rather than silently applying an incomplete scene.
+Glow applies its scenes through Home Assistant’s `scene.apply` service. They are **not added to Home Assistant’s scene registry**, and therefore do not appear in its automation scene picker. Existing Home Assistant scenes can be activated and favorited in Glow; edit or delete those in Home Assistant. Multi-room native scenes appear in Scenes, under Whole home. If a saved scene references a removed or unavailable bulb, Glow asks you to fix or edit it rather than silently applying an incomplete scene.
 
 ## Development and checks
 
@@ -90,7 +99,7 @@ docker build -t glow-lighting .
 npm run package:addon
 ```
 
-Integration tests use a real local WebSocket server to exercise authentication, discovery, service calls, live events, reconnecting, unavailable lights, and persistence. Browser tests cover the room controls, scene lifecycle, updates between tabs, and phone layout. Browser screenshots are written to `artifacts/`.
+Integration tests use a real local WebSocket server to exercise authentication, discovery, service calls, live events, reconnecting, unavailable lights, and persistence. Browser tests cover the room controls, color wheel, scene lifecycle, undo, themes, updates between tabs, and phone layout. Browser screenshots are written to `artifacts/`.
 
 The server uses the official [WebSocket API](https://developers.home-assistant.io/docs/api/websocket/) and [app communication API](https://developers.home-assistant.io/docs/apps/communication/). The app only exposes its UI through authenticated Home Assistant ingress and rejects requests arriving directly from other containers. Scene changes require JSON and reject browser cross-site requests.
 

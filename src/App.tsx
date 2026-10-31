@@ -1,32 +1,37 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Check,
-  ChevronRight,
-  CircleHelp,
-  House,
-  LayoutGrid,
+  CircleAlert,
   LoaderCircle,
-  Settings2,
-  Sparkles,
+  RotateCcw,
   Sun,
   WifiOff,
   X,
 } from "lucide-react";
 import { lightTargets } from "../packages/core/groups.mjs";
 import { ConnectionHelp } from "./ConnectionHelp";
+import { plural } from "./format";
 import { LightEditor } from "./LightEditor";
 import { LightGroupSettings } from "./LightGroupSettings";
+import { MobileBar, Sidebar, TabBar, type Page } from "./Navigation";
 import { RoomPage } from "./RoomPage";
 import { RoomsPage, type RoomFilter } from "./RoomsPage";
 import { SceneCard } from "./SceneCard";
 import { SceneEditor } from "./SceneEditor";
 import { ScenesPage, type SceneFilter } from "./ScenesPage";
+import { useTheme } from "./theme";
 import type { Home, Light, LightSettings, Scene } from "./types";
 
 import { serverClient, type GlowClient } from "./platform/client";
 import { useLiveLights } from "./live";
 
-function readRoute(): { page: "rooms" | "scenes"; roomId: string | null } {
+type Toast = {
+  message: string;
+  error: boolean;
+  action?: { label: string; run: () => void };
+};
+
+function readRoute(): { page: Page; roomId: string | null } {
   const [, page, id] = window.location.hash.slice(1).split("/");
   try {
     return {
@@ -36,6 +41,19 @@ function readRoute(): { page: "rooms" | "scenes"; roomId: string | null } {
   } catch {
     return { page: "rooms", roomId: null };
   }
+}
+
+// The settings that bring a light back exactly as it was.
+function restoreSettings(light: Light): Partial<LightSettings> {
+  return {
+    on: true,
+    ...(light.dimmable ? { brightness: light.brightness } : {}),
+    ...(light.colorMode === "color_temp" && light.temperatureSupported
+      ? { colorMode: "color_temp", kelvin: light.kelvin }
+      : light.colorSupported
+        ? { colorMode: "rgb", color: light.color }
+        : {}),
+  };
 }
 
 export default function App({
@@ -48,21 +66,19 @@ export default function App({
   const [liveHome, setHome] = useState<Home | null>(null);
   const [streamOnline, setStreamOnline] = useState(false);
   const [loadError, setLoadError] = useState("");
-  const [page, setPage] = useState<"rooms" | "scenes">(() => readRoute().page);
+  const [page, setPage] = useState<Page>(() => readRoute().page);
   const [roomId, setRoomId] = useState<string | null>(() => readRoute().roomId);
   const [filter, setFilter] = useState<RoomFilter>("all");
   const [sceneFilter, setSceneFilter] = useState<SceneFilter>("all");
-  const [connectionOpen, setConnectionOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [theme, setTheme] = useTheme();
   const [editor, setEditor] = useState<{
     roomId: string;
     scene?: Scene;
   } | null>(null);
   const [lightEditor, setLightEditor] = useState<string | null>(null);
   const [customizeRoom, setCustomizeRoom] = useState<string | null>(null);
-  const [toast, setToast] = useState<{
-    message: string;
-    error: boolean;
-  } | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
   // Only saving scenes and preferences blocks input. Light controls stay live.
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -90,7 +106,10 @@ export default function App({
   }, [client]);
   useEffect(() => {
     if (!toast) return;
-    const timer = setTimeout(() => setToast(null), toast.error ? 8000 : 3500);
+    const timer = setTimeout(
+      () => setToast(null),
+      toast.error ? 8000 : toast.action ? 7000 : 3500,
+    );
     return () => clearTimeout(timer);
   }, [toast]);
   const showError = useCallback(
@@ -162,7 +181,38 @@ export default function App({
     );
     settle(ok);
   }
-  function navigate(next: "rooms" | "scenes", nextRoom: string | null = null) {
+  // Turning everything off is easy to do by accident, so offer an undo that
+  // restores each light's brightness and color.
+  async function allLightsOff() {
+    if (!home) return;
+    const lit = home.lights.filter((l) => l.on && l.available);
+    if (!lit.length) return;
+    const previous = lit.map((l) => [l.id, restoreSettings(l)] as const);
+    if (!(await lightsAction(lit, { on: false }))) return;
+    setToast({
+      message: `Turned off ${plural(lit.length, "light")}`,
+      error: false,
+      action: {
+        label: "Undo",
+        run: () => {
+          setToast(null);
+          const batches = new Map<
+            string,
+            { ids: string[]; settings: Partial<LightSettings> }
+          >();
+          for (const [id, settings] of previous) {
+            const key = JSON.stringify(settings);
+            const batch = batches.get(key) ?? { ids: [], settings };
+            batch.ids.push(id);
+            batches.set(key, batch);
+          }
+          for (const batch of batches.values())
+            control(batch.ids, batch.settings);
+        },
+      },
+    });
+  }
+  function navigate(next: Page, nextRoom: string | null = null) {
     window.location.hash = `/${next}${nextRoom ? `/${encodeURIComponent(nextRoom)}` : ""}`;
     setPage(next);
     setRoomId(nextRoom);
@@ -180,7 +230,6 @@ export default function App({
         key={scene.id}
         scene={scene}
         home={home!}
-        inRoom={Boolean(room)}
         disabled={disabled}
         onActivate={activateScene}
         onFavorite={(scene) =>
@@ -197,145 +246,112 @@ export default function App({
     );
   }
 
+  const routeKey = room ? `room-${room.id}` : page;
+  useEffect(() => {
+    document.title = room
+      ? `${room.name} · Glow`
+      : page === "scenes"
+        ? "Scenes · Glow"
+        : "Glow · Your home, in a good light";
+  }, [room?.name, page]);
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <button
-          className="brand"
-          onClick={() => navigate("rooms")}
-          aria-label="Glow home"
-        >
-          <span className="brand-mark">
-            <Sun size={25} strokeWidth={1.8} />
-          </span>
-          <span>
-            glow<span className="brand-period">.</span>
-          </span>
-        </button>
-        <div className="home-label">
-          <span className="home-mini-icon">
-            <House size={16} />
-          </span>
-          <div>My home</div>
-        </div>
-        <nav aria-label="Main navigation">
-          <button
-            className={`nav-item ${page === "rooms" ? "selected" : ""}`}
-            onClick={() => navigate("rooms")}
-          >
-            <LayoutGrid size={19} />
-            <span>Rooms</span>
-            {home && <span className="nav-count">{home.rooms.length}</span>}
-          </button>
-          <button
-            className={`nav-item ${page === "scenes" ? "selected" : ""}`}
-            onClick={() => navigate("scenes")}
-          >
-            <Sparkles size={19} />
-            <span>All scenes</span>
-          </button>
-        </nav>
-        <div className="sidebar-bottom">
-          <button className="nav-item" onClick={() => setConnectionOpen(true)}>
-            <Settings2 size={18} />
-            <span>Connection & help</span>
-          </button>
-          <div className="powered-by">
-            <span
-              className={`status-dot ${home?.connected && streamOnline ? "" : "offline"}`}
-            />
-            <span>Home Assistant</span>
-          </div>
-        </div>
-      </aside>
-      <div className="main-shell">
-        <header className="topbar">
-          <div className="breadcrumb">
-            <House size={15} />
-            <span>My home</span>
-            <ChevronRight size={13} />
-            <span>
-              {room ? room.name : page === "rooms" ? "Rooms" : "Scenes"}
-            </span>
-          </div>
-          <button
-            className={`connection-pill ${!home?.connected || !streamOnline ? "disconnected" : ""}`}
-            onClick={() => setConnectionOpen(true)}
-          >
-            <span className="status-dot" />
-            {home?.mode === "demo"
-              ? "Demo home"
-              : home?.connected && streamOnline
-                ? "Home Assistant connected"
-                : "Connecting…"}
-            <ChevronRight size={12} />
-          </button>
-        </header>
-        <main>
-          {!home ? (
-            <div className="loading-state">
-              <Sun className="loading-sun" size={42} />
-              <h1>Loading lights</h1>
-              <p>{loadError || "Connecting to your home…"}</p>
-              {loadError && (
-                <button
-                  className="button secondary"
-                  onClick={() => location.reload()}
-                >
-                  Try again
-                </button>
-              )}
+      <Sidebar
+        page={page}
+        home={home}
+        online={streamOnline}
+        sceneCount={home?.scenes.length}
+        onNavigate={(next) => navigate(next)}
+        onSettings={() => setSettingsOpen(true)}
+      />
+      <MobileBar
+        home={home}
+        online={streamOnline}
+        onHome={() => navigate("rooms")}
+        onSettings={() => setSettingsOpen(true)}
+      />
+      <main>
+        {!home ? (
+          <div className="loading-state" role="status">
+            <div className="loading-orb" aria-hidden="true">
+              <Sun size={34} strokeWidth={1.6} />
             </div>
-          ) : (
-            <>
-              {(!home.connected || !streamOnline) && (
-                <div className="connection-warning" role="status">
-                  <WifiOff size={19} />
-                  <div>
-                    <strong>Reconnecting to your home</strong>
-                    <p>
-                      {home.error ||
-                        loadError ||
-                        "Controls will be available as soon as the connection is restored."}
-                    </p>
-                  </div>
+            <h1>
+              {loadError ? "Can’t reach your home" : "Turning on the lights…"}
+            </h1>
+            <p>{loadError || "Connecting to your home."}</p>
+            {loadError && (
+              <button
+                className="button secondary"
+                onClick={() => location.reload()}
+              >
+                Try again
+              </button>
+            )}
+            {!loadError && (
+              <div className="skeleton-grid" aria-hidden="true">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="skeleton-card" />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="page" key={routeKey}>
+            {(!home.connected || !streamOnline) && (
+              <div className="connection-warning" role="status">
+                <WifiOff size={20} />
+                <div>
+                  <strong>Reconnecting to your home</strong>
+                  <p>
+                    {home.error ||
+                      loadError ||
+                      "Controls will be available as soon as the connection is restored."}
+                  </p>
                 </div>
-              )}
-              {room ? (
-                <RoomPage
-                  home={home}
-                  room={room}
-                  disabled={disabled}
-                  onBack={() => navigate("rooms")}
-                  onLightsChange={lightsAction}
-                  onAdjustLight={setLightEditor}
-                  onCustomize={() => setCustomizeRoom(room.id)}
-                  onCreateScene={() => setEditor({ roomId: room.id })}
-                  renderScene={renderScene}
-                />
-              ) : page === "rooms" ? (
-                <RoomsPage
-                  home={home}
-                  disabled={disabled}
-                  filter={filter}
-                  onFilterChange={setFilter}
-                  onOpenRoom={(id) => navigate("rooms", id)}
-                  onHelp={() => setConnectionOpen(true)}
-                  onLightsChange={lightsAction}
-                />
-              ) : (
-                <ScenesPage
-                  home={home}
-                  filter={sceneFilter}
-                  onFilterChange={setSceneFilter}
-                  onShowRooms={() => navigate("rooms")}
-                  renderScene={renderScene}
-                />
-              )}
-            </>
-          )}
-        </main>
-      </div>
+              </div>
+            )}
+            {room ? (
+              <RoomPage
+                home={home}
+                room={room}
+                disabled={disabled}
+                onBack={() => navigate("rooms")}
+                onLightsChange={lightsAction}
+                onAdjustLight={setLightEditor}
+                onCustomize={() => setCustomizeRoom(room.id)}
+                onCreateScene={() => setEditor({ roomId: room.id })}
+                renderScene={renderScene}
+              />
+            ) : page === "rooms" ? (
+              <RoomsPage
+                home={home}
+                disabled={disabled}
+                filter={filter}
+                onFilterChange={setFilter}
+                onOpenRoom={(id) => navigate("rooms", id)}
+                onHelp={() => setSettingsOpen(true)}
+                onLightsChange={lightsAction}
+                onAllOff={allLightsOff}
+                onActivateScene={activateScene}
+              />
+            ) : (
+              <ScenesPage
+                home={home}
+                filter={sceneFilter}
+                onFilterChange={setSceneFilter}
+                onShowRooms={() => navigate("rooms")}
+                renderScene={renderScene}
+              />
+            )}
+          </div>
+        )}
+      </main>
+      <TabBar
+        page={page}
+        onNavigate={(next) => navigate(next)}
+        onSettings={() => setSettingsOpen(true)}
+      />
       {home && customizeRoom && (
         <LightGroupSettings
           groups={
@@ -353,12 +369,15 @@ export default function App({
           }
         />
       )}
-      {connectionOpen && (
+      {settingsOpen && (
         <ConnectionHelp
           home={home}
+          online={streamOnline}
           sceneStorage={client.sceneStorage}
+          theme={theme}
+          onThemeChange={setTheme}
           onDisconnect={onDisconnect}
-          onClose={() => setConnectionOpen(false)}
+          onClose={() => setSettingsOpen(false)}
         />
       )}
       {home && editor && home.rooms.some((r) => r.id === editor.roomId) && (
@@ -402,9 +421,16 @@ export default function App({
           className={`toast ${toast.error ? "error" : ""}`}
           role={toast.error ? "alert" : "status"}
         >
-          {toast.error ? <CircleHelp size={18} /> : <Check size={18} />}
+          {toast.error ? <CircleAlert size={18} /> : <Check size={18} />}
           <span>{toast.message}</span>
+          {toast.action && (
+            <button className="toast-action" onClick={toast.action.run}>
+              <RotateCcw size={15} />
+              {toast.action.label}
+            </button>
+          )}
           <button
+            className="toast-dismiss"
             aria-label="Dismiss notification"
             onClick={() => setToast(null)}
           >
