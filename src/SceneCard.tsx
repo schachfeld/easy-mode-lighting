@@ -7,7 +7,6 @@ import type { Home, Scene } from "./types";
 export function SceneCard({
   scene,
   home,
-  compact = false,
   inRoom,
   disabled,
   onActivate,
@@ -16,7 +15,6 @@ export function SceneCard({
 }: {
   scene: Scene;
   home: Home;
-  compact?: boolean;
   // Inside a room the room name is redundant, so show what the scene covers.
   inRoom: boolean;
   disabled: boolean;
@@ -28,9 +26,7 @@ export function SceneCard({
   const active = sceneMatches(scene, home.lights);
   const lightCount = Object.keys(scene.lights).length;
   return (
-    <article
-      className={`scene-card ${compact ? "compact-scene" : ""} ${active ? "active" : ""}`}
-    >
+    <article className={`scene-card ${active ? "active" : ""}`}>
       <button
         className="scene-activate"
         disabled={disabled}
@@ -63,7 +59,7 @@ export function SceneCard({
       >
         <Heart size={15} fill={scene.favorite ? "currentColor" : "none"} />
       </button>
-      {!compact && scene.source === "glow" && (
+      {scene.source === "glow" && (
         <button
           className="scene-edit icon-button"
           aria-label={`Edit ${scene.name}`}
@@ -72,7 +68,7 @@ export function SceneCard({
           <Pencil size={15} />
         </button>
       )}
-      {!compact && (scene.source === "home-assistant" || scene.haSceneId) && (
+      {(scene.source === "home-assistant" || scene.haSceneId) && (
         <span className="native-badge">Home Assistant</span>
       )}
     </article>

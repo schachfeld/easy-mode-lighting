@@ -77,6 +77,20 @@ export function RoomPage({
         <div className="section-heading">
           <div>
             <h2>
+              Scenes <span className="count-label">{scenes.length}</span>
+            </h2>
+          </div>
+          <button className="button primary" onClick={onCreateScene}>
+            <Plus size={17} />
+            Create scene
+          </button>
+        </div>
+        <div className="scenes-grid">{scenes.map((s) => renderScene(s))}</div>
+      </section>
+      <section className="section">
+        <div className="section-heading">
+          <div>
+            <h2>
               Lights <span className="count-label">{lights.length}</span>
             </h2>
           </div>
@@ -111,20 +125,6 @@ export function RoomPage({
             />
           ))}
         </div>
-      </section>
-      <section className="section">
-        <div className="section-heading">
-          <div>
-            <h2>
-              Scenes <span className="count-label">{scenes.length}</span>
-            </h2>
-          </div>
-          <button className="button primary" onClick={onCreateScene}>
-            <Plus size={17} />
-            Create scene
-          </button>
-        </div>
-        <div className="scenes-grid">{scenes.map((s) => renderScene(s))}</div>
       </section>
     </>
   );

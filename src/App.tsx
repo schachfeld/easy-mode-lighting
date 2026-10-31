@@ -174,13 +174,12 @@ export default function App({
     home?.lights.find((l) => l.id === lightEditor) ??
     home?.groups?.find((group) => group.id === lightEditor);
 
-  function renderScene(scene: Scene, compact = false) {
+  function renderScene(scene: Scene) {
     return (
       <SceneCard
         key={scene.id}
         scene={scene}
         home={home!}
-        compact={compact}
         inRoom={Boolean(room)}
         disabled={disabled}
         onActivate={activateScene}
@@ -321,10 +320,8 @@ export default function App({
                   filter={filter}
                   onFilterChange={setFilter}
                   onOpenRoom={(id) => navigate("rooms", id)}
-                  onShowScenes={() => navigate("scenes")}
                   onHelp={() => setConnectionOpen(true)}
                   onLightsChange={lightsAction}
-                  renderScene={renderScene}
                 />
               ) : (
                 <ScenesPage

@@ -1,8 +1,7 @@
-import type { ReactNode } from "react";
-import { ArrowRight, Heart, House, Lightbulb, Moon, Power } from "lucide-react";
+import { ArrowRight, House, Lightbulb, Moon, Power } from "lucide-react";
 import { plural } from "./format";
 import { RoomCard } from "./RoomCard";
-import type { Home, LightsAction, Scene } from "./types";
+import type { Home, LightsAction } from "./types";
 
 export type RoomFilter = "all" | "on";
 
@@ -12,27 +11,22 @@ export function RoomsPage({
   filter,
   onFilterChange,
   onOpenRoom,
-  onShowScenes,
   onHelp,
   onLightsChange,
-  renderScene,
 }: {
   home: Home;
   disabled: boolean;
   filter: RoomFilter;
   onFilterChange: (filter: RoomFilter) => void;
   onOpenRoom: (roomId: string) => void;
-  onShowScenes: () => void;
   onHelp: () => void;
   onLightsChange: LightsAction;
-  renderScene: (scene: Scene, compact: boolean) => ReactNode;
 }) {
   const lit = home.lights.filter((l) => l.on && l.available);
   const litRooms = new Set(lit.map((l) => l.roomId));
   const rooms = home.rooms.filter(
     (r) => filter === "all" || litRooms.has(r.id),
   );
-  const favorites = home.scenes.filter((s) => s.favorite);
   return (
     <>
       <div className="page-heading">
@@ -127,29 +121,6 @@ export function RoomsPage({
               </button>
             </div>
           )
-        )}
-      </section>
-      <section className="section favorites-section">
-        <div className="section-heading">
-          <h2>
-            <Heart size={17} />
-            Favorite scenes
-          </h2>
-          <button className="text-button" onClick={onShowScenes}>
-            All scenes
-            <ArrowRight size={15} />
-          </button>
-        </div>
-        {favorites.length ? (
-          <div className="favorites-grid">
-            {favorites.map((s) => renderScene(s, true))}
-          </div>
-        ) : (
-          <button className="empty-favorites" onClick={onShowScenes}>
-            <Heart size={19} />
-            <span>Tap the heart on a scene to keep it here.</span>
-            <ArrowRight size={17} />
-          </button>
         )}
       </section>
     </>
