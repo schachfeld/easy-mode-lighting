@@ -1,4 +1,8 @@
 import type { Home, Light, LightGroup, LightSettings } from "./types";
+export function averageBrightness(
+  lights: Pick<Light, "available" | "on" | "dimmable" | "brightness">[],
+  fallback?: number,
+): number;
 export function lightTargets(home: Home, ids: string[]): Light[];
 export function expandSceneLights(
   home: Pick<Home, "groups">,

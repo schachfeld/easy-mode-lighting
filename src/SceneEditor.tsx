@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Check, Lightbulb, Plus, Trash2, Bookmark } from "lucide-react";
 import { Brightness, Modal, SceneOrb, Toggle } from "./components";
+import { plural } from "./format";
 import type { Home, Light, LightSettings, Scene } from "./types";
 
 export function snapshot(light: Light): LightSettings {
@@ -85,7 +86,7 @@ export function SceneEditor({
   return (
     <Modal
       title={scene ? "Edit scene" : "Create scene"}
-      subtitle={`${room.name} · ${roomLights.length} lights`}
+      subtitle={`${room.name} · ${plural(roomLights.length, "light")}`}
       onClose={onClose}
       wide
     >

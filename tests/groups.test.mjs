@@ -3,7 +3,11 @@ import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { mapHome } from "../packages/core/model.mjs";
 import { createCore } from "../packages/core/controller.mjs";
-import { roomLightLayout, lightTargets } from "../packages/core/groups.mjs";
+import {
+  averageBrightness,
+  roomLightLayout,
+  lightTargets,
+} from "../packages/core/groups.mjs";
 
 function fixture() {
   const ha = Object.assign(new EventEmitter(), {
@@ -265,4 +269,26 @@ test("commands deduplicate group members and existing scenes preserve individual
   );
   assert.equal(calls.length, 2);
   core.close();
+});
+
+test("average brightness ignores lights that are off, unavailable, or cannot dim", () => {
+  const light = (brightness, overrides = {}) => ({
+    brightness,
+    on: true,
+    available: true,
+    dimmable: true,
+    ...overrides,
+  });
+  assert.equal(
+    averageBrightness([
+      light(20),
+      light(41),
+      light(100, { dimmable: false }),
+      light(90, { on: false }),
+      light(70, { available: false }),
+    ]),
+    31,
+  );
+  assert.equal(averageBrightness([light(100, { dimmable: false })]), 0);
+  assert.equal(averageBrightness([], 55), 55);
 });
