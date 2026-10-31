@@ -262,3 +262,42 @@ test("controls stream over the WebSocket and other tabs update instantly", async
     .toBe(Number(await slider.inputValue()));
   await other.close();
 });
+
+test("light counts read naturally for one light and for many", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const allOff = page.getByRole("button", {
+    name: "All lights off",
+    exact: true,
+  });
+  await expect(
+    page.getByRole("button", { name: "Open Dining room", exact: true }),
+  ).toBeVisible();
+  if (await allOff.isEnabled()) await allOff.click();
+  await expect(allOff).toBeDisabled();
+  await expect(page.getByText("0 lights on", { exact: true })).toBeVisible();
+  await expect(page.getByText("across 0 rooms", { exact: true })).toBeVisible();
+
+  await page
+    .getByRole("button", { name: "Open Dining room", exact: true })
+    .click();
+  await page
+    .getByRole("switch", { name: "Table pendant power", exact: true })
+    .click();
+  await expect(
+    page.getByText("1 of 2 lights on", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "All rooms", exact: true }).click();
+  await expect(page.getByText("1 light on", { exact: true })).toBeVisible();
+  await expect(page.getByText("across 1 room", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("1 of 2 lights on", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("4 lights · All off", { exact: true }),
+  ).toBeVisible();
+
+  await allOff.click();
+  await expect(allOff).toBeDisabled();
+});

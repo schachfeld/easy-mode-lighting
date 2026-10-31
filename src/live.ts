@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { averageBrightness } from "../packages/core/groups.mjs";
 import type { Home, Light, LightSettings } from "./types";
 
 type Settings = Partial<LightSettings>;
@@ -57,17 +58,10 @@ export function applyOverrides(
     let next = group;
     if (group.memberIds.some((id) => overrides.has(id))) {
       const members = group.memberIds.flatMap((id) => byId.get(id) ?? []);
-      const on = members.filter((member) => member.available && member.on);
-      const dimmable = on.filter((member) => member.dimmable);
       next = {
         ...group,
-        on: on.length > 0,
-        brightness: dimmable.length
-          ? Math.round(
-              dimmable.reduce((sum, member) => sum + member.brightness, 0) /
-                dimmable.length,
-            )
-          : group.brightness,
+        on: members.some((member) => member.available && member.on),
+        brightness: averageBrightness(members, group.brightness),
       };
     }
     const override = overrides.get(group.id);

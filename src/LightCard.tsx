@@ -1,5 +1,6 @@
 import { ChevronRight, Layers, Lightbulb } from "lucide-react";
 import { Brightness, Toggle } from "./components";
+import { plural } from "./format";
 import type { Light, LightGroup, LightSettings } from "./types";
 
 export function LightCard({
@@ -40,7 +41,7 @@ export function LightCard({
             <h3>{light.name}</h3>
             <small>
               {members
-                ? `${members.length} lights · ${onCount} on${members.some((member) => !member.available) ? " · Some unavailable" : ""}`
+                ? `${plural(members.length, "light")} · ${onCount} on${members.some((member) => !member.available) ? " · Some unavailable" : ""}`
                 : !light.available
                   ? "Unavailable"
                   : light.on

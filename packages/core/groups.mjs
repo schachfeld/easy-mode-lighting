@@ -1,3 +1,17 @@
+// The brightness people see for several lights: the average of those that are
+// on and can dim. Off, unavailable and on/off-only lights would skew it.
+export function averageBrightness(lights, fallback = 0) {
+  const dimmed = lights.filter(
+    (light) => light.available && light.on && light.dimmable,
+  );
+  return dimmed.length
+    ? Math.round(
+        dimmed.reduce((sum, light) => sum + light.brightness, 0) /
+          dimmed.length,
+      )
+    : fallback;
+}
+
 // Only collapse groups whose complete membership can be resolved to visible
 // lights in one room. Unknown, hidden, cyclic and cross-room membership stays
 // visible as before; guessing here could silently hide a control.
@@ -34,7 +48,6 @@ export function splitLightGroups(lights, states, preferences = {}) {
     const roomId = members[0].roomId;
     const available = members.filter((member) => member.available);
     const on = available.filter((member) => member.on);
-    const dimmable = on.filter((member) => member.dimmable);
     groups.push({
       ...light,
       roomId,
@@ -43,12 +56,7 @@ export function splitLightGroups(lights, states, preferences = {}) {
         preferences?.[light.id] === "individual" ? "individual" : "group",
       available: available.length > 0,
       on: on.length > 0,
-      brightness: dimmable.length
-        ? Math.round(
-            dimmable.reduce((sum, member) => sum + member.brightness, 0) /
-              dimmable.length,
-          )
-        : light.brightness,
+      brightness: averageBrightness(members, light.brightness),
       dimmable: members.some((member) => member.dimmable),
       colorSupported: members.some((member) => member.colorSupported),
       temperatureSupported: members.some(
