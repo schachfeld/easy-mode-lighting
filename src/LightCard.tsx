@@ -1,18 +1,16 @@
-import type { CSSProperties } from "react";
-import { ChevronRight, Layers, Lightbulb, LightbulbOff } from "lucide-react";
-import { colorName, displayColor, whiteName } from "../packages/core/color.mjs";
+import { ChevronRight, Layers, Lightbulb } from "lucide-react";
+import { colorName, whiteName } from "../packages/core/color.mjs";
 import { Brightness, Toggle } from "./components";
 import { plural } from "./format";
-import { fillPaint, glowStyle, litColors } from "./glow";
 import type { Light, LightGroup, LightSettings } from "./types";
 
+// "2700 K · Warm white", "Coral", or just "On" for bulbs without color.
 export function lightDescription(light: Light) {
   if (!light.available) return "Unavailable";
   if (!light.on) return "Off";
   if (light.colorMode === "color_temp" && light.temperatureSupported)
-    return `${whiteName(light.kelvin)} · ${light.kelvin} K`;
-  if (light.colorSupported) return colorName(light.color);
-  return "On";
+    return `${light.kelvin} K · ${whiteName(light.kelvin)}`;
+  return light.colorSupported ? colorName(light.color) : "On";
 }
 
 export function LightCard({
@@ -30,12 +28,9 @@ export function LightCard({
 }) {
   const onCount =
     members?.filter((member) => member.available && member.on).length ?? 0;
-  const lit = light.on && light.available;
-  const colors = litColors(members ?? [light]);
   return (
     <article
-      className={`light-card glow-card ${lit ? "is-on" : "is-off"} ${members ? "light-group-card" : ""} ${light.available ? "" : "unavailable"}`}
-      style={glowStyle(members ?? [light])}
+      className={`light-card ${light.on ? "light-on" : ""} ${members ? "light-group-card" : ""}`}
     >
       <div className="light-card-heading">
         <button
@@ -44,23 +39,15 @@ export function LightCard({
         >
           <span
             className="bulb-icon"
-            style={
-              lit
-                ? ({
-                    "--bulb": colors[0] ?? displayColor(light),
-                  } as CSSProperties)
-                : undefined
-            }
+            style={{ color: light.on ? light.color : undefined }}
           >
             {members ? (
-              <Layers size={22} strokeWidth={1.7} />
-            ) : light.available ? (
-              <Lightbulb size={22} strokeWidth={1.7} />
+              <Layers size={23} strokeWidth={1.5} />
             ) : (
-              <LightbulbOff size={22} strokeWidth={1.7} />
+              <Lightbulb size={23} strokeWidth={1.5} />
             )}
           </span>
-          <span className="light-text">
+          <span>
             <h3>{light.name}</h3>
             <small>
               {members
@@ -76,27 +63,21 @@ export function LightCard({
           onChange={() => onChange(members ?? [light], { on: !light.on })}
         />
       </div>
-      <div className="light-card-controls">
-        {light.dimmable && (
-          <Brightness
-            value={light.on ? light.brightness : 0}
-            disabled={disabled || !light.available}
-            label={`${light.name} brightness`}
-            compact
-            paint={fillPaint(colors)}
-            onChange={(brightness) =>
-              onChange(members ?? [light], { brightness, on: true })
-            }
-          />
-        )}
-        <button
-          className="light-adjust-link"
-          onClick={() => onAdjust(light.id)}
-        >
-          {members ? "Adjust group" : "Adjust light"}
-          <ChevronRight size={15} />
-        </button>
-      </div>
+      {light.dimmable && (
+        <Brightness
+          value={light.on ? light.brightness : 0}
+          disabled={disabled || !light.available}
+          label={`${light.name} brightness`}
+          compact
+          onChange={(brightness) =>
+            onChange(members ?? [light], { brightness, on: true })
+          }
+        />
+      )}
+      <button className="light-adjust-link" onClick={() => onAdjust(light.id)}>
+        {members ? "Adjust group" : "Adjust light"}
+        <ChevronRight size={13} />
+      </button>
       {members && (
         <details className="light-group-details">
           <summary>

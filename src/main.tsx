@@ -1,7 +1,7 @@
-import React, { lazy, Suspense } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { applyTheme, readTheme } from "./theme";
+import { lazy, Suspense } from "react";
 const MobileApp =
   import.meta.env.MODE === "mobile"
     ? lazy(() => import("./mobile/MobileApp"))
@@ -11,13 +11,6 @@ import "./styles.css";
 
 if (import.meta.env.MODE === "mobile")
   document.documentElement.classList.add("native-app");
-
-// Apply the theme before the first paint, and follow the system when the
-// person has not chosen one.
-applyTheme(readTheme());
-window
-  .matchMedia?.("(prefers-color-scheme: dark)")
-  .addEventListener?.("change", () => applyTheme(readTheme()));
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

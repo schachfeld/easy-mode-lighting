@@ -1,15 +1,13 @@
 import type { ReactNode } from "react";
-import { ArrowLeft, Plus, Settings2, Sparkles } from "lucide-react";
+import { ArrowLeft, Plus, Settings2 } from "lucide-react";
 import {
   averageBrightness,
   lightTargets,
   roomLightLayout,
 } from "../packages/core/groups.mjs";
-import { Brightness, RoomIcon, Toggle } from "./components";
+import { Brightness, Toggle } from "./components";
 import { plural } from "./format";
-import { fillPaint, glowStyle, litColors } from "./glow";
 import { LightCard } from "./LightCard";
-import { RoomArt } from "./RoomArt";
 import type { Home, LightsAction, Room, Scene } from "./types";
 
 export function RoomPage({
@@ -42,83 +40,60 @@ export function RoomPage({
   return (
     <>
       <button className="back-link" onClick={onBack}>
-        <ArrowLeft size={17} />
+        <ArrowLeft size={16} />
         All rooms
       </button>
-      <section
-        className={`room-hero glow-card room-${room.style} ${onCount ? "is-on" : "is-off"}`}
-        style={glowStyle(lights)}
-        aria-label={`${room.name} controls`}
-      >
-        <div className="room-hero-art">
-          <RoomArt kind={room.style} />
+      <div className={`room-detail-hero room-${room.style}`}>
+        <div className="room-detail-title">
+          <h1>{room.name}</h1>
+          <p>
+            {onCount} of {plural(lights.length, "light")} on
+          </p>
         </div>
-        <div className="room-hero-top">
-          <div className="room-detail-title">
-            <span className="room-icon">
-              <RoomIcon style={room.style} size={24} />
-            </span>
-            <div>
-              <h1>{room.name}</h1>
-              <p>
-                {onCount} of {plural(lights.length, "light")} on
-              </p>
-            </div>
-          </div>
-          <div className="room-detail-power">
-            <span>{onCount ? "Lights on" : "Lights off"}</span>
-            <Toggle
-              label={`${room.name} all lights`}
-              on={onCount > 0}
-              disabled={disabled || !anyAvailable}
-              onChange={() => onLightsChange(lights, { on: !onCount })}
-            />
-          </div>
+        <div className="room-detail-power">
+          <span>{onCount ? "Lights on" : "Lights off"}</span>
+          <Toggle
+            label={`${room.name} all lights`}
+            on={onCount > 0}
+            disabled={disabled || !anyAvailable}
+            onChange={() => onLightsChange(lights, { on: !onCount })}
+          />
         </div>
-        {lights.some((l) => l.dimmable) && (
-          <div className="room-master-brightness">
-            <Brightness
-              value={averageBrightness(lights)}
-              label="Room brightness"
-              disabled={disabled || !anyAvailable}
-              paint={fillPaint(litColors(lights))}
-              onChange={(brightness) =>
-                onLightsChange(lights, { on: true, brightness })
-              }
-            />
-          </div>
-        )}
-      </section>
+      </div>
+      {lights.some((l) => l.dimmable) && (
+        <div className="room-master-brightness">
+          <span>Room brightness</span>
+          <Brightness
+            value={averageBrightness(lights)}
+            label="Room brightness"
+            disabled={disabled || !anyAvailable}
+            onChange={(brightness) =>
+              onLightsChange(lights, { on: true, brightness })
+            }
+          />
+        </div>
+      )}
       <section className="section">
         <div className="section-heading">
-          <h2>
-            Scenes <span className="count-label">{scenes.length}</span>
-          </h2>
+          <div>
+            <h2>
+              Scenes <span className="count-label">{scenes.length}</span>
+            </h2>
+          </div>
           <button className="button primary" onClick={onCreateScene}>
             <Plus size={17} />
             Create scene
           </button>
         </div>
-        {scenes.length ? (
-          <div className="scenes-grid">{scenes.map((s) => renderScene(s))}</div>
-        ) : (
-          <button className="empty-scenes" onClick={onCreateScene}>
-            <Sparkles size={20} />
-            <span>
-              <strong>Save your first scene</strong>
-              <small>
-                Capture how {room.name} looks right now, or start from a
-                palette.
-              </small>
-            </span>
-          </button>
-        )}
+        <div className="scenes-grid">{scenes.map((s) => renderScene(s))}</div>
       </section>
       <section className="section">
         <div className="section-heading">
-          <h2>
-            Lights <span className="count-label">{lights.length}</span>
-          </h2>
+          <div>
+            <h2>
+              Lights <span className="count-label">{lights.length}</span>
+            </h2>
+          </div>
           {hasGroups && (
             <button
               className="text-button customize-lights"

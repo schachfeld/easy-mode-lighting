@@ -1,17 +1,9 @@
-import type { CSSProperties } from "react";
-import { ArrowRight, House, Moon, Power } from "lucide-react";
+import { ArrowRight, House, Lightbulb, Moon, Power } from "lucide-react";
 import { plural } from "./format";
-import { litColors } from "./glow";
 import { RoomCard } from "./RoomCard";
-import type { Home, LightsAction, Scene } from "./types";
+import type { Home, LightsAction } from "./types";
 
 export type RoomFilter = "all" | "on";
-
-function greeting(hour = new Date().getHours()) {
-  if (hour >= 5 && hour < 12) return "Good morning";
-  if (hour >= 12 && hour < 18) return "Good afternoon";
-  return "Good evening";
-}
 
 export function RoomsPage({
   home,
@@ -22,7 +14,6 @@ export function RoomsPage({
   onHelp,
   onLightsChange,
   onAllOff,
-  onActivateScene,
 }: {
   home: Home;
   disabled: boolean;
@@ -32,27 +23,23 @@ export function RoomsPage({
   onHelp: () => void;
   onLightsChange: LightsAction;
   onAllOff: () => void;
-  onActivateScene: (scene: Scene) => void;
 }) {
   const lit = home.lights.filter((l) => l.on && l.available);
   const litRooms = new Set(lit.map((l) => l.roomId));
   const rooms = home.rooms.filter(
     (r) => filter === "all" || litRooms.has(r.id),
   );
-  const [c1 = "transparent", c2 = c1, c3 = c2] = litColors(home.lights);
   return (
     <>
-      <header className="page-heading home-heading">
+      <div className="page-heading">
         <div>
-          <p className="eyebrow">{greeting()}</p>
           <h1>Rooms</h1>
         </div>
         <div className="home-actions">
-          <div
-            className={`home-summary ${lit.length ? "is-on" : ""}`}
-            style={{ "--c1": c1, "--c2": c2, "--c3": c3 } as CSSProperties}
-          >
-            <span className="summary-orb" aria-hidden="true" />
+          <div className="home-summary">
+            <span className="summary-bulb">
+              <Lightbulb size={23} strokeWidth={1.5} />
+            </span>
             <div>
               <strong>{plural(lit.length, "light")} on</strong>
               <small>
@@ -69,35 +56,29 @@ export function RoomsPage({
             disabled={disabled || !lit.length}
             onClick={onAllOff}
           >
-            <Power size={16} />
+            <Power size={15} />
             All lights off
           </button>
         </div>
-      </header>
-      <section className="section rooms-section" aria-label="Rooms">
-        {home.rooms.length > 0 && (
-          <div
-            className="segmented room-filters"
-            role="group"
-            aria-label="Filter rooms"
+      </div>
+      <section className="section rooms-section">
+        <div className="room-filters" role="group" aria-label="Filter rooms">
+          <button
+            className={filter === "all" ? "selected" : ""}
+            aria-pressed={filter === "all"}
+            onClick={() => onFilterChange("all")}
           >
-            <button
-              className={filter === "all" ? "selected" : ""}
-              aria-pressed={filter === "all"}
-              onClick={() => onFilterChange("all")}
-            >
-              All rooms
-            </button>
-            <button
-              className={filter === "on" ? "selected" : ""}
-              aria-pressed={filter === "on"}
-              onClick={() => onFilterChange("on")}
-            >
-              <span className="tiny-dot" />
-              Lights on
-            </button>
-          </div>
-        )}
+            All rooms
+          </button>
+          <button
+            className={filter === "on" ? "selected" : ""}
+            aria-pressed={filter === "on"}
+            onClick={() => onFilterChange("on")}
+          >
+            <span className="tiny-dot" />
+            Lights on
+          </button>
+        </div>
         <div className="rooms-grid">
           {rooms.map((room) => (
             <RoomCard
@@ -105,19 +86,15 @@ export function RoomsPage({
               room={room}
               lights={home.lights.filter((l) => l.roomId === room.id)}
               scenes={home.scenes}
-              palettes={home.palettes}
               disabled={disabled}
               onOpen={onOpenRoom}
               onLightsChange={onLightsChange}
-              onActivateScene={onActivateScene}
             />
           ))}
         </div>
         {!home.rooms.length ? (
           <div className="empty-state">
-            <span className="empty-icon">
-              <House size={28} />
-            </span>
+            <House size={32} />
             <h3>No rooms yet</h3>
             <p>
               Add lights to Areas in Home Assistant and they’ll appear here
@@ -131,9 +108,7 @@ export function RoomsPage({
           filter === "on" &&
           !lit.length && (
             <div className="empty-state">
-              <span className="empty-icon">
-                <Moon size={28} />
-              </span>
+              <Moon size={32} />
               <h3>All lights are off</h3>
               <p>Choose a room to turn on its lights.</p>
               <button

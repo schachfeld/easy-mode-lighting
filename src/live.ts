@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { colorsClose } from "../packages/core/color.mjs";
+import { colorsClose, kelvinClose } from "../packages/core/color.mjs";
 import { averageBrightness } from "../packages/core/groups.mjs";
 import type { Home, Light, LightSettings } from "./types";
 
@@ -39,7 +39,7 @@ function matches(light: Light, settings: Settings) {
     (settings.color === undefined ||
       colorsClose(light.color, settings.color)) &&
     (settings.kelvin === undefined ||
-      Math.abs(light.kelvin - settings.kelvin) < 80)
+      kelvinClose(light.kelvin, settings.kelvin))
   );
 }
 
