@@ -30,7 +30,7 @@ Glow should report `adminOnly: false`. If it reports `true`, the active panel st
 
 Glow uses the Areas already set up in Home Assistant. Assign your light devices to Areas under **Settings → Areas, labels & zones** to organize the room view. You can override the Area on individual light entities. Unassigned lights appear in **Other lights**. Hidden and disabled light entities are excluded.
 
-Tap a room to see its scenes and lights. Use the switch to turn the room on or off and the brightness slider to adjust it. Moving a slider turns the affected lights on. Tap **Adjust light** to change an individual bulb’s color or white temperature. Controls only appear for capabilities that the bulb supports.
+Tap a room to see its scenes and lights. Use the switch to turn the room on or off and the brightness slider to adjust it. Moving a slider turns the affected lights on. Tap **Adjust light** to change an individual bulb: drag around the color wheel or tap a swatch for a color, or slide between warm and cool white. The light follows as you drag. Controls only appear for capabilities that the bulb supports.
 
 **All lights off** turns off every light in your home. If you didn’t mean to, tap **Undo** in the notification to bring back each light’s brightness and color.
 
@@ -41,10 +41,10 @@ On a phone, going back closes an open dialog rather than leaving the room.
 1. Open a room and select **Create scene**.
 2. Give the scene a name.
 3. Choose a mood palette, or select **Use current lights** to capture the room as it is now.
-4. Adjust individual lights if you like. An off switch means the scene will turn that light off.
+4. Adjust individual lights if you like. Tap a light’s color to pick a color or a white for it. An off switch means the scene will turn that light off.
 5. Select **Save scene**. Tap its card whenever you want that look.
 
-The editor does not change your physical lights while you are designing a scene. Saving creates the scene; tapping it applies it. A scene can include lights that should stay off. If you close the editor with unsaved changes, Glow asks before discarding them.
+Your lights show the scene while you design it: pick a palette, move a slider or choose a color, and the room follows. Editing a scene shows it on the lights too. Save to keep the scene and the look; cancel, and the room returns to how it was before you opened the editor. A scene can include lights that should stay off. If you close the editor with unsaved changes, Glow asks before discarding them.
 
 Tap a heart to favorite a scene; find your favorites under **Favorites** in All scenes. Tap the pencil to rename, adjust, or delete a Glow scene. Your scenes are available on every device and survive restarts.
 

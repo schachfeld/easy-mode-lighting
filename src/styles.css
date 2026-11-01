@@ -1210,49 +1210,140 @@ h1 {
 .scene-light-settings .brightness {
   flex: 1;
 }
-.color-controls {
+/* Color wheel: hue runs around it, saturation grows toward the rim. */
+.color-picker-area {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 26px;
 }
-.color-picker {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  font-size: 9px;
-  color: #939b80;
+.color-picker-area .color-swatches {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  justify-content: space-evenly;
+  row-gap: 14px;
 }
-.color-picker input[type="color"] {
-  width: 24px;
-  height: 24px;
-  border: 0;
-  background: transparent;
-  padding: 0;
+.color-wheel {
+  --size: 196px;
+  position: relative;
+  flex-shrink: 0;
+  width: var(--size);
+  height: var(--size);
   border-radius: 50%;
-  cursor: pointer;
+  background:
+    radial-gradient(circle closest-side, #fff, rgb(255 255 255 / 0)),
+    conic-gradient(#f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+  box-shadow:
+    0 0 0 4px #fcfbf8,
+    0 0 0 5px #e6e7dc,
+    0 8px 24px #5a523a1a;
+  touch-action: none;
+  cursor: crosshair;
 }
-.color-picker input::-webkit-color-swatch-wrapper {
-  padding: 2px;
+.color-wheel.compact {
+  --size: 156px;
 }
-.color-picker input::-webkit-color-swatch {
-  border: 1px solid #0001;
-  border-radius: 50%;
+.color-wheel:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 8px;
 }
-.color-picker input::-moz-color-swatch {
-  border: 1px solid #0001;
-  border-radius: 50%;
-}
-.color-controls .inactive {
+.color-wheel.disabled {
   opacity: 0.45;
+  cursor: not-allowed;
 }
-.color-controls select {
-  font-size: 9px;
-  color: #909780;
-  max-width: 86px;
-  padding: 4px;
+.color-wheel-thumb {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border-radius: 50%;
+  background: var(--thumb);
+  border: 3px solid #fffefa;
+  box-shadow:
+    0 2px 8px #3a35262e,
+    0 0 0 1px #0000000d;
+  pointer-events: none;
+  /* Glide to taps and swatches; follow the finger exactly while dragging. */
+  transition:
+    left 0.35s var(--ease),
+    top 0.35s var(--ease),
+    background-color 0.35s,
+    transform 0.2s var(--ease);
+}
+.color-wheel.dragging .color-wheel-thumb {
+  transform: scale(1.18);
+  transition: transform 0.2s var(--ease);
+}
+.color-wheel-thumb.white {
+  background: #fffefa;
+  box-shadow:
+    0 0 0 1px #d8d9cc,
+    0 2px 6px #3a35261f;
+}
+.brightness.white-slider input {
+  background: var(--track) center / 100% 5px no-repeat;
+}
+.brightness.white-slider > span {
+  min-width: 52px;
+}
+.white-slider.inactive input::-webkit-slider-thumb {
+  border-color: #d6d8ca;
+}
+.white-slider.inactive input::-moz-range-thumb {
+  border-color: #d6d8ca;
+}
+.white-slider + .white-presets {
+  margin-top: 14px;
+}
+.scene-color-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 3px 8px 3px 3px;
   border: 1px solid #e4e6d8;
-  border-radius: 5px;
+  border-radius: 16px;
   background: #f8f9f0;
+  color: #858c76;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.scene-color-button.open {
+  border-color: #b7c09b;
+  background: #f0f1e5;
+}
+.scene-color-button > svg {
+  transition: transform 0.2s var(--ease);
+}
+.scene-color-button.open > svg {
+  transform: rotate(180deg);
+}
+.scene-color-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 1px #0000001a;
+  transition: background-color 0.2s;
+}
+.scene-light-picker {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 13px;
+  padding: 16px;
+  border-radius: 10px;
+  background: #f6f6ee;
+  animation: picker-in 0.25s var(--ease);
+}
+.scene-light-picker .white-slider {
+  flex: 1;
+}
+@keyframes picker-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 .modal-footer {
   display: flex;
@@ -2078,11 +2169,17 @@ h1 {
   .scene-light-settings .brightness {
     min-width: 100px;
   }
-  .color-controls {
-    gap: 5px;
+  .color-picker-area,
+  .scene-light-picker {
+    flex-direction: column;
   }
-  .color-picker span {
-    display: none;
+  .color-picker-area .color-swatches {
+    width: 100%;
+    grid-template-columns: repeat(6, 1fr);
+    justify-items: center;
+  }
+  .scene-light-picker .white-slider {
+    width: 100%;
   }
   .subtle {
     font-size: 8px;

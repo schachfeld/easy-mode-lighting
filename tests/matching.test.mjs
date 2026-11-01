@@ -4,7 +4,9 @@ import {
   colorName,
   colorsClose,
   hexToHsv,
+  hsvToHex,
   kelvinClose,
+  whiteToHex,
   whiteName,
 } from "../packages/core/color.mjs";
 import { sceneMatches } from "../packages/core/scenes.mjs";
@@ -147,6 +149,21 @@ test("scenes match within what each bulb supports", () => {
     ]),
     true,
   );
+});
+
+test("color wheel positions and white temperatures convert to colors", () => {
+  for (const color of ["#ff0000", "#ffb347", "#7b83ff", "#4fd6c4", "#ffffff"]) {
+    const { h, s, v } = hexToHsv(color);
+    assert.equal(hsvToHex(h, s, v), color);
+  }
+  assert.equal(hsvToHex(240, 1), "#0000ff");
+  assert.equal(hsvToHex(-120, 1), "#0000ff");
+  assert.equal(hsvToHex(0, 0), "#ffffff");
+  // Warm white is amber; daylight is close to white.
+  const warm = hexToHsv(whiteToHex(2200));
+  assert.ok(warm.h > 20 && warm.h < 40 && warm.s > 0.4);
+  assert.ok(hexToHsv(whiteToHex(6500)).s < 0.05);
+  assert.ok(hexToHsv(whiteToHex(2700)).s > hexToHsv(whiteToHex(4000)).s);
 });
 
 test("colors and whites have friendly names", () => {

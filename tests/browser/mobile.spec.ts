@@ -23,7 +23,7 @@ async function connect(
   await page.getByRole("button", { name: "Connect to my home" }).click();
 }
 
-test("mobile connects directly, controls lights, persists scenes per home and disconnects", async ({
+test("mobile connects directly, stays signed in, persists scenes per home and disconnects", async ({
   page,
 }) => {
   await nativeHost(page);
@@ -62,11 +62,12 @@ test("mobile connects directly, controls lights, persists scenes per home and di
   expect(
     await page.evaluate(() => Object.values(localStorage).join(" ")),
   ).not.toContain("test-token");
+  // The sign-in lives in the device's secure storage, not the web view.
+  expect(
+    JSON.parse(await page.evaluate(() => (window as any).__keychain())),
+  ).toEqual({ url: "http://homeassistant.local:8123/", token: "test-token" });
+  // Reopening the app goes straight back home, without signing in again.
   await page.reload();
-  await expect(
-    page.getByRole("heading", { name: "A little closer to home." }),
-  ).toBeVisible();
-  await connect(page);
   await expect(
     page.getByRole("button", {
       name: "Activate Mobile evening in Living room",
@@ -78,7 +79,28 @@ test("mobile connects directly, controls lights, persists scenes per home and di
     page.getByText("Scenes are saved in Home Assistant.", { exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Disconnect", exact: true }).click();
-  await expect(page.getByLabel("Long-lived access token")).toHaveValue("");
+  // A disconnected app waits instead of reconnecting on its own.
+  await expect(
+    page.getByRole("heading", { name: "Welcome home." }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("signed in to homeassistant.local:8123"),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Open my home", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Open Living room", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /connected/ }).click();
+  await page.getByRole("button", { name: "Disconnect", exact: true }).click();
+  await page.getByRole("button", { name: "Forget saved connection" }).click();
+  await expect(
+    page.getByRole("heading", { name: "A little closer to home." }),
+  ).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__keychain())).toBeNull();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "A little closer to home." }),
+  ).toBeVisible();
   await connect(page, "test-token", "http://second-home.local:8123");
   await expect(
     page.getByRole("button", { name: "Open Living room", exact: true }),
@@ -142,10 +164,10 @@ test("mobile preview explains native-only connection and offers encrypted rememb
   ).toBe(true);
 });
 
-test("remembered credentials use the native vault, unlock errors are recoverable, and forgetting returns to setup", async ({
+test("without secure storage, remembered credentials use the passphrase vault, unlock errors are recoverable, and forgetting returns to setup", async ({
   page,
 }) => {
-  await nativeHost(page);
+  await nativeHost(page, { secureStorage: false });
   await page.goto("/mobile/");
   await page
     .getByRole("button", { name: "Use an access token instead" })
@@ -242,8 +264,8 @@ test("mobile publishes persistent Home Assistant scenes and preserves the editor
   ).toBe(saved.url);
   // Clearing Glow's local metadata does not remove the HA scene.
   await page.evaluate(() => localStorage.removeItem("test-native-scenes"));
+  // The app reconnects on its own with the saved sign-in.
   await page.reload();
-  await connect(page);
   await expect(
     page.getByRole("button", {
       name: "Activate Renamed evening in Living room",
@@ -253,4 +275,80 @@ test("mobile publishes persistent Home Assistant scenes and preserves the editor
   await expect(
     page.getByRole("button", { name: "Edit Renamed evening", exact: true }),
   ).toHaveCount(0);
+});
+
+test("unlocking a passphrase vault once moves the sign-in to secure storage", async ({
+  page,
+}) => {
+  const connection = {
+    url: "http://homeassistant.local:8123/",
+    token: "test-token",
+  };
+  await nativeHost(page, {
+    vault: { password: "correct horse battery staple", connection },
+  });
+  await page.goto("/mobile/");
+  await expect(
+    page.getByRole("heading", { name: "Welcome home." }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("You won’t need the passphrase again"),
+  ).toBeVisible();
+  await page
+    .getByLabel("Vault passphrase")
+    .fill("correct horse battery staple");
+  await page.getByRole("button", { name: "Unlock & connect" }).click();
+  await expect(
+    page.getByRole("button", { name: "Open Living room", exact: true }),
+  ).toBeVisible();
+  expect(
+    JSON.parse(await page.evaluate(() => (window as any).__keychain())),
+  ).toEqual(connection);
+  // The vault is gone, and the next launch needs no passphrase.
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Open Living room", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Vault passphrase")).toHaveCount(0);
+});
+
+test("turning off Stay signed in keeps the sign-in for this session only", async ({
+  page,
+}) => {
+  await nativeHost(page);
+  await page.goto("/mobile/");
+  await page
+    .getByRole("button", { name: "Use an access token instead" })
+    .click();
+  await page.getByLabel("Long-lived access token").fill("test-token");
+  await page.getByLabel("Stay signed in on this device").uncheck();
+  await page.getByRole("button", { name: "Connect to my home" }).click();
+  await expect(
+    page.getByRole("button", { name: "Open Living room", exact: true }),
+  ).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__keychain())).toBeNull();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "A little closer to home." }),
+  ).toBeVisible();
+});
+
+test("a saved sign-in that cannot be read asks to sign in again", async ({
+  page,
+}) => {
+  await nativeHost(page);
+  await page.addInitScript(() => {
+    sessionStorage.setItem(
+      "test-native-keychain",
+      JSON.stringify({ url: "http://homeassistant.local:8123/", token: "x" }),
+    );
+    sessionStorage.setItem("test-keychain-unreadable", "1");
+  });
+  await page.goto("/mobile/");
+  await expect(page.getByRole("alert")).toContainText(
+    "could not read your saved sign-in",
+  );
+  await expect(
+    page.getByRole("heading", { name: "A little closer to home." }),
+  ).toBeVisible();
 });

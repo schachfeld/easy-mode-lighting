@@ -18,6 +18,55 @@ export function hexToHsv(hex) {
   return { h, s: max ? delta / max : 0, v: max };
 }
 
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const hex = (rgb) =>
+  "#" +
+  rgb
+    .map((c) =>
+      Math.round(clamp(c, 0, 255))
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("");
+
+export function hsvToHex(h, s, v = 1) {
+  const hue = ((h % 360) + 360) % 360;
+  const c = v * s;
+  const x = c * (1 - Math.abs(((hue / 60) % 2) - 1));
+  const m = v - c;
+  const [r, g, b] =
+    hue < 60
+      ? [c, x, 0]
+      : hue < 120
+        ? [x, c, 0]
+        : hue < 180
+          ? [0, c, x]
+          : hue < 240
+            ? [0, x, c]
+            : hue < 300
+              ? [x, 0, c]
+              : [c, 0, x];
+  return hex([(r + m) * 255, (g + m) * 255, (b + m) * 255]);
+}
+
+// The on-screen color of white light, after Tanner Helland's black-body fit,
+// softened toward white the way eyes adapt to warm light in a room.
+export function whiteToHex(kelvin) {
+  const t = clamp(kelvin, 1000, 40000) / 100;
+  const r = t <= 66 ? 255 : 329.698727446 * (t - 60) ** -0.1332047592;
+  const g =
+    t <= 66
+      ? 99.4708025861 * Math.log(t) - 161.1195681661
+      : 288.1221695283 * (t - 60) ** -0.0755148492;
+  const b =
+    t >= 66
+      ? 255
+      : t <= 19
+        ? 0
+        : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
+  return hex([r, g, b].map((c) => clamp(c, 0, 255) * 0.7 + 255 * 0.3));
+}
+
 // Home Assistant converts colors to the bulb's native color space and back,
 // and reports them at full value, so a bulb rarely returns the exact color it
 // was sent. Compare hue and saturation with tolerance instead.

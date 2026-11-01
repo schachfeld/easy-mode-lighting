@@ -55,13 +55,9 @@ test("account sign-in opens HA, validates callback, stores only the renewable cr
   expect(
     await page.evaluate(() => (window as any).__tokenRequests.length),
   ).toBe(1);
-  await page.getByLabel("Remember this connection").check();
-  await page
-    .getByLabel("Create a vault passphrase")
-    .fill("correct horse battery staple");
-  await page
-    .getByLabel("Confirm passphrase")
-    .fill("correct horse battery staple");
+  // Phones stay signed in by default, without a passphrase.
+  await expect(page.getByLabel("Stay signed in on this device")).toBeChecked();
+  await expect(page.getByLabel("Create a vault passphrase")).toHaveCount(0);
   await page.getByRole("button", { name: "Open my home", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Open Living room", exact: true }),
@@ -72,6 +68,14 @@ test("account sign-in opens HA, validates callback, stores only the renewable cr
   expect(
     await page.evaluate(() => Object.values(localStorage).join(" ")),
   ).not.toContain("account-access-");
+  // Only the renewable credential is kept, and only in secure storage.
+  expect(
+    JSON.parse(await page.evaluate(() => (window as any).__keychain())),
+  ).toEqual({
+    url: "https://home.example/ha/",
+    clientId: login.clientId,
+    refreshToken: "account-refresh-secret",
+  });
   await page.evaluate(() => window.dispatchEvent(new Event("online")));
   await expect
     .poll(() => page.evaluate(() => (window as any).__tokenRequests.length))
@@ -89,16 +93,24 @@ test("account sign-in opens HA, validates callback, stores only the renewable cr
   ).toBeVisible();
   await page.getByRole("button", { name: /connected/ }).click();
   await page.getByRole("button", { name: "Disconnect", exact: true }).click();
-  await page
-    .getByLabel("Vault passphrase")
-    .fill("correct horse battery staple");
-  await page.getByRole("button", { name: "Unlock & connect" }).click();
+  await page.getByRole("button", { name: "Open my home", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Open Living room", exact: true }),
   ).toBeVisible();
   expect(
     await page.evaluate(() => (window as any).__tokenRequests.at(-1).grantType),
   ).toBe("refresh_token");
+  // Restarting the app signs straight back in with the saved credential.
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Open Living room", exact: true }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(() => (window as any).__tokenRequests[0]),
+  ).toMatchObject({
+    grantType: "refresh_token",
+    refreshToken: "account-refresh-secret",
+  });
 });
 
 test("login callback survives a process restart without persisting credentials", async ({
@@ -193,4 +205,32 @@ test("a revoked refresh token stops reconnecting and asks for sign-in", async ({
   expect(
     await page.evaluate(() => (window as any).__tokenRequests.length),
   ).toBe(count);
+});
+
+test("a saved sign-in that Home Assistant revoked is forgotten at launch", async ({
+  page,
+}) => {
+  await nativeHost(page);
+  await page.goto("/mobile/");
+  const login = await startLogin(page);
+  await callback(
+    page,
+    `${login.callback}?state=${login.state}&code=one-time-code`,
+  );
+  await page.getByRole("button", { name: "Open my home", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Open Living room", exact: true }),
+  ).toBeVisible();
+  await page.evaluate(() => sessionStorage.setItem("test-reauthenticate", "1"));
+  await page.reload();
+  await expect(page.getByRole("alert")).toContainText(
+    "Your Home Assistant sign-in is no longer valid.",
+  );
+  await expect(
+    page.getByRole("button", {
+      name: "Sign in with Home Assistant",
+      exact: true,
+    }),
+  ).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__keychain())).toBeNull();
 });

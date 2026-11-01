@@ -1,21 +1,31 @@
 mod auth;
+mod credentials;
 mod scenes;
 use tauri::Manager;
 
+// Whether an older, passphrase-protected Stronghold vault exists.
 #[tauri::command]
 fn has_saved_connection(app: tauri::AppHandle) -> Result<bool, String> {
     let path = app.path().app_local_data_dir().map_err(|e| e.to_string())?;
     Ok(path.join("connection.hold").exists())
 }
 
+// Removes the older vault, for example after moving it to secure storage.
 #[tauri::command]
-fn forget_connection(app: tauri::AppHandle) -> Result<(), String> {
+fn forget_vault(app: tauri::AppHandle) -> Result<(), String> {
     let path = app.path().app_local_data_dir().map_err(|e| e.to_string())?;
     match std::fs::remove_file(path.join("connection.hold")) {
         Ok(()) => Ok(()),
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
         Err(e) => Err(e.to_string()),
     }
+}
+
+// Removes the saved sign-in from secure storage and any older vault.
+#[tauri::command]
+async fn forget_connection(app: tauri::AppHandle) -> Result<(), String> {
+    credentials::forget_secure_connection().await?;
+    forget_vault(app)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -44,6 +54,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             has_saved_connection,
             forget_connection,
+            forget_vault,
+            credentials::secure_storage_available,
+            credentials::load_secure_connection,
+            credentials::save_secure_connection,
             auth::ha_token_request,
             scenes::ha_scene_request
         ])

@@ -1,6 +1,21 @@
-import { useState, type FormEvent } from "react";
-import { Check, Lightbulb, Plus, Trash2, Bookmark } from "lucide-react";
-import { Brightness, Modal, SceneOrb, Toggle } from "./components";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+} from "react";
+import {
+  Bookmark,
+  Check,
+  ChevronDown,
+  Lightbulb,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { whiteToHex } from "../packages/core/color.mjs";
+import { ColorWheel } from "./ColorWheel";
+import { Brightness, Modal, SceneOrb, Toggle, WhiteSlider } from "./components";
 import { plural } from "./format";
 import type { Home, Light, LightSettings, Scene } from "./types";
 
@@ -21,6 +36,7 @@ export function SceneEditor({
   onClose,
   onSave,
   onDelete,
+  onPreview,
   busy,
   errorMessage,
 }: {
@@ -28,6 +44,8 @@ export function SceneEditor({
   roomId: string;
   scene?: Scene;
   onClose: () => void;
+  // Shows settings on the room's lights while the scene is being designed.
+  onPreview: (lights: Record<string, LightSettings>) => void;
   onSave: (data: object, id?: string) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
   busy: boolean;
@@ -46,14 +64,38 @@ export function SceneEditor({
     ),
   );
   const [confirm, setConfirm] = useState<"delete" | "discard" | null>(null);
+  const [picking, setPicking] = useState<string | null>(null);
   const [error, setError] = useState("");
+
+  // The lights show the scene as it is designed. Only lights whose settings
+  // changed are sent. Leaving without saving puts the room back as it was.
+  const [original] = useState(() =>
+    Object.fromEntries(roomLights.map((l) => [l.id, snapshot(l)])),
+  );
+  const shown = useRef<Record<string, LightSettings>>(original);
+  const show = (next: Record<string, LightSettings>) => {
+    const changes = Object.fromEntries(
+      Object.entries(next).filter(
+        ([id, value]) =>
+          JSON.stringify(value) !== JSON.stringify(shown.current[id]),
+      ),
+    );
+    shown.current = next;
+    if (Object.keys(changes).length) onPreview(changes);
+  };
+  useEffect(() => show(settings), [settings]);
+  const leave = () => {
+    show(original);
+    onClose();
+  };
+
   // Closing by accident, with Escape, the backdrop or the back gesture, should
   // not throw away a scene someone has been designing.
   const [initial] = useState(() => JSON.stringify({ name, palette, settings }));
   const dirty = JSON.stringify({ name, palette, settings }) !== initial;
-  const requestClose = () => (dirty ? setConfirm("discard") : onClose());
+  const requestClose = () => (dirty ? setConfirm("discard") : leave());
   async function remove() {
-    if (scene && (await onDelete(scene.id))) onClose();
+    if (scene && (await onDelete(scene.id))) leave();
     else setError("The scene could not be deleted. Please try again.");
   }
   const setLight = (id: string, patch: Partial<LightSettings>) =>
@@ -124,10 +166,9 @@ export function SceneEditor({
             className="text-button"
             type="button"
             onClick={() => {
+              // How the room looked before the editor opened.
               setSelectedMood(null);
-              setSettings(
-                Object.fromEntries(roomLights.map((l) => [l.id, snapshot(l)])),
-              );
+              setSettings(original);
             }}
           >
             Use current lights
@@ -151,105 +192,99 @@ export function SceneEditor({
         </div>
         <div className="field-heading">
           <span className="field-label">Lights</span>
-          <span className="subtle">Changes are saved with the scene</span>
+          <span className="subtle">
+            Your lights show changes as you make them
+          </span>
         </div>
         <div className="scene-light-list">
-          {roomLights.map((light) => (
-            <div className="scene-light" key={light.id}>
-              <div className="scene-light-heading">
-                <Lightbulb size={18} />
-                <span>{light.name}</span>
-                <Toggle
-                  label={`Include ${light.name} as on`}
-                  on={settings[light.id].on}
-                  onChange={() =>
-                    setLight(light.id, { on: !settings[light.id].on })
-                  }
-                />
-              </div>
-              {settings[light.id].on && (
-                <div className="scene-light-settings">
-                  {light.dimmable && (
-                    <Brightness
-                      value={settings[light.id].brightness}
-                      label={`${light.name} scene brightness`}
-                      onChange={(brightness) =>
-                        setLight(light.id, { brightness })
-                      }
-                      compact
-                    />
-                  )}
-                  {(light.colorSupported || light.temperatureSupported) && (
-                    <div className="color-controls">
-                      {light.colorSupported && (
-                        <label
-                          className={`color-picker ${settings[light.id].colorMode === "color_temp" && light.temperatureSupported ? "inactive" : ""}`}
-                          title="Choose color"
-                        >
-                          <input
-                            type="color"
-                            aria-label={`${light.name} scene color`}
-                            value={settings[light.id].color}
-                            onChange={(e) =>
-                              setLight(light.id, {
-                                color: e.target.value,
-                                colorMode: "rgb",
-                              })
-                            }
-                          />
-                          <span>Color</span>
-                        </label>
-                      )}
-                      {light.temperatureSupported && (
-                        <select
-                          className={
-                            settings[light.id].colorMode === "color_temp"
-                              ? ""
-                              : "inactive"
-                          }
-                          aria-label={`${light.name} scene white temperature`}
-                          value={
-                            settings[light.id].colorMode === "color_temp"
-                              ? settings[light.id].kelvin
-                              : ""
-                          }
-                          onChange={(e) =>
-                            setLight(light.id, {
-                              kelvin: Number(e.target.value),
-                              colorMode: "color_temp",
-                            })
-                          }
-                        >
-                          <option value="" disabled>
-                            White light
-                          </option>
-                          {[
-                            ...new Set([
-                              light.minKelvin,
-                              2700,
-                              4000,
-                              light.maxKelvin,
-                              settings[light.id].kelvin,
-                            ]),
-                          ]
-                            .filter(
-                              (k) =>
-                                k >= light.minKelvin && k <= light.maxKelvin,
-                            )
-                            .sort((a, b) => a - b)
-                            .map((k) => (
-                              <option key={k} value={k}>
-                                {k} K
-                              </option>
-                            ))}
-                        </select>
-                      )}
-                    </div>
-                  )}
+          {roomLights.map((light) => {
+            const current = settings[light.id];
+            const white =
+              current.colorMode === "color_temp" && light.temperatureSupported;
+            const kelvin = Math.max(
+              light.minKelvin,
+              Math.min(light.maxKelvin, current.kelvin),
+            );
+            const open = picking === light.id;
+            return (
+              <div className="scene-light" key={light.id}>
+                <div className="scene-light-heading">
+                  <Lightbulb size={18} />
+                  <span>{light.name}</span>
+                  <Toggle
+                    label={`Include ${light.name} as on`}
+                    on={current.on}
+                    onChange={() => setLight(light.id, { on: !current.on })}
+                  />
                 </div>
-              )}
-            </div>
-          ))}
+                {current.on && (
+                  <div className="scene-light-settings">
+                    {light.dimmable && (
+                      <Brightness
+                        value={current.brightness}
+                        label={`${light.name} scene brightness`}
+                        onChange={(brightness) =>
+                          setLight(light.id, { brightness })
+                        }
+                        compact
+                      />
+                    )}
+                    {(light.colorSupported || light.temperatureSupported) && (
+                      <button
+                        type="button"
+                        className={`scene-color-button ${open ? "open" : ""}`}
+                        style={
+                          {
+                            "--swatch": white
+                              ? whiteToHex(kelvin)
+                              : current.color,
+                          } as CSSProperties
+                        }
+                        aria-label={`${light.name} scene color`}
+                        aria-expanded={open}
+                        onClick={() => setPicking(open ? null : light.id)}
+                      >
+                        <span className="scene-color-dot" />
+                        <span>{white ? `${kelvin} K` : "Color"}</span>
+                        <ChevronDown size={13} />
+                      </button>
+                    )}
+                  </div>
+                )}
+                {current.on && open && (
+                  <div className="scene-light-picker">
+                    {light.colorSupported && (
+                      <ColorWheel
+                        compact
+                        color={current.color}
+                        white={white}
+                        label={`${light.name} scene color wheel`}
+                        onChange={(color) =>
+                          setLight(light.id, { color, colorMode: "rgb" })
+                        }
+                      />
+                    )}
+                    {light.temperatureSupported && (
+                      <WhiteSlider
+                        compact
+                        value={kelvin}
+                        min={light.minKelvin}
+                        max={light.maxKelvin}
+                        inactive={!white}
+                        label={`${light.name} scene white temperature`}
+                        onChange={(value) =>
+                          setLight(light.id, {
+                            kelvin: value,
+                            colorMode: "color_temp",
+                          })
+                        }
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
         {error && (
           <p className="form-error" role="alert">
@@ -281,7 +316,7 @@ export function SceneEditor({
                 type="button"
                 className="button danger-button"
                 disabled={busy}
-                onClick={confirm === "delete" ? remove : onClose}
+                onClick={confirm === "delete" ? remove : leave}
               >
                 {confirm === "delete" ? "Delete scene" : "Discard changes"}
               </button>

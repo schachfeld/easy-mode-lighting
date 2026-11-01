@@ -216,6 +216,13 @@ export default function App({
       },
     });
   }
+  // The scene editor shows its settings on the room's lights as they change.
+  // Each light gets its own command stream, so its changes arrive in order.
+  function previewLights(lights: Record<string, LightSettings>) {
+    for (const [id, settings] of Object.entries(lights))
+      if (home?.lights.some((l) => l.id === id && l.available))
+        control([id], settings.on ? { ...settings, on: true } : { on: false });
+  }
   function navigate(next: "rooms" | "scenes", nextRoom: string | null = null) {
     const hash = `/${next}${nextRoom ? `/${encodeURIComponent(nextRoom)}` : ""}`;
     // A dialog that just closed may still be stepping back through history.
@@ -437,6 +444,7 @@ export default function App({
           busy={busy}
           errorMessage={toast?.error ? toast.message : undefined}
           onClose={() => setEditor(null)}
+          onPreview={previewLights}
           onSave={(body, id) =>
             action(
               id ? `scenes/${encodeURIComponent(id)}` : "scenes",

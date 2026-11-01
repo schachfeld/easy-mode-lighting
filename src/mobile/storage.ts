@@ -6,8 +6,41 @@ import type { SceneData, SceneStore } from "../../packages/core/controller.mjs";
 
 import type { Connection } from "../../packages/core/auth.mjs";
 export type { Connection } from "../../packages/core/auth.mjs";
+// The connection is kept in the platform's secure storage where there is one
+// (the iOS Keychain or the Android Keystore), so Glow reconnects on its own.
+// Elsewhere, an older passphrase-protected Stronghold vault remains available.
+export const secureStorageAvailable = () =>
+  invoke<boolean>("secure_storage_available");
 export const hasSavedConnection = () => invoke<boolean>("has_saved_connection");
+// Removes the saved connection from secure storage and any vault.
 export const forgetConnection = () => invoke<void>("forget_connection");
+// Removes only the passphrase vault, after moving it to secure storage.
+export const forgetVault = () => invoke<void>("forget_vault");
+
+function validConnection(connection: unknown): Connection {
+  const value = connection as Partial<Record<string, unknown>> | null;
+  if (
+    !value ||
+    typeof value.url !== "string" ||
+    !(
+      typeof value.token === "string" ||
+      (typeof value.refreshToken === "string" &&
+        typeof value.clientId === "string")
+    )
+  )
+    throw new Error("Invalid saved connection.");
+  return value as unknown as Connection;
+}
+
+export async function loadSecureConnection(): Promise<Connection | null> {
+  const value = await invoke<string | null>("load_secure_connection");
+  return value ? validConnection(JSON.parse(value)) : null;
+}
+
+export const saveSecureConnection = (connection: Connection) =>
+  invoke<void>("save_secure_connection", {
+    connection: JSON.stringify(connection),
+  });
 
 async function withVault<T>(
   password: string,
@@ -42,19 +75,9 @@ export async function unlockConnection(password: string): Promise<Connection> {
     const client = await vault.loadClient("glow");
     const value = await client.getStore().get("connection");
     if (!value) throw new Error("No connection saved.");
-    const connection = JSON.parse(
-      new TextDecoder().decode(new Uint8Array(value)),
+    return validConnection(
+      JSON.parse(new TextDecoder().decode(new Uint8Array(value))),
     );
-    if (
-      typeof connection.url !== "string" ||
-      !(
-        typeof connection.token === "string" ||
-        (typeof connection.refreshToken === "string" &&
-          typeof connection.clientId === "string")
-      )
-    )
-      throw new Error("Invalid saved connection.");
-    return connection;
   });
 }
 

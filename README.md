@@ -8,9 +8,9 @@ Open a room, set its brightness, tap a scene, or make one of your own. No dashbo
 
 - See your rooms automatically, using your Home Assistant Areas.
 - Turn a room on or off, dim all its lights, or adjust individual bulbs.
-- Set colors and white temperatures on supported lights.
+- Set colors on a color wheel and white temperatures on a slider; lights follow as you drag.
 - Create, edit, favorite, and delete scenes inside each room.
-- Start from six color palettes, or capture your current light settings.
+- Start from six color palettes, or capture your current light settings. Your lights show a scene while you design it.
 - Activate existing Home Assistant scenes alongside your Glow scenes.
 - Undo **All lights off** to bring back every light's brightness and color.
 - See changes from other devices and Home Assistant instantly, and watch your lights follow sliders and colors as you drag.
@@ -67,7 +67,7 @@ For development against a real instance, set `HA_URL` and `HA_TOKEN` on the serv
 
 ## Standalone mobile app
 
-The same React interface and lighting core also power a Tauri 2 app for Android and iOS. Mobile connects directly to Home Assistant over its WebSocket API, without installing the Glow add-on. It includes Home Assistant account sign-in through your browser, optional encrypted credential storage, and scenes saved in Home Assistant. Manual access tokens remain supported. Account sign-in requires publishing the public identity page described in the mobile guide.
+The same React interface and lighting core also power a Tauri 2 app for Android and iOS. Mobile connects directly to Home Assistant over its WebSocket API, without installing the Glow add-on. It includes Home Assistant account sign-in through your browser, stays signed in using the iOS Keychain or Android Keystore, and saves scenes in Home Assistant. Manual access tokens remain supported. Account sign-in requires publishing the public identity page described in the mobile guide.
 
 See [the mobile guide](MOBILE.md) for prerequisites, build commands, architecture, and storage behavior. Preview its connection screen with `npm run dev:mobile`; build its frontend with `npm run build:mobile`. New scenes are saved in Home Assistant and appear in both mobile and the add-on.
 
