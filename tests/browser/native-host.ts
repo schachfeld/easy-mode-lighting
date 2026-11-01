@@ -2,9 +2,15 @@ import type { Page } from "@playwright/test";
 
 export async function nativeHost(
   page: Page,
-  options: { groups?: boolean } = {},
+  options: {
+    groups?: boolean;
+    // Phones have a Keychain or Keystore; desktop builds do not.
+    secureStorage?: boolean;
+    // A passphrase vault saved by an earlier version of Glow.
+    vault?: { password: string; connection: object };
+  } = {},
 ) {
-  await page.addInitScript(({ groups }) => {
+  await page.addInitScript(({ groups, secureStorage = true, vault }) => {
     const host = window as any;
     host.isTauri = true;
     let nextId = 1;
@@ -43,12 +49,37 @@ export async function nativeHost(
         });
     };
     host.__tokenRequests = [];
-    host.__reauthenticate = false;
+    // Session storage survives reloads, like an app restart.
+    host.__reauthenticate =
+      sessionStorage.getItem("test-reauthenticate") === "1";
     let tokenSequence = 0;
     let failSave = false;
-    let savedVault = false;
-    let vaultPassword = "";
-    let vaultRecord: number[] | null = null;
+    // The native secure store, which the app reaches only through IPC.
+    const keychain = "test-native-keychain";
+    host.__keychain = () => sessionStorage.getItem(keychain);
+    if (vault && !sessionStorage.getItem("test-native-vault"))
+      sessionStorage.setItem(
+        "test-native-vault",
+        JSON.stringify({
+          password: vault.password,
+          record: Array.from(
+            new TextEncoder().encode(JSON.stringify(vault.connection)),
+          ),
+        }),
+      );
+    const stored = JSON.parse(
+      sessionStorage.getItem("test-native-vault") ?? "null",
+    );
+    let savedVault = Boolean(stored);
+    let vaultPassword = stored?.password ?? "";
+    let vaultRecord: number[] | null = stored?.record ?? null;
+    const persistVault = () =>
+      savedVault
+        ? sessionStorage.setItem(
+            "test-native-vault",
+            JSON.stringify({ password: vaultPassword, record: vaultRecord }),
+          )
+        : sessionStorage.setItem("test-native-vault", "null");
     let unloads = 0;
     host.__vaultUnloads = () => unloads;
     const states: any[] = groups
@@ -194,10 +225,26 @@ export async function nativeHost(
           };
         }
         if (command === "has_saved_connection") return savedVault;
-        if (command === "forget_connection") {
+        if (command === "forget_vault" || command === "forget_connection") {
           savedVault = false;
           vaultRecord = null;
           vaultPassword = "";
+          persistVault();
+          if (command === "forget_connection")
+            sessionStorage.removeItem(keychain);
+          return;
+        }
+        if (command === "secure_storage_available") return secureStorage;
+        if (command === "load_secure_connection") {
+          if (sessionStorage.getItem("test-keychain-unreadable") === "1")
+            throw "Platform failure: the Keystore key is missing";
+          return sessionStorage.getItem(keychain);
+        }
+        if (command === "save_secure_connection") {
+          if (!secureStorage)
+            throw "This device has no secure storage for your sign-in.";
+          sessionStorage.setItem(keychain, args.connection);
+          sessionStorage.removeItem("test-keychain-unreadable");
           return;
         }
         if (command === "plugin:path|resolve_directory") return "/test/appdata";
@@ -223,6 +270,7 @@ export async function nativeHost(
           return vaultRecord;
         if (command === "plugin:stronghold|save") {
           savedVault = true;
+          persistVault();
           return;
         }
         if (command === "plugin:stronghold|destroy") {

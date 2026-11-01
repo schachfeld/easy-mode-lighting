@@ -6,6 +6,7 @@ import {
   House,
   LayoutGrid,
   LoaderCircle,
+  RotateCcw,
   Settings2,
   Sparkles,
   Sun,
@@ -14,6 +15,8 @@ import {
 } from "lucide-react";
 import { lightTargets } from "../packages/core/groups.mjs";
 import { ConnectionHelp } from "./ConnectionHelp";
+import { dialogsSettled } from "./dialogs";
+import { plural } from "./format";
 import { LightEditor } from "./LightEditor";
 import { LightGroupSettings } from "./LightGroupSettings";
 import { RoomPage } from "./RoomPage";
@@ -25,6 +28,25 @@ import type { Home, Light, LightSettings, Scene } from "./types";
 
 import { serverClient, type GlowClient } from "./platform/client";
 import { useLiveLights } from "./live";
+
+type Toast = {
+  message: string;
+  error: boolean;
+  action?: { label: string; run: () => void };
+};
+
+// The settings that bring a light back exactly as it was.
+function restoreSettings(light: Light): Partial<LightSettings> {
+  return {
+    on: true,
+    ...(light.dimmable ? { brightness: light.brightness } : {}),
+    ...(light.colorMode === "color_temp" && light.temperatureSupported
+      ? { colorMode: "color_temp", kelvin: light.kelvin }
+      : light.colorSupported
+        ? { colorMode: "rgb", color: light.color }
+        : {}),
+  };
+}
 
 function readRoute(): { page: "rooms" | "scenes"; roomId: string | null } {
   const [, page, id] = window.location.hash.slice(1).split("/");
@@ -59,10 +81,7 @@ export default function App({
   } | null>(null);
   const [lightEditor, setLightEditor] = useState<string | null>(null);
   const [customizeRoom, setCustomizeRoom] = useState<string | null>(null);
-  const [toast, setToast] = useState<{
-    message: string;
-    error: boolean;
-  } | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
   // Only saving scenes and preferences blocks input. Light controls stay live.
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -90,7 +109,10 @@ export default function App({
   }, [client]);
   useEffect(() => {
     if (!toast) return;
-    const timer = setTimeout(() => setToast(null), toast.error ? 8000 : 3500);
+    const timer = setTimeout(
+      () => setToast(null),
+      toast.error ? 8000 : toast.action ? 7000 : 3500,
+    );
     return () => clearTimeout(timer);
   }, [toast]);
   const showError = useCallback(
@@ -162,13 +184,63 @@ export default function App({
     );
     settle(ok);
   }
+  // Turning everything off is easy to do by accident, so offer an undo that
+  // restores each light's brightness and color.
+  async function allLightsOff() {
+    if (!home) return;
+    const lit = home.lights.filter((l) => l.on && l.available);
+    if (!lit.length) return;
+    const previous = lit.map((l) => [l.id, restoreSettings(l)] as const);
+    if (!(await lightsAction(lit, { on: false }))) return;
+    setToast({
+      message: `Turned off ${plural(lit.length, "light")}`,
+      error: false,
+      action: {
+        label: "Undo",
+        run: () => {
+          setToast(null);
+          // One command per distinct look, like a scene.
+          const batches = new Map<
+            string,
+            { ids: string[]; settings: Partial<LightSettings> }
+          >();
+          for (const [id, settings] of previous) {
+            const key = JSON.stringify(settings);
+            const batch = batches.get(key) ?? { ids: [], settings };
+            batch.ids.push(id);
+            batches.set(key, batch);
+          }
+          for (const batch of batches.values())
+            control(batch.ids, batch.settings);
+        },
+      },
+    });
+  }
+  // The scene editor shows its settings on the room's lights as they change.
+  // Each light gets its own command stream, so its changes arrive in order.
+  function previewLights(lights: Record<string, LightSettings>) {
+    for (const [id, settings] of Object.entries(lights))
+      if (home?.lights.some((l) => l.id === id && l.available))
+        control([id], settings.on ? { ...settings, on: true } : { on: false });
+  }
   function navigate(next: "rooms" | "scenes", nextRoom: string | null = null) {
-    window.location.hash = `/${next}${nextRoom ? `/${encodeURIComponent(nextRoom)}` : ""}`;
+    const hash = `/${next}${nextRoom ? `/${encodeURIComponent(nextRoom)}` : ""}`;
+    // A dialog that just closed may still be stepping back through history.
+    dialogsSettled().then(() => {
+      window.location.hash = hash;
+    });
     setPage(next);
     setRoomId(nextRoom);
     window.scrollTo({ top: 0, behavior: "instant" });
   }
   const room = home?.rooms.find((r) => r.id === roomId);
+  useEffect(() => {
+    document.title = room
+      ? `${room.name} · Glow`
+      : page === "scenes"
+        ? "Scenes · Glow"
+        : "Glow · Your home, in a good light";
+  }, [room?.name, page]);
   const disabled = !home?.connected || !streamOnline;
   const currentLight =
     home?.lights.find((l) => l.id === lightEditor) ??
@@ -221,6 +293,7 @@ export default function App({
         <nav aria-label="Main navigation">
           <button
             className={`nav-item ${page === "rooms" ? "selected" : ""}`}
+            aria-current={page === "rooms" ? "page" : undefined}
             onClick={() => navigate("rooms")}
           >
             <LayoutGrid size={19} />
@@ -229,6 +302,7 @@ export default function App({
           </button>
           <button
             className={`nav-item ${page === "scenes" ? "selected" : ""}`}
+            aria-current={page === "scenes" ? "page" : undefined}
             onClick={() => navigate("scenes")}
           >
             <Sparkles size={19} />
@@ -322,6 +396,7 @@ export default function App({
                   onOpenRoom={(id) => navigate("rooms", id)}
                   onHelp={() => setConnectionOpen(true)}
                   onLightsChange={lightsAction}
+                  onAllOff={allLightsOff}
                 />
               ) : (
                 <ScenesPage
@@ -369,6 +444,7 @@ export default function App({
           busy={busy}
           errorMessage={toast?.error ? toast.message : undefined}
           onClose={() => setEditor(null)}
+          onPreview={previewLights}
           onSave={(body, id) =>
             action(
               id ? `scenes/${encodeURIComponent(id)}` : "scenes",
@@ -404,6 +480,12 @@ export default function App({
         >
           {toast.error ? <CircleHelp size={18} /> : <Check size={18} />}
           <span>{toast.message}</span>
+          {toast.action && (
+            <button className="toast-action" onClick={toast.action.run}>
+              <RotateCcw size={13} />
+              {toast.action.label}
+            </button>
+          )}
           <button
             aria-label="Dismiss notification"
             onClick={() => setToast(null)}

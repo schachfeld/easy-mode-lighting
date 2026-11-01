@@ -1,7 +1,7 @@
 import { Check, Heart, Pencil } from "lucide-react";
 import { SceneOrb } from "./components";
 import { plural } from "./format";
-import { sceneMatches } from "./scenes";
+import { sceneMatches } from "../packages/core/scenes.mjs";
 import type { Home, Scene } from "./types";
 
 export function SceneCard({

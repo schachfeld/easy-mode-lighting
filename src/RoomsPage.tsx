@@ -13,6 +13,7 @@ export function RoomsPage({
   onOpenRoom,
   onHelp,
   onLightsChange,
+  onAllOff,
 }: {
   home: Home;
   disabled: boolean;
@@ -21,6 +22,7 @@ export function RoomsPage({
   onOpenRoom: (roomId: string) => void;
   onHelp: () => void;
   onLightsChange: LightsAction;
+  onAllOff: () => void;
 }) {
   const lit = home.lights.filter((l) => l.on && l.available);
   const litRooms = new Set(lit.map((l) => l.roomId));
@@ -52,12 +54,7 @@ export function RoomsPage({
           <button
             className="button secondary all-off"
             disabled={disabled || !lit.length}
-            onClick={() =>
-              onLightsChange(
-                home.lights.filter((l) => l.on),
-                { on: false },
-              )
-            }
+            onClick={onAllOff}
           >
             <Power size={15} />
             All lights off
@@ -68,12 +65,14 @@ export function RoomsPage({
         <div className="room-filters" role="group" aria-label="Filter rooms">
           <button
             className={filter === "all" ? "selected" : ""}
+            aria-pressed={filter === "all"}
             onClick={() => onFilterChange("all")}
           >
             All rooms
           </button>
           <button
             className={filter === "on" ? "selected" : ""}
+            aria-pressed={filter === "on"}
             onClick={() => onFilterChange("on")}
           >
             <span className="tiny-dot" />

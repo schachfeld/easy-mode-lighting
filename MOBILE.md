@@ -75,7 +75,12 @@ To build locally on a Mac instead, run `npm run tauri -- ios init`, copy `src-ta
 
 Enter your Home Assistant base address, for example `http://homeassistant.local:8123` or your reachable HTTPS address. Reverse-proxy prefixes are supported. Choose **Sign in with Home Assistant**. Glow opens your system browser, where you sign in on your own Home Assistant instance and approve access. The return link opens Glow again; choose **Open my home** to connect. Glow never asks for your Home Assistant password. **Use an access token instead** remains available for manually supplied long-lived access tokens. The account must be allowed to read the registries and control your lights.
 
-By default credentials remain in memory for that session. Account login uses a renewable refresh token and obtains a fresh access token on reconnection. **Remember this connection** encrypts the refresh token (or manually supplied token) in a Tauri Stronghold snapshot using a user-selected passphrase and Argon2 derivation. Unlock it with that passphrase after reopening the app. The passphrase is not saved. **Disconnect** closes the connection; **Forget saved connection** removes the saved credentials without deleting scenes. Browser local storage is never used for production credentials.
+Glow keeps you signed in. Account login uses a renewable refresh token and obtains a fresh access token on reconnection. With **Stay signed in on this device** (on by default), the refresh token (or manually supplied token) is stored in the platform's secure storage, and Glow reopens your home automatically:
+
+- **iOS:** the Keychain, readable after the first unlock since restart, never synced to iCloud or restored to another device (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`).
+- **Android:** app preferences encrypted with AES-GCM under a non-exportable Android Keystore key. A backup restored to another device cannot be decrypted; Glow then asks you to sign in again.
+
+Turn the option off to keep credentials in memory for that session only. **Disconnect** closes the connection without forgetting it; choose **Open my home** to reconnect, or **Forget saved connection** to remove the saved credentials without deleting scenes. A sign-in that Home Assistant has revoked is forgotten automatically. Builds without platform secure storage, such as desktop development builds, keep the earlier option: **Remember this connection** encrypts the credentials in a Tauri Stronghold snapshot with a user-selected passphrase and Argon2 derivation. A passphrase vault saved by an earlier version of Glow is moved to secure storage the next time you unlock it, then deleted. Browser local storage is never used for production credentials.
 
 The connection uses Tauri's native WebSocket transport, including normal certificate validation for HTTPS/WSS. Local HTTP/WS is supported; the native transport avoids WebView mixed-content restrictions. Do not disable certificate verification for a self-signed instance; use a trusted certificate or your local address. Away from home, the configured address must be reachable through your existing remote-access arrangement or VPN. Glow does not provide a relay.
 
@@ -110,17 +115,17 @@ Glow recognizes groups when every member can be resolved to a visible light in t
 
 ## Shared architecture
 
-| Location                                                                     | Responsibility                                                                 |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `src/App.tsx`, `src/SceneEditor.tsx`, `src/components.tsx`, `src/styles.css` | Shared React interface                                                         |
-| `packages/core/model.mjs`                                                    | Room discovery, capability mapping, palettes, validation                       |
-| `packages/core/controller.mjs`                                               | Light commands, scene lifecycle and application; injected storage              |
-| `packages/core/home-assistant.mjs`                                           | Authentication, discovery, state events, heartbeat and reconnecting            |
-| `packages/core/native-socket.mjs`                                            | Adapts asynchronous native sockets and buffers early authentication frames     |
-| `src/platform/client.ts`                                                     | UI contract and add-on HTTP/event-stream adapter                               |
-| `server/`                                                                    | Express, ingress, Node sockets and atomic file storage                         |
-| `src/mobile/`                                                                | Direct connection adapter, onboarding, device persistence and credential vault |
-| `src-tauri/`                                                                 | Native shell, capabilities and build configuration                             |
+| Location                                                                     | Responsibility                                                              |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `src/App.tsx`, `src/SceneEditor.tsx`, `src/components.tsx`, `src/styles.css` | Shared React interface                                                      |
+| `packages/core/model.mjs`                                                    | Room discovery, capability mapping, palettes, validation                    |
+| `packages/core/controller.mjs`                                               | Light commands, scene lifecycle and application; injected storage           |
+| `packages/core/home-assistant.mjs`                                           | Authentication, discovery, state events, heartbeat and reconnecting         |
+| `packages/core/native-socket.mjs`                                            | Adapts asynchronous native sockets and buffers early authentication frames  |
+| `src/platform/client.ts`                                                     | UI contract and add-on HTTP/event-stream adapter                            |
+| `server/`                                                                    | Express, ingress, Node sockets and atomic file storage                      |
+| `src/mobile/`                                                                | Direct connection adapter, onboarding, device persistence and saved sign-in |
+| `src-tauri/`                                                                 | Native shell, capabilities and build configuration                          |
 
 The shared core has no Node, React, or Tauri dependency. The add-on imports it directly; Vite bundles it into the mobile frontend. Platform entry points supply storage and socket implementations. Mobile dependencies are excluded from the add-on browser bundle. Add-on packaging includes `packages/` in both its source archive and runtime container.
 

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { once } from "node:events";
@@ -722,4 +722,31 @@ test("rejected scene writes restore local state and disconnected saves do not pr
     503,
   );
   assert.equal(mock.configCalls.length, count);
+});
+
+test("hashed assets are cached for good while the page is always revalidated", async (t) => {
+  const distDir = mkdtempSync(join(tmpdir(), "glow-dist-"));
+  t.after(() => rmSync(distDir, { recursive: true, force: true }));
+  mkdirSync(join(distDir, "assets"));
+  writeFileSync(
+    join(distDir, "index.html"),
+    "<!doctype html><title>Glow</title>",
+  );
+  writeFileSync(join(distDir, "assets", "index-a1b2c3.js"), "export {};");
+  const app = await fixture(t, { distDir });
+
+  const asset = await fetch(`${app.url}/assets/index-a1b2c3.js`);
+  assert.equal(asset.status, 200);
+  assert.match(asset.headers.get("cache-control"), /max-age=31536000/);
+  assert.match(asset.headers.get("cache-control"), /immutable/);
+  assert.equal(asset.headers.get("x-content-type-options"), "nosniff");
+
+  const page = await fetch(`${app.url}/`);
+  assert.equal(page.status, 200);
+  assert.doesNotMatch(page.headers.get("cache-control") ?? "", /immutable/);
+
+  // A stale asset from an older build is a clean 404, not the HTML page.
+  const missing = await fetch(`${app.url}/assets/index-old.js`);
+  assert.equal(missing.status, 404);
+  assert.doesNotMatch(await missing.text(), /<title>/);
 });

@@ -14,8 +14,11 @@ import {
   Utensils,
   Flower2,
   Sun,
+  Thermometer,
   X,
 } from "lucide-react";
+import { whiteToHex } from "../packages/core/color.mjs";
+import { onDialogBack, popDialogEntry, pushDialogEntry } from "./dialogs";
 
 export const roomIcons: Record<string, typeof Armchair> = {
   living: Armchair,
@@ -62,6 +65,42 @@ export function Toggle({
   );
 }
 
+// Lights follow a slider while it moves. The caller coalesces commands, and
+// releasing it reports whether the final value was accepted; a rejected value
+// springs back to the light's real state.
+function useSliderDraft(
+  value: number,
+  onChange: (value: number) => void | Promise<boolean | void>,
+) {
+  const [draft, setDraft] = useState(value);
+  const changing = useRef(false);
+  const latest = useRef(value);
+  const sent = useRef<Promise<boolean | void>>(Promise.resolve());
+  latest.current = value;
+  useEffect(() => {
+    if (!changing.current) setDraft(value);
+  }, [value]);
+  const commit = async () => {
+    if (changing.current) {
+      changing.current = false;
+      const accepted = await sent.current;
+      if (accepted === false && !changing.current) setDraft(latest.current);
+    }
+  };
+  const change = (next: number) => {
+    changing.current = true;
+    setDraft(next);
+    sent.current = Promise.resolve(onChange(next));
+  };
+  const events = {
+    onPointerUp: commit,
+    onKeyUp: commit,
+    onBlur: commit,
+    onPointerCancel: commit,
+  };
+  return { draft, change, events };
+}
+
 export function Brightness({
   value,
   onChange,
@@ -75,23 +114,7 @@ export function Brightness({
   label?: string;
   compact?: boolean;
 }) {
-  const [draft, setDraft] = useState(value);
-  const changing = useRef(false);
-  const latest = useRef(value);
-  const sent = useRef<Promise<boolean | void>>(Promise.resolve());
-  latest.current = value;
-  useEffect(() => {
-    if (!changing.current) setDraft(value);
-  }, [value]);
-  // Lights follow the slider while it moves. The caller coalesces commands,
-  // and releasing it reports whether the final value was accepted.
-  const commit = async () => {
-    if (changing.current) {
-      changing.current = false;
-      const accepted = await sent.current;
-      if (accepted === false && !changing.current) setDraft(latest.current);
-    }
-  };
+  const { draft, change, events } = useSliderDraft(value, onChange);
   return (
     <div
       className={`brightness ${compact ? "compact" : ""} ${disabled ? "disabled" : ""}`}
@@ -104,21 +127,81 @@ export function Brightness({
         value={draft}
         disabled={disabled}
         aria-label={label}
+        aria-valuetext={`${draft}%`}
         style={{ "--fill": `${draft}%` } as CSSProperties}
-        onChange={(e) => {
-          const next = Number(e.target.value);
-          changing.current = true;
-          setDraft(next);
-          sent.current = Promise.resolve(onChange(next));
-        }}
-        onPointerUp={commit}
-        onKeyUp={commit}
-        onBlur={commit}
-        onPointerCancel={commit}
+        onChange={(e) => change(Number(e.target.value))}
+        {...events}
       />
       <span>
         {draft}
         <small>%</small>
+      </span>
+    </div>
+  );
+}
+
+// White light from warm to cool, on a track painted with those whites.
+export function WhiteSlider({
+  value,
+  min,
+  max,
+  onChange,
+  disabled = false,
+  inactive = false,
+  label = "White temperature",
+  compact = false,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  onChange: (kelvin: number) => void | Promise<boolean | void>;
+  disabled?: boolean;
+  // The light shows a color, so no white is selected.
+  inactive?: boolean;
+  label?: string;
+  compact?: boolean;
+}) {
+  const { draft, change, events } = useSliderDraft(value, onChange);
+  // While the light shows a color, tapping the slider where it already is
+  // still means "this white".
+  const select = () => {
+    if (inactive && !disabled) onChange(draft);
+  };
+  const stops = Array.from({ length: 5 }, (_, i) =>
+    whiteToHex(min + ((max - min) * i) / 4),
+  );
+  return (
+    <div
+      className={`brightness white-slider ${compact ? "compact" : ""} ${disabled ? "disabled" : ""} ${inactive ? "inactive" : ""}`}
+    >
+      <Thermometer size={compact ? 16 : 19} strokeWidth={1.6} />
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={50}
+        value={draft}
+        disabled={disabled || max <= min}
+        aria-label={label}
+        aria-valuetext={inactive ? "Showing a color" : `${draft} K`}
+        style={
+          {
+            "--track": `linear-gradient(to right, ${stops.join(", ")})`,
+          } as CSSProperties
+        }
+        onChange={(e) => change(Number(e.target.value))}
+        {...events}
+        onPointerUp={() => {
+          select();
+          events.onPointerUp();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") select();
+        }}
+      />
+      <span>
+        {draft}
+        <small> K</small>
       </span>
     </div>
   );
@@ -138,12 +221,26 @@ export function Modal({
   wide?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
   useEffect(() => {
     const dialog = ref.current!;
     const previous = document.activeElement as HTMLElement | null;
     dialog.showModal();
     document.body.style.overflow = "hidden";
+    let open = true;
+    pushDialogEntry();
+    const stop = onDialogBack(() => {
+      close.current();
+      // A dialog may stay open, for example to confirm discarding changes.
+      requestAnimationFrame(() => {
+        if (open) pushDialogEntry();
+      });
+    });
     return () => {
+      open = false;
+      stop();
+      popDialogEntry();
       dialog.close();
       document.body.style.overflow = "";
       previous?.focus();

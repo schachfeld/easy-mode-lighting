@@ -99,8 +99,8 @@ test("group controls, individual controls and per-home display preferences persi
   await page.getByLabel("Scene name", { exact: true }).fill("Two lamps");
   await page.getByRole("button", { name: "Save scene", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
+  // The app reopens the same home with its saved sign-in.
   await page.reload();
-  await connect(page);
   await expect(page.locator(".light-group-card")).toHaveCount(0);
   await expect(
     page.getByRole("heading", { name: "Stehlampe", exact: true }),
@@ -127,7 +127,11 @@ test("group controls, individual controls and per-home display preferences persi
   await expect(
     page.getByRole("heading", { name: "Kranbalk", exact: true }),
   ).toBeVisible();
+  // Switch homes: sign out of this one, then connect to another.
   await page.reload();
+  await page.getByRole("button", { name: /connected/ }).click();
+  await page.getByRole("button", { name: "Disconnect", exact: true }).click();
+  await page.getByRole("button", { name: "Forget saved connection" }).click();
   await connect(page, "http://second-home.local:8123");
   await page.getByRole("button", { name: "All rooms", exact: true }).click();
   await page

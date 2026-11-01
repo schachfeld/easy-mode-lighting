@@ -2,7 +2,7 @@ import { ChevronRight } from "lucide-react";
 import { averageBrightness } from "../packages/core/groups.mjs";
 import { Brightness, RoomIcon, Toggle } from "./components";
 import { plural } from "./format";
-import { sceneMatches } from "./scenes";
+import { sceneMatches } from "../packages/core/scenes.mjs";
 import type { Light, LightsAction, Room, Scene } from "./types";
 
 export function RoomCard({

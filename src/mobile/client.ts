@@ -61,7 +61,11 @@ export async function connectMobile(
       );
       const check = () => {
         if (ha.connected) finish();
-        else if (ha.error) finish(new Error(ha.error));
+        // A stopped client was refused for good, such as a revoked sign-in.
+        else if (ha.error)
+          finish(
+            Object.assign(new Error(ha.error), { reauthenticate: ha.stopped }),
+          );
       };
       const cancel = () => finish(new Error("Connection cancelled."));
       const finish = (error?: Error) => {

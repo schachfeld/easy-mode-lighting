@@ -1,7 +1,17 @@
 import { ChevronRight, Layers, Lightbulb } from "lucide-react";
+import { colorName, whiteName } from "../packages/core/color.mjs";
 import { Brightness, Toggle } from "./components";
 import { plural } from "./format";
 import type { Light, LightGroup, LightSettings } from "./types";
+
+// "2700 K · Warm white", "Coral", or just "On" for bulbs without color.
+export function lightDescription(light: Light) {
+  if (!light.available) return "Unavailable";
+  if (!light.on) return "Off";
+  if (light.colorMode === "color_temp" && light.temperatureSupported)
+    return `${light.kelvin} K · ${whiteName(light.kelvin)}`;
+  return light.colorSupported ? colorName(light.color) : "On";
+}
 
 export function LightCard({
   light,
@@ -42,13 +52,7 @@ export function LightCard({
             <small>
               {members
                 ? `${plural(members.length, "light")} · ${onCount} on${members.some((member) => !member.available) ? " · Some unavailable" : ""}`
-                : !light.available
-                  ? "Unavailable"
-                  : light.on
-                    ? light.colorMode === "color_temp"
-                      ? `${light.kelvin} K · White light`
-                      : "Color light"
-                    : "Off"}
+                : lightDescription(light)}
             </small>
           </span>
         </button>

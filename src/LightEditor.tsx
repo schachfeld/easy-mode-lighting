@@ -1,5 +1,11 @@
 import { Check, Lightbulb, Sun } from "lucide-react";
-import { Brightness, Modal, Toggle } from "./components";
+import {
+  colorName,
+  colorsClose,
+  kelvinClose,
+} from "../packages/core/color.mjs";
+import { ColorWheel } from "./ColorWheel";
+import { Brightness, Modal, Toggle, WhiteSlider } from "./components";
 import { plural } from "./format";
 import type { Light, LightGroup, LightsAction } from "./types";
 
@@ -37,6 +43,19 @@ export function LightEditor({
   const locked = disabled || !light.available;
   const supportedKelvin = (kelvin: number) =>
     Math.max(light.minKelvin, Math.min(light.maxKelvin, kelvin));
+  // Bulbs report colors and temperatures slightly differently from what they
+  // were sent, so match within tolerance. A white light's reported color is
+  // only an approximation and never selects a swatch.
+  const selectedColor =
+    light.colorMode === "rgb"
+      ? swatches.find((color) => colorsClose(light.color, color))
+      : undefined;
+  const selectedWhite =
+    light.colorMode === "color_temp"
+      ? whites.find((white) =>
+          kelvinClose(light.kelvin, supportedKelvin(white.kelvin)),
+        )
+      : undefined;
   return (
     <Modal
       title={light.name}
@@ -90,38 +109,34 @@ export function LightEditor({
         <>
           <div className="field-heading">
             <span className="field-label">A splash of color</span>
-            <label className="color-picker">
-              <input
-                type="color"
-                value={light.color}
-                aria-label="Custom light color"
-                disabled={locked}
-                onChange={(e) =>
-                  onChange([light], {
-                    color: e.target.value,
-                    colorMode: "rgb",
-                    on: true,
-                  })
-                }
-              />
-              <span>Custom</span>
-            </label>
           </div>
-          <div className="color-swatches">
-            {swatches.map((color) => (
-              <button
-                key={color}
-                style={{ background: color }}
-                className={light.color === color ? "selected" : ""}
-                aria-label={`Set color ${color}`}
-                disabled={locked}
-                onClick={() =>
-                  onChange([light], { color, colorMode: "rgb", on: true })
-                }
-              >
-                {light.color === color && <Check size={17} />}
-              </button>
-            ))}
+          <div className="color-picker-area">
+            <ColorWheel
+              color={light.color}
+              white={light.colorMode === "color_temp"}
+              label={`${light.name} color`}
+              disabled={locked}
+              onChange={(color) =>
+                onChange([light], { color, colorMode: "rgb", on: true })
+              }
+            />
+            <div className="color-swatches">
+              {swatches.map((color) => (
+                <button
+                  key={color}
+                  style={{ background: color }}
+                  className={selectedColor === color ? "selected" : ""}
+                  aria-label={`Set color ${colorName(color)}`}
+                  aria-pressed={selectedColor === color}
+                  disabled={locked}
+                  onClick={() =>
+                    onChange([light], { color, colorMode: "rgb", on: true })
+                  }
+                >
+                  {selectedColor === color && <Check size={17} />}
+                </button>
+              ))}
+            </div>
           </div>
         </>
       )}
@@ -130,6 +145,16 @@ export function LightEditor({
           <div className="field-heading">
             <span className="field-label">Or a softer shade of white</span>
           </div>
+          <WhiteSlider
+            value={supportedKelvin(light.kelvin)}
+            min={light.minKelvin}
+            max={light.maxKelvin}
+            inactive={light.colorMode !== "color_temp"}
+            disabled={locked}
+            onChange={(kelvin) =>
+              onChange([light], { kelvin, colorMode: "color_temp", on: true })
+            }
+          />
           <div className="white-presets">
             {whites.map((white) => {
               const kelvin = supportedKelvin(white.kelvin);
@@ -137,11 +162,8 @@ export function LightEditor({
                 <button
                   key={white.name}
                   disabled={locked}
-                  className={
-                    light.colorMode === "color_temp" && light.kelvin === kelvin
-                      ? "selected"
-                      : ""
-                  }
+                  className={selectedWhite === white ? "selected" : ""}
+                  aria-pressed={selectedWhite === white}
                   onClick={() =>
                     onChange([light], {
                       kelvin,
