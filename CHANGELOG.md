@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0] - 2026-11-02
+
+- Pick any color from a hue and saturation wheel, and set white temperature with a slider covering each bulb's full range. The wheel works with touch, mouse, and keyboard.
+- Preview scenes on your lights while editing them. **Save** keeps the look; **Cancel**, discard, or delete restores the room to how it was before the editor opened.
+- Show room scenes above the lights in each room, and remove the separate favorites section from the overview.
+- Show consistent room brightness on cards and room pages by averaging only lights that are on and dimmable, and use correct singular and plural counts ("1 light on").
+- Shrink the add-on image from 307 MB to 253 MB for faster installs and updates.
+- Mobile: stay signed in using the iOS Keychain or Android Keystore, and reconnect automatically at launch. Existing passphrase-protected sign-ins move to secure storage the next time they are unlocked.
+- Mobile: prepare the iOS app for TestFlight and support Xcode 27 builds.
+
+Automated tests cover the color controls, scene previews, and room counts using a simulated server. Validation with physical lights is still pending.
+
 ## [1.3.0] - 2026-10-23
 
 - Control lights in real time. Lights follow brightness sliders and color pickers while you drag, and toggles respond instantly instead of waiting for Home Assistant.
