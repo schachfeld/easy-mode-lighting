@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2026-11-02
+
+- Mobile: replace the app icon with a glowing firefly jar. The Home Assistant add-on icon is unchanged.
+
 ## [1.4.0] - 2026-11-02
 
 - Pick any color from a hue and saturation wheel, and set white temperature with a slider covering each bulb's full range. The wheel works with touch, mouse, and keyboard.
