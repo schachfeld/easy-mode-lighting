@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sageBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7f9676"/>
+      <stop offset="1" stop-color="#53664c"/>
+    </linearGradient>
+    <radialGradient id="ambient" cx="512" cy="420" r="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffc382" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#ffc382" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="well" x1="0" y1="184" x2="0" y2="840" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1e261c"/>
+      <stop offset="1" stop-color="#2a3527"/>
+    </linearGradient>
+    <linearGradient id="fillLow" x1="0" y1="840" x2="0" y2="496" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b84826"/>
+      <stop offset="0.58" stop-color="#df7855"/>
+      <stop offset="1" stop-color="#f9ab72"/>
+    </linearGradient>
+    <linearGradient id="fillHigh" x1="0" y1="840" x2="0" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c95632"/>
+      <stop offset="0.44" stop-color="#f08e5d"/>
+      <stop offset="0.80" stop-color="#ffd89c"/>
+      <stop offset="1" stop-color="#fffaf0"/>
+    </linearGradient>
+    <linearGradient id="fillMid" x1="0" y1="840" x2="0" y2="372" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#be4e2b"/>
+      <stop offset="0.50" stop-color="#e88458"/>
+      <stop offset="1" stop-color="#ffe0ab"/>
+    </linearGradient>
+    <filter id="knobShadow" x="-40%" y="-40%" width="180%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="6"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.36"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#sageBg)"/>
+  <rect width="1024" height="1024" fill="url(#ambient)"/>
+
+  <!-- Recessed Track Wells -->
+  <g fill="url(#well)">
+    <rect x="196" y="184" width="168" height="656" rx="84"/>
+    <rect x="428" y="184" width="168" height="656" rx="84"/>
+    <rect x="660" y="184" width="168" height="656" rx="84"/>
+  </g>
+
+  <!-- Lit Fader Bars -->
+  <rect x="196" y="496" width="168" height="344" rx="84" fill="url(#fillLow)"/>
+  <rect x="428" y="240" width="168" height="600" rx="84" fill="url(#fillHigh)"/>
+  <rect x="660" y="372" width="168" height="468" rx="84" fill="url(#fillMid)"/>
+
+  <!-- Tactile Slider Knobs -->
+  <g fill="#fffefb" filter="url(#knobShadow)">
+    <circle cx="280" cy="580" r="56"/>
+    <circle cx="512" cy="324" r="56"/>
+    <circle cx="744" cy="456" r="56"/>
+  </g>
+</svg>

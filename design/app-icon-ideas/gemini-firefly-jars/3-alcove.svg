@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="plasterWall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e47f5b"/>
+      <stop offset="0.62" stop-color="#cf6340"/>
+      <stop offset="1" stop-color="#b24829"/>
+    </linearGradient>
+    <clipPath id="archClip">
+      <path d="M 168 814 V 454 A 344 344 0 0 1 856 454 V 814 Z"/>
+    </clipPath>
+    <clipPath id="jarInterior">
+      <path d="M 384 326 H 640 V 354 C 640 382 704 406 704 470 V 746 C 704 786 674 812 634 812 H 390 C 350 812 320 786 320 746 V 470 C 320 406 384 382 384 354 Z"/>
+    </clipPath>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#plasterWall)"/>
+  <rect x="0" y="832" width="1024" height="192" fill="#94381d"/>
+  <path d="M 152 818 V 450 A 360 360 0 0 1 872 450 V 818 Z" fill="#7a2c16"/>
+  <g clip-path="url(#archClip)">
+    <rect x="168" y="100" width="688" height="720" fill="#1e211c"/>
+    <path d="M 196 818 V 462 A 344 344 0 0 1 868 462 V 454 A 344 344 0 0 0 168 454 V 818 Z" fill="#141613"/>
+    <circle cx="512" cy="566" r="312" fill="#272922"/>
+    <circle cx="512" cy="566" r="250" fill="#332f25"/>
+  </g>
+  <g clip-path="url(#jarInterior)">
+    <rect x="308" y="318" width="408" height="502" fill="#471b0e"/>
+    <circle cx="512" cy="568" r="210" fill="#782d18"/>
+    <circle cx="504" cy="562" r="158" fill="#b34928"/>
+    <circle cx="468" cy="534" r="106" fill="#df7855"/>
+    <circle cx="468" cy="534" r="68" fill="#f5a855"/>
+
+    <circle cx="592" cy="676" r="78" fill="#df7855"/>
+    <circle cx="592" cy="676" r="48" fill="#f5a855"/>
+
+    <circle cx="582" cy="434" r="56" fill="#df7855"/>
+    <circle cx="582" cy="434" r="34" fill="#f5a855"/>
+    <g transform="translate(468 534) rotate(-24)">
+      <path d="M -8 -6 C -52 -32 -62 10 -12 14 Z" fill="#ffe8a6"/>
+      <path d="M 8 -6 C 52 -32 62 10 12 14 Z" fill="#ffe8a6"/>
+      <circle cx="0" cy="-23" r="12" fill="#373b35"/>
+      <rect x="-20" y="-13" width="40" height="54" rx="20" fill="#ffffff"/>
+    </g>
+    <g transform="translate(592 676) rotate(22)">
+      <path d="M -6 -4 C -40 -25 -48 8 -10 11 Z" fill="#ffe8a6"/>
+      <path d="M 6 -4 C 40 -25 48 8 10 11 Z" fill="#ffe8a6"/>
+      <circle cx="0" cy="-18" r="10" fill="#373b35"/>
+      <rect x="-16" y="-10" width="32" height="42" rx="16" fill="#ffffff"/>
+    </g>
+    <g transform="translate(582 434) rotate(-14)">
+      <ellipse cx="-18" cy="-2" rx="16" ry="8" transform="rotate(-20 -18 -2)" fill="#ffe8a6"/>
+      <ellipse cx="18" cy="-2" rx="16" ry="8" transform="rotate(20 18 -2)" fill="#ffe8a6"/>
+      <circle cx="0" cy="4" r="17" fill="#ffffff"/>
+    </g>
+    <rect x="348" y="476" width="16" height="236" rx="8" fill="#f5b895" opacity="0.48"/>
+  </g>
+  <path d="M 384 326 H 640 V 354 C 640 382 704 406 704 470 V 746 C 704 786 674 812 634 812 H 390 C 350 812 320 786 320 746 V 470 C 320 406 384 382 384 354 Z"
+        fill="none" stroke="#fff8ef" stroke-width="26" stroke-linejoin="round"/>
+  <rect x="374" y="306" width="276" height="24" fill="#373b35"/>
+  <rect x="352" y="236" width="320" height="78" rx="22" fill="#71836a"/>
+  <path d="M 374 236 H 512 V 314 H 374 A 22 22 0 0 1 352 292 V 258 A 22 22 0 0 1 374 236 Z" fill="#8ea386"/>
+  <rect x="368" y="244" width="288" height="10" rx="5" fill="#dce6d6" opacity="0.55"/>
+  <rect x="122" y="812" width="780" height="46" rx="21" fill="#f2a277"/>
+  <rect x="122" y="835" width="780" height="23" rx="11" fill="#df7855"/>
+  <rect x="346" y="812" width="332" height="16" rx="8" fill="#ffe7b3"/>
+</svg>

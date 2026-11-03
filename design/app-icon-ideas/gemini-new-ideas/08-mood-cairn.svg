@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="airyMesh" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e5ede0"/>
+      <stop offset="0.48" stop-color="#f8f4ec"/>
+      <stop offset="1" stop-color="#f2dfc9"/>
+    </linearGradient>
+    <filter id="meshBlur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="90"/>
+    </filter>
+    <filter id="stoneDrop" x="-25%" y="-25%" width="150%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="18"/>
+      <feOffset dx="0" dy="16"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.20"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- 1. Base Sanctuary Stone (Deep Charcoal-Forest with warm terracotta bounce light) -->
+    <radialGradient id="baseBody" cx="460" cy="735" r="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4e594a"/>
+      <stop offset="0.62" stop-color="#2c3229"/>
+      <stop offset="1" stop-color="#1b1f1a"/>
+    </radialGradient>
+    <radialGradient id="baseBounce" cx="512" cy="610" r="220" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f5925d" stop-opacity="0.78"/>
+      <stop offset="0.55" stop-color="#df7855" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#df7855" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 2. Middle Hearth Pillow (Rich Terracotta-Vermilion Mesh) -->
+    <radialGradient id="midBody" cx="476" cy="462" r="255" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffc588"/>
+      <stop offset="0.34" stop-color="#f28452"/>
+      <stop offset="0.74" stop-color="#c9522e"/>
+      <stop offset="1" stop-color="#872b12"/>
+    </radialGradient>
+    <!-- 3. Top Daylight-Gold Pebble (Saturated Golden-Apricot to Sage-Rim Mesh) -->
+    <radialGradient id="topBody" cx="496" cy="264" r="175" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff4c8"/>
+      <stop offset="0.38" stop-color="#ffb85c"/>
+      <stop offset="0.82" stop-color="#df7844"/>
+      <stop offset="1" stop-color="#ad4b24"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Airy Multi-Hue Atmospheric Gradient-Mesh Canvas (Light background) -->
+  <rect width="1024" height="1024" fill="url(#airyMesh)"/>
+  <g filter="url(#meshBlur)">
+    <circle cx="170" cy="180" r="320" fill="#d5e2ce" opacity="0.85"/>
+    <circle cx="860" cy="190" r="300" fill="#dce6e5" opacity="0.85"/>
+    <circle cx="512" cy="490" r="280" fill="#ffe6c4" opacity="0.75"/>
+    <circle cx="190" cy="860" r="330" fill="#f7e6d0" opacity="0.90"/>
+    <circle cx="850" cy="850" r="320" fill="#efd2b6" opacity="0.85"/>
+  </g>
+
+  <!-- Grounded Contact Shadow -->
+  <ellipse cx="512" cy="838" rx="245" ry="34" fill="#5e4b3a" opacity="0.26" filter="url(#stoneDrop)"/>
+
+  <!-- 1. Base Sanctuary Stone -->
+  <g filter="url(#stoneDrop)">
+    <path d="M 512 608 C 676 606 790 660 786 736 C 782 808 664 842 508 842 C 350 842 236 804 238 732 C 240 656 352 610 512 608 Z" fill="url(#baseBody)"/>
+    <path d="M 512 608 C 676 606 790 660 786 736 C 782 808 664 842 508 842 C 350 842 236 804 238 732 C 240 656 352 610 512 608 Z" fill="url(#baseBounce)"/>
+  </g>
+
+  <!-- 2. Middle Hearth Pillow (tilted -5 deg) -->
+  <g filter="url(#stoneDrop)" transform="rotate(-5 512 502)">
+    <path d="M 510 388 C 642 386 730 436 726 506 C 722 576 630 618 506 618 C 382 618 294 572 298 502 C 302 432 384 390 510 388 Z" fill="url(#midBody)"/>
+  </g>
+
+  <!-- 3. Top Golden-Amber Pebble (tilted +7 deg) -->
+  <g filter="url(#stoneDrop)" transform="rotate(7 518 296)">
+    <path d="M 518 202 C 606 202 664 244 662 298 C 660 352 598 390 514 390 C 432 390 374 350 376 296 C 378 242 434 202 518 202 Z" fill="url(#topBody)"/>
+  </g>
+</svg>

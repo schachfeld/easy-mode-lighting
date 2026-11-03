@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="creamGround" cx="512" cy="512" r="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffef9"/>
+      <stop offset="0.34" stop-color="#ffe7be"/>
+      <stop offset="0.58" stop-color="#f7f3ea"/>
+      <stop offset="1" stop-color="#ebe5d8"/>
+    </radialGradient>
+    <path id="lWall" d="M 186 290 A 104 104 0 0 1 290 186 H 782 A 56 56 0 0 1 838 242 V 338 A 56 56 0 0 1 782 394 H 422 A 28 28 0 0 0 394 422 V 462 A 56 56 0 0 1 338 518 H 242 A 56 56 0 0 1 186 462 Z"/>
+  </defs>
+
+  <!-- Untouched Canvas: warm golden-cream radiance concentrated in central negative-space courtyard -->
+  <rect width="1024" height="1024" fill="url(#creamGround)"/>
+
+  <!-- Top-Left Terracotta Architectural L-Wall -->
+  <use href="#lWall" fill="#df7855"/>
+
+  <!-- Bottom-Right Charcoal Architectural L-Wall (180-deg figure-ground counterpart) -->
+  <use href="#lWall" fill="#373b35" transform="rotate(180 512 512)"/>
+</svg>

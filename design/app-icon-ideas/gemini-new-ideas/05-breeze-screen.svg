@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="limestone" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8f4eb"/>
+      <stop offset="0.5" stop-color="#efe8da"/>
+      <stop offset="1" stop-color="#e2d8c5"/>
+    </linearGradient>
+    <radialGradient id="centerSpill" cx="512" cy="512" r="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffb86c" stop-opacity="0.32"/>
+      <stop offset="0.6" stop-color="#df7855" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#df7855" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="apCenter" cx="0.5" cy="0.45" r="0.6">
+      <stop offset="0" stop-color="#fffef9"/>
+      <stop offset="0.44" stop-color="#ffd48c"/>
+      <stop offset="1" stop-color="#ea804c"/>
+    </radialGradient>
+    <radialGradient id="apWarm" cx="0.5" cy="0.45" r="0.62">
+      <stop offset="0" stop-color="#ffe6b6"/>
+      <stop offset="0.48" stop-color="#df7855"/>
+      <stop offset="1" stop-color="#a53c1e"/>
+    </radialGradient>
+    <linearGradient id="apSage" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6c8065"/>
+      <stop offset="1" stop-color="#3e4b3a"/>
+    </linearGradient>
+    <linearGradient id="bevelGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffcf8c"/>
+      <stop offset="1" stop-color="#fffaf0"/>
+    </linearGradient>
+    <linearGradient id="bevelTerra" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c97252"/>
+      <stop offset="1" stop-color="#f7cfa8"/>
+    </linearGradient>
+    <linearGradient id="bevelStone" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#bdb19d"/>
+      <stop offset="1" stop-color="#dfd6c6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Pressed Limestone Architectural Screen -->
+  <rect width="1024" height="1024" fill="url(#limestone)"/>
+  <rect width="1024" height="1024" fill="url(#centerSpill)"/>
+
+  <!-- 3x3 Mortar Grooves & Highlight Edges (centers at 204, 512, 820 so squircle corners frame concentrically) -->
+  <g stroke="#cfc4b0" stroke-width="10">
+    <line x1="358" y1="0" x2="358" y2="1024"/>
+    <line x1="666" y1="0" x2="666" y2="1024"/>
+    <line x1="0" y1="358" x2="1024" y2="358"/>
+    <line x1="0" y1="666" x2="1024" y2="666"/>
+  </g>
+  <g stroke="#fbf8f1" stroke-width="4" opacity="0.8">
+    <line x1="364" y1="0" x2="364" y2="1024"/>
+    <line x1="672" y1="0" x2="672" y2="1024"/>
+    <line x1="0" y1="364" x2="1024" y2="364"/>
+    <line x1="0" y1="672" x2="1024" y2="672"/>
+  </g>
+
+  <!-- 4 Corner Resting-Room Apertures (Calm Evening Sage, centered at 204 & 820) -->
+  <rect x="98" y="98" width="212" height="212" rx="70" fill="url(#bevelStone)"/>
+  <rect x="120" y="120" width="168" height="168" rx="54" fill="url(#apSage)"/>
+
+  <rect x="714" y="98" width="212" height="212" rx="70" fill="url(#bevelStone)"/>
+  <rect x="736" y="120" width="168" height="168" rx="54" fill="url(#apSage)"/>
+
+  <rect x="98" y="714" width="212" height="212" rx="70" fill="url(#bevelStone)"/>
+  <rect x="120" y="736" width="168" height="168" rx="54" fill="url(#apSage)"/>
+
+  <rect x="714" y="714" width="212" height="212" rx="70" fill="url(#bevelStone)"/>
+  <rect x="736" y="736" width="168" height="168" rx="54" fill="url(#apSage)"/>
+
+  <!-- 4 Orthogonal Neighbor-Room Apertures (Warm Terracotta Glow) -->
+  <rect x="406" y="98" width="212" height="212" rx="70" fill="url(#bevelTerra)"/>
+  <rect x="428" y="120" width="168" height="168" rx="54" fill="url(#apWarm)"/>
+
+  <rect x="98" y="406" width="212" height="212" rx="70" fill="url(#bevelTerra)"/>
+  <rect x="120" y="428" width="168" height="168" rx="54" fill="url(#apWarm)"/>
+
+  <rect x="714" y="406" width="212" height="212" rx="70" fill="url(#bevelTerra)"/>
+  <rect x="736" y="428" width="168" height="168" rx="54" fill="url(#apWarm)"/>
+
+  <rect x="406" y="714" width="212" height="212" rx="70" fill="url(#bevelTerra)"/>
+  <rect x="428" y="736" width="168" height="168" rx="54" fill="url(#apWarm)"/>
+
+  <!-- Center Active-Room Aperture (Radiant Golden Cream) -->
+  <rect x="402" y="402" width="220" height="220" rx="74" fill="url(#bevelGold)"/>
+  <rect x="426" y="426" width="172" height="172" rx="56" fill="url(#apCenter)"/>
+</svg>

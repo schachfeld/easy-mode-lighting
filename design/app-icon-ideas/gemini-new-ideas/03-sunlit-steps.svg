@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sunWall" x1="220" y1="80" x2="720" y2="680" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffdf7"/>
+      <stop offset="0.55" stop-color="#fff0d4"/>
+      <stop offset="1" stop-color="#fad09a"/>
+    </linearGradient>
+    <linearGradient id="wallShadow" x1="0" y1="0" x2="380" y2="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c9c0ae"/>
+      <stop offset="1" stop-color="#ded4c1"/>
+    </linearGradient>
+    <linearGradient id="midTerracotta" x1="260" y1="200" x2="880" y2="880" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f79f6b"/>
+      <stop offset="0.55" stop-color="#df7855"/>
+      <stop offset="1" stop-color="#c45532"/>
+    </linearGradient>
+    <linearGradient id="riserShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b54928"/>
+      <stop offset="1" stop-color="#cd5e3a"/>
+    </linearGradient>
+    <linearGradient id="deepParapet" x1="320" y1="520" x2="980" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ad4323"/>
+      <stop offset="1" stop-color="#76250f"/>
+    </linearGradient>
+    <filter id="paperCut" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="15"/>
+      <feOffset dx="-8" dy="12"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.24"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Layer 1: Sunlit Cream Plaster Back Wall -->
+  <rect width="1024" height="1024" fill="url(#sunWall)"/>
+
+  <!-- Layer 2: Upper-Left Overhang Shadow framing diagonal sunbeam -->
+  <polygon points="0,0 456,0 0,456" fill="url(#wallShadow)"/>
+
+  <!-- Layer 3: Paper-Cut Stepped Terracotta Staircase -->
+  <g filter="url(#paperCut)">
+    <polygon points="0,840 164,840 164,660 352,660 352,480 540,480 540,300 728,300 728,120 1024,120 1024,1024 0,1024" fill="url(#midTerracotta)"/>
+
+    <!-- Crisp 45-deg Triangular Step-Nose Cast Shadows -->
+    <g fill="url(#riserShade)" opacity="0.62">
+      <polygon points="164,692 164,840 312,840"/>
+      <polygon points="352,512 352,660 500,660"/>
+      <polygon points="540,332 540,480 688,480"/>
+      <polygon points="728,152 728,300 876,300"/>
+    </g>
+
+    <!-- Sunlit Top Treads catching bright afternoon light -->
+    <rect x="0" y="840" width="164" height="32" fill="#ffe7bc"/>
+    <rect x="164" y="660" width="188" height="32" fill="#fff2d6"/>
+    <rect x="352" y="480" width="188" height="32" fill="#fff7e5"/>
+    <rect x="540" y="300" width="188" height="32" fill="#fffaf0"/>
+    <rect x="728" y="120" width="296" height="32" fill="#ffe7bc"/>
+  </g>
+
+  <!-- Layer 4: Foreground Paper-Cut Shadow Parapet anchoring lower-right -->
+  <g filter="url(#paperCut)">
+    <polygon points="264,1024 1024,264 1024,1024" fill="url(#deepParapet)"/>
+  </g>
+</svg>

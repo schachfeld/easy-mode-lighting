@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#faf8f3"/>
+      <stop offset="1" stop-color="#e8e2d5"/>
+    </linearGradient>
+    <radialGradient id="leftWall" cx="465" cy="350" r="410" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffdf6"/>
+      <stop offset="0.36" stop-color="#ffd89c"/>
+      <stop offset="0.76" stop-color="#ec8a58"/>
+      <stop offset="1" stop-color="#d1643b"/>
+    </radialGradient>
+    <linearGradient id="rightWall" x1="512" y1="310" x2="790" y2="610" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d86b43"/>
+      <stop offset="0.30" stop-color="#b4492a"/>
+      <stop offset="1" stop-color="#782812"/>
+    </linearGradient>
+    <linearGradient id="floorShade" x1="512" y1="518" x2="770" y2="750" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#df7c52"/>
+      <stop offset="1" stop-color="#ad4526"/>
+    </linearGradient>
+    <linearGradient id="floorLight" x1="420" y1="530" x2="520" y2="825" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffdf7"/>
+      <stop offset="0.52" stop-color="#ffd99e"/>
+      <stop offset="1" stop-color="#f39d66"/>
+    </linearGradient>
+    <filter id="drop" x="-20%" y="-20%" width="140%" height="150%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="22"/>
+      <feOffset dx="0" dy="20"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.22"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+  <g filter="url(#drop)">
+    <!-- Interior Left Wall (grazed by warm cove light) -->
+    <polygon points="512,202 512,518 238,676 238,360" fill="url(#leftWall)"/>
+
+    <!-- Interior Right Wall (deep terracotta shade with warm corner bounce) -->
+    <polygon points="512,202 786,360 786,676 512,518" fill="url(#rightWall)"/>
+
+    <!-- Interior Floor Base (terracotta shade) -->
+    <polygon points="512,518 786,676 512,834 238,676" fill="url(#floorShade)"/>
+
+    <!-- Diagonal Cast Light Wash across Floor -->
+    <polygon points="512,518 656,601 446,796 238,676" fill="url(#floorLight)"/>
+
+    <!-- Subtle luminous corner crease -->
+    <line x1="512" y1="202" x2="512" y2="518" stroke="#ffe2b5" stroke-width="6" stroke-opacity="0.65"/>
+
+    <!-- Architectural Section-Cut Poché Frame (crisp charcoal/sage-slate rim all around) -->
+    <!-- Top-Left Cut Wall Rim -->
+    <polygon points="512,152 512,202 238,360 194,335" fill="#687264"/>
+    <!-- Top-Right Cut Wall Rim -->
+    <polygon points="512,152 830,335 786,360 512,202" fill="#525a4f"/>
+    <!-- Left Vertical Cut Face & Left Floor Slab -->
+    <polygon points="194,335 238,360 238,676 512,834 512,884 194,701" fill="#3f453d"/>
+    <!-- Right Vertical Cut Face & Right Floor Slab -->
+    <polygon points="830,335 830,701 512,884 512,834 786,676 786,360" fill="#2b2f29"/>
+  </g>
+</svg>
