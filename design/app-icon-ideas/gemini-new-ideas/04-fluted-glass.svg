@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="darkPine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b221e"/>
+      <stop offset="1" stop-color="#101512"/>
+    </linearGradient>
+    <linearGradient id="ribSheen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff8ef" stop-opacity="0.24"/>
+      <stop offset="0.14" stop-color="#fff8ef" stop-opacity="0.05"/>
+      <stop offset="0.72" stop-color="#000000" stop-opacity="0.08"/>
+      <stop offset="0.91" stop-color="#ffd5aa" stop-opacity="0.11"/>
+      <stop offset="1" stop-color="#060907" stop-opacity="0.70"/>
+    </linearGradient>
+    <linearGradient id="pillCenter" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffef8"/>
+      <stop offset="0.45" stop-color="#ffdca0"/>
+      <stop offset="1" stop-color="#ea8250"/>
+    </linearGradient>
+    <linearGradient id="pillMid" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff2d2"/>
+      <stop offset="0.48" stop-color="#f59860"/>
+      <stop offset="1" stop-color="#c2502d"/>
+    </linearGradient>
+    <linearGradient id="pillEdge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f2915f"/>
+      <stop offset="1" stop-color="#9e391b"/>
+    </linearGradient>
+    <filter id="columnGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="38"/>
+    </filter>
+    <filter id="refractSoft" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+    <clipPath id="f1"><rect x="0" y="0" width="205" height="1024"/></clipPath>
+    <clipPath id="f2"><rect x="205" y="0" width="205" height="1024"/></clipPath>
+    <clipPath id="f3"><rect x="410" y="0" width="204" height="1024"/></clipPath>
+    <clipPath id="f4"><rect x="614" y="0" width="205" height="1024"/></clipPath>
+    <clipPath id="f5"><rect x="819" y="0" width="205" height="1024"/></clipPath>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#darkPine)"/>
+
+  <!-- Flute 1 (Left Edge, y=742) -->
+  <g clip-path="url(#f1)">
+    <ellipse cx="112" cy="742" rx="95" ry="200" fill="#b84f30" opacity="0.38" filter="url(#columnGlow)"/>
+    <rect x="-20" y="672" width="250" height="140" rx="70" transform="rotate(25 105 742)" fill="url(#pillEdge)" filter="url(#refractSoft)"/>
+    <rect x="0" y="0" width="205" height="1024" fill="url(#ribSheen)"/>
+  </g>
+
+  <!-- Flute 2 (Inner Left, y=627) -->
+  <g clip-path="url(#f2)">
+    <ellipse cx="308" cy="627" rx="105" ry="260" fill="#df7855" opacity="0.50" filter="url(#columnGlow)"/>
+    <rect x="176" y="547" width="264" height="160" rx="80" transform="rotate(25 308 627)" fill="url(#pillMid)" filter="url(#refractSoft)"/>
+    <rect x="205" y="0" width="205" height="1024" fill="url(#ribSheen)"/>
+  </g>
+
+  <!-- Flute 3 (Center Hero, y=512) -->
+  <g clip-path="url(#f3)">
+    <ellipse cx="512" cy="512" rx="115" ry="320" fill="#f59862" opacity="0.62" filter="url(#columnGlow)"/>
+    <rect x="374" y="424" width="276" height="176" rx="88" transform="rotate(25 512 512)" fill="url(#pillCenter)" filter="url(#refractSoft)"/>
+    <rect x="410" y="0" width="204" height="1024" fill="url(#ribSheen)"/>
+  </g>
+
+  <!-- Flute 4 (Inner Right, y=397) -->
+  <g clip-path="url(#f4)">
+    <ellipse cx="716" cy="397" rx="105" ry="260" fill="#df7855" opacity="0.50" filter="url(#columnGlow)"/>
+    <rect x="584" y="317" width="264" height="160" rx="80" transform="rotate(25 716 397)" fill="url(#pillMid)" filter="url(#refractSoft)"/>
+    <rect x="614" y="0" width="205" height="1024" fill="url(#ribSheen)"/>
+  </g>
+
+  <!-- Flute 5 (Right Edge, y=282) -->
+  <g clip-path="url(#f5)">
+    <ellipse cx="912" cy="282" rx="95" ry="200" fill="#b84f30" opacity="0.38" filter="url(#columnGlow)"/>
+    <rect x="794" y="212" width="250" height="140" rx="70" transform="rotate(25 919 282)" fill="url(#pillEdge)" filter="url(#refractSoft)"/>
+    <rect x="819" y="0" width="205" height="1024" fill="url(#ribSheen)"/>
+  </g>
+
+  <!-- Crisp Vertical Glass Valleys -->
+  <g stroke="#080b09" stroke-width="14" opacity="0.88">
+    <line x1="205" y1="0" x2="205" y2="1024"/>
+    <line x1="410" y1="0" x2="410" y2="1024"/>
+    <line x1="614" y1="0" x2="614" y2="1024"/>
+    <line x1="819" y1="0" x2="819" y2="1024"/>
+  </g>
+</svg>

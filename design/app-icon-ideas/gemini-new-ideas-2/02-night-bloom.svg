@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Nocturnal charcoal background anchored in Glow brand charcoal #373b35 -->
+    <linearGradient id="bg" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#3e443b"/>
+      <stop offset="52%" stop-color="#343932"/>
+      <stop offset="100%" stop-color="#2b302a"/>
+    </linearGradient>
+
+    <!-- Diffused warm evening radiance around the open blossom -->
+    <radialGradient id="ambientHalo" cx="0.5" cy="0.45" r="0.46" fx="0.5" fy="0.43">
+      <stop offset="0%" stop-color="#ef9161" stop-opacity="0.42"/>
+      <stop offset="44%" stop-color="#df7855" stop-opacity="0.21"/>
+      <stop offset="78%" stop-color="#b84f30" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#343932" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Illuminated concave back petal: incandescent cream heart blooming into warm golden-honey -->
+    <radialGradient id="innerPetal" cx="0.5" cy="0.73" r="0.68" fx="0.5" fy="0.75">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="38%" stop-color="#fff8e4"/>
+      <stop offset="70%" stop-color="#ffd88e"/>
+      <stop offset="92%" stop-color="#f7b46a"/>
+      <stop offset="100%" stop-color="#ec9658"/>
+    </radialGradient>
+
+    <!-- Translucent inner lateral petal folds inside the glowing chalice -->
+    <linearGradient id="innerFoldLeft" x1="0.2" y1="0.1" x2="0.85" y2="0.95">
+      <stop offset="0%" stop-color="#f6ae65" stop-opacity="0.62"/>
+      <stop offset="55%" stop-color="#ffe5a6" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#fffdf4" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="innerFoldRight" x1="0.8" y1="0.1" x2="0.15" y2="0.95">
+      <stop offset="0%" stop-color="#f6ae65" stop-opacity="0.62"/>
+      <stop offset="55%" stop-color="#ffe5a6" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#fffdf4" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Sheltered incandescent heart pooling deep in the chalice basin -->
+    <radialGradient id="heartCore" cx="0.5" cy="0.58" r="0.48">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="52%" stop-color="#fff8df" stop-opacity="0.94"/>
+      <stop offset="84%" stop-color="#ffd588" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#f4a25e" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Left sheltering terracotta petal -->
+    <linearGradient id="leftPetal" x1="0.72" y1="0.10" x2="0.18" y2="0.92">
+      <stop offset="0%" stop-color="#ee9264"/>
+      <stop offset="28%" stop-color="#df7855"/>
+      <stop offset="68%" stop-color="#b84f30"/>
+      <stop offset="100%" stop-color="#8d331a"/>
+    </linearGradient>
+
+    <!-- Right sheltering terracotta petal (overlapping across front like an alcove wall) -->
+    <linearGradient id="rightPetal" x1="0.28" y1="0.10" x2="0.82" y2="0.92">
+      <stop offset="0%" stop-color="#f2986b"/>
+      <stop offset="30%" stop-color="#e17b57"/>
+      <stop offset="70%" stop-color="#b84f30"/>
+      <stop offset="100%" stop-color="#872f17"/>
+    </linearGradient>
+
+    <!-- Crisp golden-apricot specular rim catching the inner petal edges -->
+    <linearGradient id="rimLeft" x1="0.2" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#ffe0a8" stop-opacity="0.72"/>
+      <stop offset="60%" stop-color="#ffedd0" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#f29b63" stop-opacity="0.25"/>
+    </linearGradient>
+
+    <linearGradient id="rimRight" x1="0.8" y1="0" x2="0.1" y2="1">
+      <stop offset="0%" stop-color="#ffe0a8" stop-opacity="0.72"/>
+      <stop offset="52%" stop-color="#fff0d4" stop-opacity="0.94"/>
+      <stop offset="78%" stop-color="#ee9460" stop-opacity="0.52"/>
+      <stop offset="100%" stop-color="#b84f30" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Sage leaves illuminated from above by the warm bloom -->
+    <linearGradient id="sageLeft" x1="0.30" y1="0.04" x2="0.62" y2="0.98">
+      <stop offset="0%" stop-color="#a8bd98"/>
+      <stop offset="44%" stop-color="#7c9074"/>
+      <stop offset="86%" stop-color="#586952"/>
+      <stop offset="100%" stop-color="#465541"/>
+    </linearGradient>
+
+    <linearGradient id="sageRight" x1="0.70" y1="0.04" x2="0.38" y2="0.98">
+      <stop offset="0%" stop-color="#aec39e"/>
+      <stop offset="44%" stop-color="#809478"/>
+      <stop offset="86%" stop-color="#566750"/>
+      <stop offset="100%" stop-color="#43523f"/>
+    </linearGradient>
+
+    <linearGradient id="calyxGrad" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#3c4938"/>
+      <stop offset="40%" stop-color="#62755b"/>
+      <stop offset="100%" stop-color="#576851"/>
+    </linearGradient>
+
+    <linearGradient id="leafTopLight" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#e3edd0" stop-opacity="0.70"/>
+      <stop offset="100%" stop-color="#7c9074" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Clip for back central petal so inner folds stay strictly inside its contour -->
+    <clipPath id="clipBackPetal">
+      <path d="M 498 193
+               Q 512 181, 526 193
+               C 586 236, 654 328, 664 468
+               C 674 590, 608 696, 512 696
+               C 416 696, 350 590, 360 468
+               C 370 328, 438 236, 498 193 Z"/>
+    </clipPath>
+
+    <!-- Unified G2-smooth master outer contour for the front terracotta chalice -->
+    <clipPath id="clipFrontChalice">
+      <path d="M 275 256
+               Q 282 244, 294 253
+               C 362 306, 436 446, 512 586
+               C 588 446, 662 306, 730 253
+               Q 742 244, 749 256
+               C 796 350, 792 540, 682 680
+               C 624 754, 568 776, 512 776
+               C 456 776, 400 754, 342 680
+               C 232 540, 228 350, 275 256 Z"/>
+    </clipPath>
+
+    <!-- Clip for right front petal overlap across the chalice belly -->
+    <clipPath id="clipRightFront">
+      <path d="M 730 253
+               Q 742 244, 749 256
+               C 800 354, 796 546, 682 684
+               C 610 770, 492 790, 392 752
+               C 434 704, 474 648, 512 586
+               C 588 446, 662 306, 730 253 Z"/>
+    </clipPath>
+
+    <!-- Unified G2-smooth master silhouette for the two cradling sage leaves -->
+    <clipPath id="clipLeaves">
+      <path d="M 160 526
+               Q 162 512, 173 522
+               C 222 570, 264 656, 342 742
+               C 392 796, 450 806, 512 806
+               C 574 806, 632 796, 682 742
+               C 760 656, 802 570, 851 522
+               Q 862 512, 864 526
+               C 874 592, 852 670, 796 740
+               C 720 834, 614 872, 512 872
+               C 410 872, 304 834, 228 740
+               C 172 670, 150 592, 160 526 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- 1. Fully opaque nocturnal charcoal background + warm ambient glow -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#ambientHalo)"/>
+
+  <!-- Soft ground shadow beneath the cradling leaves -->
+  <ellipse cx="512" cy="880" rx="152" ry="18" fill="#181c17" opacity="0.40"/>
+
+  <!-- 2. Sculpted concave calyx stem & upward-sweeping sage leaves -->
+  <path d="M 480 766
+           L 544 766
+           C 546 786, 558 802, 578 824
+           L 446 824
+           C 466 802, 478 786, 480 766 Z"
+        fill="url(#calyxGrad)"/>
+
+  <g clip-path="url(#clipLeaves)">
+    <!-- Left upward-sweeping sage leaf -->
+    <path d="M 150 510
+             L 540 510
+             L 540 880
+             L 150 880 Z"
+          fill="url(#sageLeft)"/>
+    <path d="M 172 524 C 222 572, 264 658, 342 744 C 392 796, 448 806, 508 806"
+          fill="none" stroke="url(#leafTopLight)" stroke-width="11" stroke-linecap="round"/>
+
+    <!-- Subtle cast shadow from overlapping right leaf fold at base -->
+    <path d="M 512 804 C 482 820, 460 844, 444 876 L 530 880 Z"
+          fill="#263023" opacity="0.36"/>
+
+    <!-- Right upward-sweeping sage leaf overlapping smoothly across the center cradle -->
+    <path d="M 874 510
+             L 512 510
+             L 512 806
+             C 484 820, 464 846, 454 876
+             L 874 880 Z"
+          fill="url(#sageRight)"/>
+    <path d="M 852 524 C 802 572, 760 658, 682 744 C 632 796, 574 806, 512 806 C 484 820, 464 846, 454 876"
+          fill="none" stroke="url(#leafTopLight)" stroke-width="11" stroke-linecap="round"/>
+  </g>
+
+  <!-- 3. Illuminated concave central back petal & inner folds -->
+  <g clip-path="url(#clipBackPetal)">
+    <rect x="345" y="175" width="334" height="525" fill="url(#innerPetal)"/>
+    <!-- Translucent inner lateral petal folds nested cleanly inside the glowing bowl -->
+    <path d="M 358 340 C 414 384, 468 474, 512 590 L 355 570 Z" fill="url(#innerFoldLeft)"/>
+    <path d="M 666 340 C 610 384, 556 474, 512 590 L 669 570 Z" fill="url(#innerFoldRight)"/>
+    <!-- Pure incandescent heart pooling deep in the sheltered basin -->
+    <ellipse cx="512" cy="502" rx="140" ry="162" fill="url(#heartCore)"/>
+  </g>
+
+  <!-- Delicate warm cream catchlight along the central petal crown -->
+  <path d="M 384 360 C 408 278, 460 220, 500 192 Q 512 183, 524 192 C 564 220, 616 278, 640 360"
+        fill="none" stroke="#fff9ea" stroke-width="8" stroke-linecap="round" opacity="0.75"/>
+
+  <!-- 4. Front sheltering terracotta petals (clipped to unified G2-smooth chalice contour) -->
+  <g clip-path="url(#clipFrontChalice)">
+    <!-- Left front terracotta petal -->
+    <path d="M 225 240
+             L 625 240
+             L 625 785
+             L 225 785 Z"
+          fill="url(#leftPetal)"/>
+
+    <!-- Inner rim highlight along left petal edge -->
+    <path d="M 288 250 C 360 306, 436 446, 512 586"
+          fill="none" stroke="url(#rimLeft)" stroke-width="16" stroke-linecap="round"/>
+
+    <!-- Dimensional cast shadow from overlapping right front petal -->
+    <path d="M 512 586 C 470 650, 428 708, 384 756 L 580 790 L 560 586 Z"
+          fill="#561807" opacity="0.38"/>
+
+    <!-- Right front terracotta petal wrapping over left petal -->
+    <g clip-path="url(#clipRightFront)">
+      <path d="M 385 240
+               L 800 240
+               L 800 785
+               L 385 785 Z"
+            fill="url(#rightPetal)"/>
+      <!-- Inner rim highlight & overlap ridge catchlight -->
+      <path d="M 736 250 C 664 306, 588 446, 512 586 C 474 648, 434 704, 392 752"
+            fill="none" stroke="url(#rimRight)" stroke-width="16" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- Soft warm bloom wrap at the throat vertex where light meets the crossed petals -->
+  <circle cx="512" cy="566" r="42" fill="url(#heartCore)" opacity="0.40"/>
+</svg>

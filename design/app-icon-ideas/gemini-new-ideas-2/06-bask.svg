@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Rich evening room background (cleanly distinct on both light & dark iOS wallpapers) -->
+    <linearGradient id="roomBg" x1="88%" y1="6%" x2="16%" y2="96%">
+      <stop offset="0%" stop-color="#252923"/>
+      <stop offset="56%" stop-color="#2f342d"/>
+      <stop offset="100%" stop-color="#3a3f37"/>
+    </linearGradient>
+
+    <!-- Warm ambient bounce around lower room -->
+    <radialGradient id="ambientBounce" cx="50%" cy="78%" r="58%">
+      <stop offset="0%" stop-color="#b84f30" stop-opacity="0.38"/>
+      <stop offset="62%" stop-color="#b84f30" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#252923" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Soft outer atmospheric scatter of the indoor light cone -->
+    <linearGradient id="beamSoft" x1="14%" y1="0%" x2="54%" y2="84%">
+      <stop offset="0%" stop-color="#f09761" stop-opacity="0.32"/>
+      <stop offset="50%" stop-color="#df7855" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#b84f30" stop-opacity="0.05"/>
+    </linearGradient>
+
+    <!-- Crisp architectural terracotta light cone (mid-tone so cream cat pops cleanly) -->
+    <linearGradient id="beamCore" x1="15%" y1="0%" x2="52%" y2="84%">
+      <stop offset="0%" stop-color="#f3a36c" stop-opacity="0.86"/>
+      <stop offset="35%" stop-color="#e58159" stop-opacity="0.76"/>
+      <stop offset="75%" stop-color="#df7855" stop-opacity="0.70"/>
+      <stop offset="100%" stop-color="#df7855" stop-opacity="0.82"/>
+    </linearGradient>
+
+    <!-- Luminous elliptical pool of warm light on the room floor -->
+    <radialGradient id="floorPool" cx="44%" cy="46%" r="56%">
+      <stop offset="0%" stop-color="#fff4dc"/>
+      <stop offset="46%" stop-color="#f7b378"/>
+      <stop offset="85%" stop-color="#df7855"/>
+      <stop offset="100%" stop-color="#c45735"/>
+    </radialGradient>
+
+    <!-- Soft warm halo around the floor pool -->
+    <radialGradient id="poolHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="52%" stop-color="#df7855" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#df7855" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Unified spatial sunlit cream fur across head & body -->
+    <linearGradient id="catLit" gradientUnits="userSpaceOnUse" x1="300" y1="160" x2="690" y2="835">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="52%" stop-color="#fff9f0"/>
+      <stop offset="86%" stop-color="#fce7c8"/>
+      <stop offset="100%" stop-color="#f4c799"/>
+    </linearGradient>
+
+    <!-- Local sunlit gradient for rotated head space -->
+    <linearGradient id="headLit" gradientUnits="userSpaceOnUse" x1="-185" y1="-260" x2="175" y2="210">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="62%" stop-color="#fff9f0"/>
+      <stop offset="100%" stop-color="#fdeed7"/>
+    </linearGradient>
+
+    <!-- Warm apricot-terracotta form shadow on side turned away from light -->
+    <linearGradient id="catShadow" x1="15%" y1="15%" x2="92%" y2="88%">
+      <stop offset="0%" stop-color="#f19e70"/>
+      <stop offset="58%" stop-color="#df7855"/>
+      <stop offset="100%" stop-color="#be5331"/>
+    </linearGradient>
+
+    <!-- Plush tail gradient -->
+    <linearGradient id="tailGrad" x1="20%" y1="8%" x2="85%" y2="92%">
+      <stop offset="0%" stop-color="#fff0d4"/>
+      <stop offset="42%" stop-color="#ec9064"/>
+      <stop offset="100%" stop-color="#c55735"/>
+    </linearGradient>
+
+    <!-- Proud, plump sitting cat body silhouette -->
+    <clipPath id="bodyClip">
+      <path d="M 334 510
+               C 298 588, 296 688, 320 756
+               C 338 808, 398 834, 504 834
+               C 622 834, 688 806, 698 746
+               C 710 668, 676 574, 616 510
+               Z"/>
+    </clipPath>
+
+    <!-- Plush cheeked cat head with bold rounded ears -->
+    <clipPath id="headClip">
+      <path d="M -206 -48
+               C -216 -128, -202 -214, -175 -264
+               C -161 -290, -132 -290, -112 -264
+               L -55 -192
+               C -18 -202, 22 -202, 58 -192
+               L 116 -264
+               C 136 -290, 165 -290, 179 -264
+               C 206 -214, 218 -128, 208 -48
+               C 226 16, 214 96, 162 142
+               C 114 183, 50 196, -4 196
+               C -68 196, -136 181, -181 135
+               C -228 86, -230 12, -206 -48
+               Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- 1. Fully opaque dark charcoal room -->
+  <rect width="1024" height="1024" fill="url(#roomBg)"/>
+  <rect width="1024" height="1024" fill="url(#ambientBounce)"/>
+
+  <!-- 2. Soft atmospheric outer scatter of the indoor light cone -->
+  <path d="M -65 0 L 435 0 L 896 826 L 128 826 Z" fill="url(#beamSoft)"/>
+
+  <!-- 3. Floor pool soft outer halo -->
+  <ellipse cx="514" cy="828" rx="382" ry="108" fill="url(#poolHalo)"/>
+
+  <!-- 4. Crisp architectural warm light cone -->
+  <path d="M 0 0 L 358 0 L 848 824 L 176 824 Z" fill="url(#beamCore)"/>
+
+  <!-- 5. Luminous elliptical floor pool -->
+  <ellipse cx="514" cy="824" rx="338" ry="82" fill="url(#floorPool)"/>
+
+  <!-- 6. Directional cast shadow from the sitting cat -->
+  <ellipse cx="554" cy="833" rx="212" ry="43" fill="#9a3a1d" opacity="0.46"/>
+
+  <!-- 7. Graceful S-curled plush cat tail with clear negative-space gap -->
+  <path d="M 658 778
+           C 754 784, 818 732, 822 646
+           C 825 588, 796 554, 758 564"
+        fill="none"
+        stroke="url(#tailGrad)"
+        stroke-width="74"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  <!-- Crisp warm cream rim highlight kissing the upper lit tip of the tail -->
+  <path d="M 758 562
+           C 792 554, 820 584, 821 632"
+        fill="none"
+        stroke="#fff8ee"
+        stroke-width="20"
+        stroke-linecap="round"
+        opacity="0.86"/>
+
+  <!-- 8. Proud, plump sitting cat body -->
+  <g clip-path="url(#bodyClip)">
+    <rect x="285" y="500" width="435" height="350" fill="url(#catLit)"/>
+    <!-- Sculptural terracotta shadow crescent along right back & haunch -->
+    <path d="M 556 500
+             C 610 602, 598 740, 500 842
+             L 725 842
+             L 725 500
+             Z"
+          fill="url(#catShadow)"/>
+    <!-- Puffed sunlit chest highlight -->
+    <path d="M 332 536 C 304 606, 304 692, 324 750"
+          fill="none"
+          stroke="#ffffff"
+          stroke-width="22"
+          stroke-linecap="round"
+          opacity="0.78"/>
+    <!-- Delicate warm chin shadow right under jawline -->
+    <ellipse cx="478" cy="618" rx="132" ry="26" fill="#df7855" opacity="0.22"/>
+  </g>
+
+  <!-- Tucked front paws resting neatly in the warm light pool -->
+  <ellipse cx="412" cy="816" rx="50" ry="25" fill="#fffaf2"/>
+  <ellipse cx="510" cy="820" rx="52" ry="26" fill="#fde9cb"/>
+  <path d="M 461 799 L 461 834" stroke="#df7855" stroke-width="11" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- 9. Expressive upturned cat head leaning blissfully into the upper-left light -->
+  <g transform="translate(486, 424) rotate(8)">
+    <g clip-path="url(#headClip)">
+      <!-- Luminous cream head & both ears -->
+      <rect x="-250" y="-315" width="500" height="535" fill="url(#headLit)"/>
+
+      <!-- Soft terracotta shading along lower-right cheek (keeping both ears bright!) -->
+      <path d="M 156 -70
+               C 168 38, 134 130, 52 208
+               L 250 208
+               L 250 -70
+               Z"
+            fill="url(#catShadow)"
+            opacity="0.80"/>
+
+      <!-- Radiant white-cream rim light kissing left ear & forehead -->
+      <path d="M -206 -48
+               C -216 -128, -202 -214, -175 -264"
+            fill="none"
+            stroke="#ffffff"
+            stroke-width="24"
+            stroke-linecap="round"
+            opacity="0.94"/>
+    </g>
+
+    <!-- Warm terracotta inner ear triangles -->
+    <path d="M -168 -126
+             C -173 -174, -164 -220, -147 -246
+             C -139 -258, -128 -257, -119 -244
+             L -84 -188
+             C -115 -173, -144 -152, -168 -126 Z"
+          fill="#df7855"/>
+
+    <path d="M 88 -188
+             L 123 -244
+             C 132 -257, 143 -258, 151 -246
+             C 168 -220, 176 -174, 170 -126
+             C 147 -152, 118 -173, 88 -188 Z"
+          fill="#d0633f"/>
+
+    <!-- Soft warm terracotta cheek blush -->
+    <ellipse cx="-154" cy="40" rx="38" ry="22" fill="#df7855" opacity="0.35"/>
+    <ellipse cx="114" cy="40" rx="38" ry="22" fill="#df7855" opacity="0.33"/>
+
+    <!-- Blissfully closed smiling eyes (bold & wide-spaced for 29px clarity) -->
+    <path d="M -146 -4 Q -101 -58 -56 -4"
+          fill="none"
+          stroke="#1f221d"
+          stroke-width="33"
+          stroke-linecap="round"/>
+
+    <path d="M 22 -4 Q 67 -58 112 -4"
+          fill="none"
+          stroke="#1f221d"
+          stroke-width="33"
+          stroke-linecap="round"/>
+
+    <!-- Cute upturned nose -->
+    <path d="M -39 22
+             C -39 12, 3 12, 3 22
+             C 3 33, -10 46, -18 46
+             C -26 46, -39 33, -39 22 Z"
+          fill="#242822"/>
+
+    <!-- Delicate warm terracotta smile -->
+    <path d="M -18 44 Q -34 65 -54 53 M -18 44 Q -2 65 18 53"
+          fill="none"
+          stroke="#9e4225"
+          stroke-width="14"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          opacity="0.78"/>
+  </g>
+</svg>

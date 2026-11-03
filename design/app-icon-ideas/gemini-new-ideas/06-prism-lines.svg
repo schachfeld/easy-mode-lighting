@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="charcoalBg" cx="480" cy="512" r="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#282c26"/>
+      <stop offset="1" stop-color="#141713"/>
+    </radialGradient>
+    <radialGradient id="junctionBloom" cx="500" cy="512" r="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#df7855" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#df7855" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#charcoalBg)"/>
+  <circle cx="500" cy="512" r="280" fill="url(#junctionBloom)"/>
+
+  <!-- Incoming Light Stroke -->
+  <line x1="136" y1="512" x2="292" y2="512" stroke="#fff9f0" stroke-width="68" stroke-linecap="round"/>
+
+  <!-- Dispersed Scene-Palette Rays (Bold Monoline Line Art with crisp breathing room) -->
+  <g fill="none" stroke-width="66" stroke-linecap="round">
+    <line x1="564" y1="362" x2="856" y2="212" stroke="#fff7e6"/>
+    <line x1="620" y1="464" x2="878" y2="412" stroke="#ffb76e"/>
+    <line x1="620" y1="560" x2="878" y2="612" stroke="#df7855"/>
+    <line x1="564" y1="662" x2="856" y2="812" stroke="#82997a"/>
+  </g>
+
+  <!-- Geometric Crystal Prism Outline -->
+  <polygon points="292,512 448,284 584,512 448,740" fill="#1e221d" stroke="#fff9f0" stroke-width="58" stroke-linejoin="round"/>
+</svg>

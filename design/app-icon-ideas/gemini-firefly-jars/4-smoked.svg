@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="linenBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffefb"/>
+      <stop offset="0.65" stop-color="#f9f1e4"/>
+      <stop offset="1" stop-color="#eee0cc"/>
+    </linearGradient>
+    <radialGradient id="causticCore" cx="634" cy="708" r="244" gradientTransform="translate(178 -190) rotate(22) scale(1.16 0.68)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff4b8" stop-opacity="0.98"/>
+      <stop offset="0.36" stop-color="#ffa94d" stop-opacity="0.88"/>
+      <stop offset="0.74" stop-color="#df7855" stop-opacity="0.68"/>
+      <stop offset="1" stop-color="#b84f30" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="smokedGlass" x1="250" y1="295" x2="690" y2="800" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#272a25"/>
+      <stop offset="0.48" stop-color="#1d1f1b"/>
+      <stop offset="1" stop-color="#141613"/>
+    </linearGradient>
+    <radialGradient id="emberHearth" cx="478" cy="560" r="235" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffad4f" stop-opacity="0.54"/>
+      <stop offset="0.56" stop-color="#df7855" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#1d1f1b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="terracottaStopper" x1="328" y1="184" x2="612" y2="254" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f08e69"/>
+      <stop offset="0.55" stop-color="#df7855"/>
+      <stop offset="1" stop-color="#a64123"/>
+    </linearGradient>
+    <radialGradient id="knobGrad" cx="456" cy="142" r="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffba99"/>
+      <stop offset="0.45" stop-color="#df7855"/>
+      <stop offset="1" stop-color="#9c3a1e"/>
+    </radialGradient>
+    <linearGradient id="smokedSpec" x1="0" y1="335" x2="0" y2="745" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.66"/>
+      <stop offset="0.65" stop-color="#fff8ef" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#fff8ef" stop-opacity="0.05"/>
+    </linearGradient>
+    <filter id="shadowBlur" filterUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+    <filter id="causticBlur" filterUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <filter id="emberBlur" filterUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <feGaussianBlur stdDeviation="24"/>
+    </filter>
+    <filter id="sparkTight" filterUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#linenBg)"/>
+  <ellipse cx="626" cy="712" rx="262" ry="148" transform="rotate(20 626 712)"
+           fill="#873c1f" opacity="0.44" filter="url(#shadowBlur)"/>
+  <ellipse cx="644" cy="716" rx="212" ry="112" transform="rotate(20 644 716)"
+           fill="url(#causticCore)" filter="url(#causticBlur)"/>
+  <path d="M 548 744 Q 666 782 768 720" fill="none" stroke="#fff7cf" stroke-width="20" stroke-linecap="round"
+        opacity="0.86" filter="url(#sparkTight)"/>
+  <g transform="rotate(-14 470 506)">
+    <path d="M 354 254 H 586 V 298 C 586 332 690 360 690 448 V 710 C 690 770 642 808 582 808 H 358 C 298 808 250 770 250 710 V 448 C 250 360 354 332 354 298 Z"
+          fill="url(#smokedGlass)"/>
+    <path d="M 354 254 H 586 V 298 C 586 332 690 360 690 448 V 710 C 690 770 642 808 582 808 H 358 C 298 808 250 770 250 710 V 448 C 250 360 354 332 354 298 Z"
+          fill="url(#emberHearth)"/>
+    <path d="M 658 446 V 702 C 658 744 624 774 578 774 H 416"
+          fill="none" stroke="#df7855" stroke-width="20" stroke-linecap="round" opacity="0.68" filter="url(#sparkTight)"/>
+    <g filter="url(#emberBlur)">
+      <circle cx="438" cy="502" r="78" fill="#ffa03d"/>
+      <circle cx="558" cy="608" r="68" fill="#ff9436"/>
+      <circle cx="368" cy="642" r="52" fill="#df7855"/>
+      <circle cx="542" cy="412" r="46" fill="#ffb649"/>
+    </g>
+    <g filter="url(#sparkTight)">
+      <circle cx="438" cy="502" r="40" fill="#ffe899"/>
+      <circle cx="558" cy="608" r="34" fill="#ffe288"/>
+      <circle cx="368" cy="642" r="24" fill="#ffd97d"/>
+      <circle cx="542" cy="412" r="22" fill="#ffe288"/>
+    </g>
+    <g transform="translate(438 502) rotate(14)">
+      <ellipse cx="-25" cy="-4" rx="25" ry="11" transform="rotate(-24 -25 -4)" fill="#fff8ef" opacity="0.80"/>
+      <ellipse cx="25" cy="-4" rx="25" ry="11" transform="rotate(24 25 -4)" fill="#fff8ef" opacity="0.80"/>
+      <circle cx="0" cy="4" r="27" fill="#ffffff"/>
+    </g>
+    <g transform="translate(558 608) rotate(14)">
+      <ellipse cx="-21" cy="-3" rx="21" ry="9" transform="rotate(-24 -21 -3)" fill="#fff8ef" opacity="0.76"/>
+      <ellipse cx="21" cy="-3" rx="21" ry="9" transform="rotate(24 21 -3)" fill="#fff8ef" opacity="0.76"/>
+      <circle cx="0" cy="4" r="23" fill="#ffffff"/>
+    </g>
+    <circle cx="368" cy="642" r="18" fill="#fffef6"/>
+    <circle cx="542" cy="412" r="16" fill="#fffef6"/>
+    <path d="M 290 452 C 290 402 336 368 382 352 C 348 382 320 416 320 462 V 710 C 320 728 290 726 290 704 Z"
+          fill="url(#smokedSpec)"/>
+    <path d="M 368 326 H 528" fill="none" stroke="#fff8ef" stroke-width="10" stroke-linecap="round" opacity="0.42"/>
+    <path d="M 354 254 H 586 V 298 C 586 332 690 360 690 448 V 710 C 690 770 642 808 582 808 H 358 C 298 808 250 770 250 710 V 448 C 250 360 354 332 354 298 Z"
+          fill="none" stroke="#373b35" stroke-width="18" stroke-linejoin="round"/>
+    <rect x="344" y="252" width="252" height="24" rx="10" fill="#71836a"/>
+    <circle cx="470" cy="152" r="38" fill="url(#knobGrad)"/>
+    <rect x="326" y="182" width="288" height="76" rx="28" fill="url(#terracottaStopper)"/>
+    <path d="M 354 200 H 582" fill="none" stroke="#ffc6a8" stroke-width="8" stroke-linecap="round" opacity="0.68"/>
+  </g>
+</svg>
