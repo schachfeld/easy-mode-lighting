@@ -1,7 +1,9 @@
 import { spawn } from "node:child_process";
+import { once } from "node:events";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import express from "express";
 import {
   arrangeHome,
   startHomeAssistant,
@@ -10,12 +12,18 @@ import {
 } from "./home-assistant";
 
 export const glowPort = Number(process.env.GLOW_E2E_PORT ?? 8101);
+export const mobilePort = Number(process.env.GLOW_E2E_MOBILE_PORT ?? 8102);
 
 // Boots Home Assistant in Docker, then a production Glow server connected to
-// it with a real access token, exactly as a standalone install would run.
+// it with a real access token, exactly as a standalone install would run. The
+// mobile build is served alongside it for the account sign-in tests.
 export default async function globalSetup() {
-  if (!existsSync("dist/index.html"))
-    throw new Error("Run `npm run build` before the Home Assistant tests.");
+  for (const [file, command] of [
+    ["dist/index.html", "npm run build"],
+    ["dist-mobile/index.html", "npm run build:mobile"],
+  ])
+    if (!existsSync(file))
+      throw new Error(`Run \`${command}\` before the Home Assistant tests.`);
   const { id, ha } = await startHomeAssistant();
   const dataDir = mkdtempSync(join(tmpdir(), "glow-ha-e2e-"));
   let output = "";
@@ -32,12 +40,18 @@ export default async function globalSetup() {
   });
   glow.stdout.on("data", (chunk) => (output += chunk));
   glow.stderr.on("data", (chunk) => (output += chunk));
-  const teardown = async () => {
+  const mobile = express()
+    .use("/mobile", express.static("dist-mobile"))
+    .listen(mobilePort, "127.0.0.1");
+  const teardown = async (failed = false) => {
+    if (failed) console.error(output);
     glow.kill("SIGTERM");
-    stopHomeAssistant(id);
+    mobile.close();
+    stopHomeAssistant(id, failed);
     rmSync(dataDir, { recursive: true, force: true });
   };
   try {
+    await once(mobile, "listening");
     await arrangeHome(ha);
     await until("Glow to discover the rooms", async () => {
       if (glow.exitCode !== null) throw new Error(output);
@@ -48,13 +62,11 @@ export default async function globalSetup() {
         : undefined;
     });
   } catch (error) {
-    console.error(output);
-    stopHomeAssistant(id, true);
-    glow.kill("SIGTERM");
-    rmSync(dataDir, { recursive: true, force: true });
+    await teardown(true);
     throw error;
   }
   process.env.GLOW_HA_URL = ha.url;
   process.env.GLOW_HA_TOKEN = ha.token;
-  return teardown;
+  process.env.GLOW_MOBILE_URL = `http://127.0.0.1:${mobilePort}/mobile/`;
+  return () => teardown();
 }
