@@ -69,7 +69,7 @@ The workflow stops before building if any value is missing.
 
 The app declares `ITSAppUsesNonExemptEncryption = false`, because Glow only uses encryption for HTTPS/WSS connections and to protect saved sign-in credentials on the device. Confirm this matches your export-compliance assessment; if not, remove the key from `src-tauri/Info.ios.plist` and answer the encryption questions in App Store Connect instead. `src-tauri/PrivacyInfo.xcprivacy` declares no tracking or collected data, and the file-timestamp and elapsed-time APIs used by the Rust runtime. Fill in the App Store Connect privacy questionnaire as **Data Not Collected** to match. iOS app icons are opaque, as App Store Connect requires.
 
-To build locally on a Mac instead, run `npm run tauri -- ios init`, copy `src-tauri/PrivacyInfo.xcprivacy` into the generated `src-tauri/gen/apple/*_iOS/` folder and run `xcodegen generate` in `src-tauri/gen/apple`. Then run `APPLE_DEVELOPMENT_TEAM=<team id> npm run tauri -- ios build --export-method app-store-connect` and upload the IPA from `src-tauri/gen/apple/build/` with Transporter.
+To build locally on a Mac instead, run `npm run tauri -- ios init`, copy the app icons from `src-tauri/icons/ios/` into `src-tauri/gen/apple/Assets.xcassets/AppIcon.appiconset/` (otherwise the build ships Tauri's placeholder icon), copy `src-tauri/PrivacyInfo.xcprivacy` into the generated `src-tauri/gen/apple/*_iOS/` folder and run `xcodegen generate` in `src-tauri/gen/apple`. Then run `APPLE_DEVELOPMENT_TEAM=<team id> npm run tauri -- ios build --export-method app-store-connect` and upload the IPA from `src-tauri/gen/apple/build/` with Transporter.
 
 ## Connect
 
