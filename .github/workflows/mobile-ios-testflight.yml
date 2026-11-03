@@ -54,9 +54,15 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run tauri -- ios init --ci --skip-targets-install
-      - name: Add the privacy manifest
+      - name: Add the app icon and privacy manifest
         working-directory: src-tauri/gen/apple
         run: |
+          # `tauri ios init` fills the asset catalog with Tauri's placeholder icon.
+          icon_set=Assets.xcassets/AppIcon.appiconset
+          for icon in ../../icons/ios/*.png; do
+            test -f "$icon_set/$(basename "$icon")"
+            cp "$icon" "$icon_set/"
+          done
           target_dir=$(find . -maxdepth 1 -type d -name '*_iOS' | head -n 1)
           test -n "$target_dir"
           cp ../../PrivacyInfo.xcprivacy "$target_dir/"
