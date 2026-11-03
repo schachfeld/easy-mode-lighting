@@ -1,11 +1,27 @@
 import { execFileSync } from "node:child_process";
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DEFAULT_CLIENT_ID } from "../../packages/core/auth.mjs";
 
 // Pinned so a Home Assistant release cannot break CI unannounced. Override
 // with HA_IMAGE to try another version.
 export const image =
   process.env.HA_IMAGE ?? "ghcr.io/home-assistant/home-assistant:2026.10.4";
 const configDir = fileURLToPath(new URL("./config", import.meta.url));
+const identityDir = fileURLToPath(new URL("./identity", import.meta.url));
+const identityPage = fileURLToPath(
+  new URL("../../auth-client/index.html", import.meta.url),
+);
+export const owner = { username: "glow", password: "glow-e2e-password" };
 
 export type State = {
   entity_id: string;
@@ -15,6 +31,32 @@ export type State = {
 
 const docker = (...args: string[]) =>
   execFileSync("docker", args, { encoding: "utf8", timeout: 600000 }).trim();
+
+// Home Assistant only lets Glow use its glow-lighting:// callback after
+// fetching Glow's published identity page. Inside the container, that host
+// resolves to a local HTTPS server with the repository's page, so sign-in is
+// checked against the production client ID without internet access.
+function stageIdentity(directory: string) {
+  const host = new URL(DEFAULT_CLIENT_ID).hostname;
+  const generated = JSON.parse(
+    execFileSync(
+      "docker",
+      ["run", "--rm", "-i", "--entrypoint", "python3", image, "-", host],
+      {
+        input: readFileSync(join(identityDir, "certificates.py")),
+        encoding: "utf8",
+        timeout: 60000,
+      },
+    ),
+  );
+  mkdirSync(directory);
+  writeFileSync(join(directory, "ca.pem"), generated.ca);
+  writeFileSync(join(directory, "certificate.pem"), generated.certificate);
+  writeFileSync(join(directory, "key.pem"), generated.key);
+  copyFileSync(join(identityDir, "serve.py"), join(directory, "serve.py"));
+  copyFileSync(identityPage, join(directory, "index.html"));
+  return host;
+}
 
 async function until<T>(
   description: string,
@@ -108,6 +150,35 @@ export class HomeAssistantClient {
 
 export type Container = { id: string; ha: HomeAssistantClient };
 
+// Copy the configuration in rather than bind-mounting it, so files Home
+// Assistant writes as root never end up in the working tree.
+function createContainer(staging: string) {
+  const identity = join(staging, "glow-identity");
+  const identityHost = stageIdentity(identity);
+  const id = docker(
+    "create",
+    "--rm",
+    "-p",
+    "127.0.0.1::8123",
+    "-e",
+    "TZ=UTC",
+    // Home Assistant reads its trusted certificates once at startup.
+    "-e",
+    "SSL_CERT_FILE=/config/glow-identity/ca.pem",
+    "--add-host",
+    `${identityHost}:127.0.0.1`,
+    image,
+  );
+  try {
+    docker("cp", `${configDir}/.`, `${id}:/config`);
+    docker("cp", identity, `${id}:/config/glow-identity`);
+    return id;
+  } catch (error) {
+    docker("rm", "--force", id);
+    throw error;
+  }
+}
+
 // Starts a fresh Home Assistant with the mock lights, creates the owner
 // account through onboarding, and returns a long-lived token for it.
 export async function startHomeAssistant(): Promise<Container> {
@@ -116,20 +187,16 @@ export async function startHomeAssistant(): Promise<Container> {
   } catch {
     docker("pull", image);
   }
-  // Copy the configuration in rather than bind-mounting it, so files Home
-  // Assistant writes as root never end up in the working tree.
-  const id = docker(
-    "create",
-    "--rm",
-    "-p",
-    "127.0.0.1::8123",
-    "-e",
-    "TZ=UTC",
-    image,
-  );
+  const staging = mkdtempSync(join(tmpdir(), "glow-ha-identity-"));
+  let id: string;
   try {
-    docker("cp", `${configDir}/.`, `${id}:/config`);
+    id = createContainer(staging);
+  } finally {
+    rmSync(staging, { recursive: true, force: true });
+  }
+  try {
     docker("start", id);
+    docker("exec", "-d", id, "python3", "/config/glow-identity/serve.py");
     const address = docker("port", id, "8123/tcp").split("\n")[0];
     const url = `http://${address}/`;
     await until("Home Assistant to accept onboarding", async () => {
@@ -145,8 +212,7 @@ export async function startHomeAssistant(): Promise<Container> {
       body: JSON.stringify({
         client_id: clientId,
         name: "Glow Tester",
-        username: "glow",
-        password: "glow-e2e-password",
+        ...owner,
         language: "en",
       }),
     });
