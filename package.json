@@ -9,6 +9,7 @@
     "start": "node server/index.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "playwright test",
+    "test:ha": "playwright test -c playwright.ha.config.ts",
     "format": "prettier --write src packages server auth-client src-tauri/*.json src-tauri/capabilities/*.json tests scripts *.ts *.json *.yaml *.md .github",
     "format:check": "prettier --check src packages server auth-client src-tauri/*.json src-tauri/capabilities/*.json tests scripts *.ts *.json *.yaml *.md .github",
     "release:check": "node scripts/release.mjs check",

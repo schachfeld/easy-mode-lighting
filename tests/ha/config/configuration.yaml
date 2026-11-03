@@ -1,0 +1,43 @@
+# A minimal Home Assistant for Glow's end-to-end tests. Only the integrations
+# Glow talks to are loaded, which keeps startup fast and the logs quiet.
+homeassistant:
+  name: Glow test home
+  unit_system: metric
+  time_zone: UTC
+  country: DE
+  latitude: 52.52
+  longitude: 13.40
+  elevation: 34
+
+http:
+api:
+auth:
+config:
+onboarding:
+websocket_api:
+logger:
+  default: warning
+
+scene: !include scenes.yaml
+
+light:
+  - platform: glow_mock_lights
+    lights:
+      - name: Sofa lamp
+        unique_id: sofa_lamp
+        color_modes: [rgb, color_temp]
+        on: true
+        brightness: 128
+      - name: Ceiling light
+        unique_id: ceiling_light
+        color_modes: [color_temp]
+        min_kelvin: 2700
+        max_kelvin: 6500
+      - name: Bedside lamp
+        unique_id: bedside_lamp
+        color_modes: [brightness]
+      - name: Wardrobe light
+        unique_id: wardrobe_light
+        available: false
+      - name: Porch light
+        unique_id: porch_light

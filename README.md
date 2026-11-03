@@ -87,11 +87,14 @@ npm run build
 npm run build:mobile
 npx playwright install chromium --only-shell
 npm run test:browser
+npm run test:ha
 docker build -t glow-lighting .
 npm run package:addon
 ```
 
 Integration tests use a real local WebSocket server to exercise authentication, discovery, service calls, live events, reconnecting, unavailable lights, and persistence. Browser tests cover the room controls, scene lifecycle, undo, dialogs and the back button, updates between tabs, and phone layout. Browser screenshots are written to `artifacts/`.
+
+`npm run test:ha` needs Docker and a prior `npm run build`. It starts a real Home Assistant container (pinned in `tests/ha/home-assistant.ts`; override with `HA_IMAGE`), onboards an owner account, and loads in-memory mock lights from `tests/ha/config/custom_components`. A production Glow server connects to it with a long-lived token, and the tests drive the UI while checking the light states, scenes, and areas in Home Assistant itself.
 
 The server uses the official [WebSocket API](https://developers.home-assistant.io/docs/api/websocket/) and [app communication API](https://developers.home-assistant.io/docs/apps/communication/). The app only exposes its UI through authenticated Home Assistant ingress and rejects requests arriving directly from other containers. Scene changes require JSON and reject browser cross-site requests.
 
