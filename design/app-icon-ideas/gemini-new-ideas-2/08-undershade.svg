@@ -1,0 +1,248 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Evening room walls & ceiling viewed looking steeply UP into a corner -->
+    <linearGradient id="wallLeft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3d413a"/>
+      <stop offset="100%" stop-color="#2f332d"/>
+    </linearGradient>
+    <linearGradient id="wallRight" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#383c35"/>
+      <stop offset="100%" stop-color="#2b2f29"/>
+    </linearGradient>
+    <linearGradient id="ceilingPlane" x1="0.5" y1="1" x2="0.5" y2="0">
+      <stop offset="0%" stop-color="#4a3c33"/>
+      <stop offset="100%" stop-color="#323630"/>
+    </linearGradient>
+
+    <!-- Focused warm uplight cone pouring out of top shade opening onto ceiling -->
+    <linearGradient id="uplightCone" x1="0.5" y1="1" x2="0.5" y2="0">
+      <stop offset="0%" stop-color="#ffdcb0" stop-opacity="0.72"/>
+      <stop offset="42%" stop-color="#df7855" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#df7855" stop-opacity="0.04"/>
+    </linearGradient>
+    <radialGradient id="uplightGlow" cx="50%" cy="14%" r="44%" fx="50%" fy="15%">
+      <stop offset="0%" stop-color="#ffc994" stop-opacity="0.52"/>
+      <stop offset="48%" stop-color="#df7855" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#323630" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Soft warm downward room bounce around the lamp base -->
+    <radialGradient id="downlightBounce" cx="50%" cy="58%" r="52%" fx="50%" fy="54%">
+      <stop offset="0%" stop-color="#ffb87d" stop-opacity="0.36"/>
+      <stop offset="55%" stop-color="#df7855" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#2b2f29" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Rich sculptural terracotta lampshade exterior (distinct mid-dark value for 29px punch) -->
+    <linearGradient id="shadeExterior" x1="0" y1="0.5" x2="1" y2="0.5">
+      <stop offset="0%" stop-color="#7c2b14"/>
+      <stop offset="18%" stop-color="#b14829"/>
+      <stop offset="50%" stop-color="#dc724e"/>
+      <stop offset="82%" stop-color="#b14829"/>
+      <stop offset="100%" stop-color="#762812"/>
+    </linearGradient>
+    <linearGradient id="shadeTopShadow" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#ffb98a" stop-opacity="0.18"/>
+      <stop offset="35%" stop-color="#b84f30" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#5e1f0d" stop-opacity="0.36"/>
+    </linearGradient>
+
+    <!-- Rolled fabric bottom rim of lampshade -->
+    <linearGradient id="rimBinding" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#ffe7c7"/>
+      <stop offset="48%" stop-color="#f0a068"/>
+      <stop offset="100%" stop-color="#bd5130"/>
+    </linearGradient>
+
+    <!-- Blazing incandescent interior of the lampshade seen from underneath -->
+    <radialGradient id="shadeInterior" cx="50%" cy="36%" r="60%" fx="50%" fy="33%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="28%" stop-color="#fff9ec"/>
+      <stop offset="60%" stop-color="#fedaa4"/>
+      <stop offset="86%" stop-color="#f0a268"/>
+      <stop offset="100%" stop-color="#d97146"/>
+    </radialGradient>
+
+    <!-- Converging interior pleat shading (subtle near bulb, crisp near outer rim) -->
+    <radialGradient id="pleatShade" cx="50%" cy="34%" r="62%">
+      <stop offset="0%" stop-color="#d4683c" stop-opacity="0"/>
+      <stop offset="34%" stop-color="#d4683c" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#b84f30" stop-opacity="0.24"/>
+    </radialGradient>
+
+    <!-- Receding upper inner baffle ring -->
+    <linearGradient id="innerTopBaffle" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#ce643a" stop-opacity="0.52"/>
+      <stop offset="100%" stop-color="#fff4de" stop-opacity="0.12"/>
+    </linearGradient>
+
+    <!-- Warm opal incandescent bulb partially eclipsed by socket -->
+    <radialGradient id="bulbGlobe" cx="50%" cy="42%" r="54%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="62%" stop-color="#fff9eb"/>
+      <stop offset="90%" stop-color="#ffe1ad"/>
+      <stop offset="100%" stop-color="#f4b772"/>
+    </radialGradient>
+    <radialGradient id="bulbBloom" cx="50%" cy="44%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.96"/>
+      <stop offset="52%" stop-color="#fff5de" stop-opacity="0.48"/>
+      <stop offset="100%" stop-color="#ffd596" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Foreshortened dark charcoal-bronze socket & tapered perspective column -->
+    <linearGradient id="columnMetal" x1="0" y1="0.5" x2="1" y2="0.5">
+      <stop offset="0%" stop-color="#8b5a3c"/>
+      <stop offset="15%" stop-color="#3e3932"/>
+      <stop offset="50%" stop-color="#232621"/>
+      <stop offset="85%" stop-color="#3e3932"/>
+      <stop offset="100%" stop-color="#8b5a3c"/>
+    </linearGradient>
+
+    <!-- Top-lit glazed sage stoneware base bathed in downward light from the open shade -->
+    <radialGradient id="sageStoneware" cx="50%" cy="6%" r="86%" fx="50%" fy="4%">
+      <stop offset="0%" stop-color="#f2f4e3"/>
+      <stop offset="20%" stop-color="#b7c7ab"/>
+      <stop offset="52%" stop-color="#809477"/>
+      <stop offset="84%" stop-color="#5a6b54"/>
+      <stop offset="100%" stop-color="#44523f"/>
+    </radialGradient>
+    <linearGradient id="sageShoulderRim" x1="0" y1="0.3" x2="1" y2="0.3">
+      <stop offset="0%" stop-color="#ffe0b8" stop-opacity="0.46"/>
+      <stop offset="20%" stop-color="#809477" stop-opacity="0"/>
+      <stop offset="80%" stop-color="#809477" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#ffe0b8" stop-opacity="0.46"/>
+    </linearGradient>
+
+    <clipPath id="interiorMouthClip">
+      <ellipse cx="512" cy="498" rx="340" ry="198"/>
+    </clipPath>
+  </defs>
+
+  <!-- 1. Opaque evening room architecture (looking steeply UP toward ceiling corner) -->
+  <rect width="1024" height="1024" fill="#2d312b"/>
+  <polygon points="0,36 512,194 512,1024 0,1024" fill="url(#wallLeft)"/>
+  <polygon points="1024,36 512,194 512,1024 1024,1024" fill="url(#wallRight)"/>
+  <polygon points="0,0 1024,0 1024,36 512,194 0,36" fill="url(#ceilingPlane)"/>
+
+  <!-- Atmospheric warm downlight bounce & ceiling uplight plume -->
+  <rect width="1024" height="1024" fill="url(#downlightBounce)"/>
+  <polygon points="348,198 118,0 906,0 676,198" fill="url(#uplightCone)"/>
+  <rect width="1024" height="1024" fill="url(#uplightGlow)"/>
+
+  <!-- 2. Steeply foreshortened terracotta lampshade exterior frustum -->
+  <!-- Top ellipse (512,206 rx=168 ry=58) tangent-matched to bottom ellipse (512,496 rx=358 ry=212) -->
+  <path d="M 351,189
+           A 168 58 0 0 1 673,189
+           L 838,408
+           A 358 212 0 1 1 186,408
+           Z"
+        fill="url(#shadeExterior)"/>
+  <path d="M 351,189
+           A 168 58 0 0 1 673,189
+           L 838,408
+           A 358 212 0 1 1 186,408
+           Z"
+        fill="url(#shadeTopShadow)"/>
+
+  <!-- Crisp warm top-rim lip catching the escaping uplight -->
+  <path d="M 354,190 A 168 58 0 0 1 670,190"
+        fill="none" stroke="#ffd2ad" stroke-width="7" stroke-linecap="round" opacity="0.72"/>
+
+  <!-- 3. Huge wide-open underside mouth of the lampshade facing the viewer -->
+  <ellipse cx="512" cy="496" rx="358" ry="212" fill="url(#rimBinding)"/>
+  <ellipse cx="512" cy="498" rx="340" ry="198" fill="url(#shadeInterior)"/>
+
+  <!-- Foreshortened interior structure clipped inside the glowing shade cavity -->
+  <g clip-path="url(#interiorMouthClip)">
+    <!-- 12 converging radial pleats fanning from foreshortened upper apex (512,262) -->
+    <g fill="url(#pleatShade)">
+      <polygon points="512,262 142,418 156,488"/>
+      <polygon points="512,262 184,556 232,612"/>
+      <polygon points="512,262 290,654 362,686"/>
+      <polygon points="512,262 438,704 512,708"/>
+      <polygon points="512,262 586,704 662,686"/>
+      <polygon points="512,262 734,654 792,612"/>
+      <polygon points="512,262 840,556 868,488"/>
+      <polygon points="512,262 882,418 852,356"/>
+      <polygon points="512,262 790,304 714,278"/>
+      <polygon points="512,262 310,278 234,304"/>
+    </g>
+
+    <!-- Receding upper inner spider collar ring -->
+    <ellipse cx="512" cy="336" rx="150" ry="54" fill="url(#innerTopBaffle)"/>
+    <ellipse cx="512" cy="336" rx="150" ry="54" fill="none" stroke="#cf693e" stroke-width="8" opacity="0.48"/>
+
+    <!-- Warm brass 3-spoke harp spider meeting behind the bulb -->
+    <g stroke="#cc6d40" stroke-width="10" stroke-linecap="round" opacity="0.46">
+      <line x1="512" y1="396" x2="368" y2="322"/>
+      <line x1="512" y1="396" x2="656" y2="322"/>
+      <line x1="512" y1="396" x2="512" y2="282"/>
+    </g>
+
+    <!-- Blazing frosted warm bulb globe nestled inside the upper shade vault -->
+    <circle cx="512" cy="380" r="158" fill="url(#bulbBloom)"/>
+    <circle cx="512" cy="382" r="88" fill="url(#bulbGlobe)"/>
+  </g>
+
+  <!-- Crisp inner cream rim highlight -->
+  <ellipse cx="512" cy="498" rx="340" ry="198" fill="none" stroke="#fff8ea" stroke-width="6" opacity="0.78"/>
+
+  <!-- 4. Foreshortened lamp socket, perspective stem & sculpted sage stoneware base -->
+  <!-- Crosses IN FRONT OF the lower/back rim (y=708) of the open shade, locking in worm's-eye 3D perspective -->
+  <g>
+    <!-- Perspective-tapered neck stem widening toward the low camera -->
+    <path d="M 476,492
+             L 548,492
+             L 570,762
+             L 454,762
+             Z"
+          fill="url(#columnMetal)"/>
+    <!-- Crisp warm edge highlights catching the bright shade interior -->
+    <line x1="479" y1="498" x2="458" y2="754" stroke="#fad0a4" stroke-width="6" stroke-linecap="round" opacity="0.78"/>
+    <line x1="545" y1="498" x2="566" y2="754" stroke="#fad0a4" stroke-width="6" stroke-linecap="round" opacity="0.78"/>
+
+    <!-- Foreshortened socket cup partially eclipsing the lower half of the glowing bulb -->
+    <path d="M 458,434
+             A 54 20 0 0 1 566,434
+             L 556,496
+             A 44 17 0 0 0 468,496
+             Z"
+          fill="url(#columnMetal)"/>
+    <!-- Upward-arching worm's-eye cylinder ring at base of socket -->
+    <path d="M 468,496 A 44 17 0 0 1 556,496"
+          fill="none" stroke="#856e5b" stroke-width="6" stroke-linecap="round"/>
+    <!-- Blazing top lip of socket right against the glowing bulb -->
+    <ellipse cx="512" cy="434" rx="54" ry="19" fill="#36332d" stroke="#fff9eb" stroke-width="7"/>
+
+    <!-- Sculpted glazed sage ceramic amphora base swelling into bottom foreground -->
+    <path d="M 438,762
+             A 74 27 0 0 1 586,762
+             C 668,794 724,888 742,1024
+             L 282,1024
+             C 300,888 356,794 438,762
+             Z"
+          fill="url(#sageStoneware)"/>
+    <path d="M 438,762
+             A 74 27 0 0 1 586,762
+             C 668,794 724,888 742,1024
+             L 282,1024
+             C 300,888 356,794 438,762
+             Z"
+          fill="url(#sageShoulderRim)"/>
+    <!-- Crisp top-lit shoulder contour highlight along the ceramic swell -->
+    <path d="M 294,1012 C 314,886 366,800 442,768"
+          fill="none" stroke="#f6e6cc" stroke-width="6" stroke-linecap="round" opacity="0.48"/>
+    <path d="M 730,1012 C 710,886 658,800 582,768"
+          fill="none" stroke="#f6e6cc" stroke-width="6" stroke-linecap="round" opacity="0.48"/>
+
+    <!-- Warm brass collar ring arching UPWARD in worm's-eye perspective -->
+    <path d="M 438,762
+             A 74 27 0 0 1 586,762
+             L 580,782
+             A 68 25 0 0 0 444,782
+             Z"
+          fill="#c97949"/>
+    <path d="M 440,761 A 72 26 0 0 1 584,761"
+          fill="none" stroke="#fff0d1" stroke-width="6" stroke-linecap="round"/>
+  </g>
+</svg>

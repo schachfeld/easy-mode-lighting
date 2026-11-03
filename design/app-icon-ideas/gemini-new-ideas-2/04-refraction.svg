@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="room-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3d433a"/>
+      <stop offset="34%" stop-color="#2e332c"/>
+      <stop offset="68%" stop-color="#2e322b"/>
+      <stop offset="100%" stop-color="#3c4138"/>
+    </linearGradient>
+
+    <radialGradient id="lower-warmth" cx="610" cy="708" r="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#df7855" stop-opacity="0.30"/>
+      <stop offset="65%" stop-color="#b84f30" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#3c4138" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="slab-bg" x1="0" y1="348" x2="0" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#c25330"/>
+      <stop offset="50%" stop-color="#9e3b1d"/>
+      <stop offset="100%" stop-color="#7d2b13"/>
+    </linearGradient>
+
+    <radialGradient id="slab-bloom" cx="525" cy="524" r="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffb278" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#9e3b1d" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="beam-in" x1="90" y1="36" x2="488" y2="348" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f6f5f0"/>
+      <stop offset="100%" stop-color="#fffefb"/>
+    </linearGradient>
+
+    <linearGradient id="beam-fresnel" x1="488" y1="348" x2="910" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffecd3" stop-opacity="0.66"/>
+      <stop offset="55%" stop-color="#f6c39b" stop-opacity="0.46"/>
+      <stop offset="100%" stop-color="#e8a376" stop-opacity="0.28"/>
+    </linearGradient>
+
+    <linearGradient id="beam-slab" x1="488" y1="348" x2="562" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fffef9"/>
+      <stop offset="48%" stop-color="#ffebc8"/>
+      <stop offset="100%" stop-color="#ffd89e"/>
+    </linearGradient>
+
+    <linearGradient id="beam-out" x1="562" y1="700" x2="950" y2="996" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffdfa6"/>
+      <stop offset="55%" stop-color="#ffce86"/>
+      <stop offset="100%" stop-color="#f9ba6e"/>
+    </linearGradient>
+
+    <!-- Stops at 38.1%..57.2% align the specular flare exactly to the [390, 586] entry footprint -->
+    <linearGradient id="slab-rim-top" x1="0" y1="0" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#eb9570" stop-opacity="0.52"/>
+      <stop offset="35%" stop-color="#f8be9f" stop-opacity="0.80"/>
+      <stop offset="38.1%" stop-color="#fffefb" stop-opacity="1"/>
+      <stop offset="57.2%" stop-color="#fffefb" stop-opacity="1"/>
+      <stop offset="61%" stop-color="#f8be9f" stop-opacity="0.80"/>
+      <stop offset="100%" stop-color="#eb9570" stop-opacity="0.52"/>
+    </linearGradient>
+
+    <!-- Stops at 45.3%..64.5% align the warm exit flare to the [464, 660] exit footprint -->
+    <linearGradient id="slab-rim-bot" x1="0" y1="0" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#d97852" stop-opacity="0.46"/>
+      <stop offset="42%" stop-color="#f5b38c" stop-opacity="0.76"/>
+      <stop offset="45.3%" stop-color="#ffeac2" stop-opacity="1"/>
+      <stop offset="64.5%" stop-color="#ffeac2" stop-opacity="1"/>
+      <stop offset="68%" stop-color="#f5b38c" stop-opacity="0.76"/>
+      <stop offset="100%" stop-color="#d97852" stop-opacity="0.46"/>
+    </linearGradient>
+
+    <clipPath id="clip-top">
+      <rect x="0" y="0" width="1024" height="348"/>
+    </clipPath>
+    <clipPath id="clip-slab">
+      <rect x="0" y="348" width="1024" height="352"/>
+    </clipPath>
+    <clipPath id="clip-bot">
+      <rect x="0" y="700" width="1024" height="324"/>
+    </clipPath>
+  </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" fill="url(#room-bg)"/>
+  <rect x="0" y="700" width="1024" height="324" fill="url(#lower-warmth)"/>
+
+  <rect x="0" y="348" width="1024" height="352" fill="url(#slab-bg)"/>
+  <rect x="0" y="348" width="1024" height="352" fill="url(#slab-bloom)"/>
+
+  <!-- Snell's-law slab displacement: 54 deg in air (tan=1.3764) -> 11.88 deg in terracotta glass (dx=74 over dy=352) -> 54 deg out, sharing L=196px surface footprints so beam widens anamorphically inside the slab -->
+  <g clip-path="url(#clip-top)">
+    <polygon points="390,348 586,348 1065,0 869,0" fill="url(#beam-fresnel)"/>
+  </g>
+
+  <g clip-path="url(#clip-top)">
+    <polygon points="-89,0 107,0 586,348 390,348" fill="url(#beam-in)"/>
+  </g>
+
+  <g clip-path="url(#clip-slab)">
+    <polygon points="390,348 586,348 660,700 464,700" fill="url(#beam-slab)"/>
+  </g>
+
+  <g clip-path="url(#clip-bot)">
+    <polygon points="464,700 660,700 1106,1024 910,1024" fill="url(#beam-out)"/>
+  </g>
+
+  <rect x="0" y="343" width="1024" height="10" fill="url(#slab-rim-top)"/>
+  <rect x="0" y="695" width="1024" height="10" fill="url(#slab-rim-bot)"/>
+</svg>
