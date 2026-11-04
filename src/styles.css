@@ -2573,3 +2573,81 @@ h1 {
     padding-top: env(safe-area-inset-top);
   }
 }
+
+/* Rooms: creating them and choosing their lights. */
+.rooms-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.rooms-toolbar .room-filters {
+  margin-bottom: 0;
+}
+.rooms-toolbar .button {
+  font-size: 11px;
+}
+.room-light-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.room-name-ideas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.room-name-ideas button {
+  font-size: 11px;
+  padding: 7px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  color: #72766c;
+  background: #fffefb;
+}
+.room-name-ideas button:hover {
+  background: #efeee6;
+}
+.room-name-ideas button.selected {
+  background: #e9ecdf;
+  border-color: #a6b395;
+  color: #526b46;
+}
+.room-light-sections {
+  display: grid;
+  gap: 18px;
+}
+.room-light-section {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.room-light-section legend {
+  font-size: 11px;
+  font-weight: 500;
+  color: #7b846b;
+  padding: 0;
+  margin-bottom: 8px;
+}
+.room-light-section .group-display-options label {
+  padding: 11px 14px;
+}
+.room-light-section .group-display-options label.locked {
+  cursor: default;
+  opacity: 0.75;
+}
+.room-select {
+  appearance: auto;
+  cursor: pointer;
+}
+.room-select-note {
+  color: #72766c;
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 8px;
+}

@@ -282,6 +282,12 @@ export function mapHome(
         temperatureSupported: modes.includes("color_temp"),
         minKelvin: a.min_color_temp_kelvin ?? 2000,
         maxKelvin: a.max_color_temp_kelvin ?? 6500,
+        // Only registered entities can be given an area. A light whose room
+        // comes from its device keeps that room until the device is moved.
+        movable: registry.has(s.entity_id),
+        roomFromDevice:
+          !registry.get(s.entity_id)?.area_id &&
+          areaIds.has(deviceAreas.get(registry.get(s.entity_id)?.device_id)),
       };
     });
   const { lights, groups } = splitLightGroups(
@@ -325,6 +331,9 @@ export function mapHome(
     });
   return {
     rooms,
+    areas: areas
+      .map((a) => ({ id: a.area_id, name: a.name, style: roomStyle(a.name) }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
     lights,
     groups,
     scenes: [
