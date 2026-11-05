@@ -219,6 +219,25 @@ export class HomeAssistant extends Events {
     });
   }
 
+  // Area and entity registry changes. The registries are reloaded before
+  // resolving, so the next state already shows the light in its new room.
+  async registryUpdate(type, data) {
+    if (!this.connected) throw new Error("Home Assistant is disconnected.");
+    let result;
+    try {
+      result = await this.request(type, data);
+    } catch (error) {
+      if (/unauthori[sz]ed|admin/i.test(error.message))
+        throw new Error(
+          "Changing rooms requires an administrator connection. Check your account or app permissions.",
+        );
+      throw error;
+    }
+    await this.loadRegistries();
+    this.emit("change");
+    return result;
+  }
+
   async sceneConfig(method, id, config) {
     if (!this.connected) throw new Error("Home Assistant is disconnected.");
     if (!this.apiUrl || !this.sceneRequest)

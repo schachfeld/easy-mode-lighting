@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ArrowLeft, Plus, Settings2 } from "lucide-react";
+import { ArrowLeft, Pencil, Plus, Settings2 } from "lucide-react";
 import {
   averageBrightness,
   lightTargets,
@@ -18,6 +18,7 @@ export function RoomPage({
   onLightsChange,
   onAdjustLight,
   onCustomize,
+  onEditRoom,
   onCreateScene,
   renderScene,
 }: {
@@ -28,6 +29,8 @@ export function RoomPage({
   onLightsChange: LightsAction;
   onAdjustLight: (id: string) => void;
   onCustomize: () => void;
+  // Missing for “Other lights”, which is not a Home Assistant area.
+  onEditRoom?: () => void;
   onCreateScene: () => void;
   renderScene: (scene: Scene) => ReactNode;
 }) {
@@ -94,14 +97,25 @@ export function RoomPage({
               Lights <span className="count-label">{lights.length}</span>
             </h2>
           </div>
-          {hasGroups && (
-            <button
-              className="text-button customize-lights"
-              onClick={onCustomize}
-            >
-              <Settings2 size={16} /> Customize lights
-            </button>
-          )}
+          <div className="room-light-actions">
+            {hasGroups && (
+              <button
+                className="text-button customize-lights"
+                onClick={onCustomize}
+              >
+                <Settings2 size={16} /> Customize lights
+              </button>
+            )}
+            {onEditRoom && (
+              <button
+                className="text-button"
+                onClick={onEditRoom}
+                disabled={disabled}
+              >
+                <Pencil size={15} /> Edit room
+              </button>
+            )}
+          </div>
         </div>
         {layout.overlapping.length > 0 && (
           <p className="group-settings-note">

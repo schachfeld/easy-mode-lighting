@@ -15,6 +15,9 @@ export type Light = LightSettings & {
   temperatureSupported: boolean;
   minKelvin: number;
   maxKelvin: number;
+  // Live homes only. Missing means the light can be moved freely.
+  movable?: boolean;
+  roomFromDevice?: boolean;
 };
 export type Room = { id: string; name: string; style: string };
 export type GroupDisplay = "group" | "individual";
@@ -42,6 +45,8 @@ export type Palette = {
 };
 export type Home = {
   rooms: Room[];
+  // Every Home Assistant area, including those without lights yet.
+  areas?: Room[];
   lights: Light[];
   groups?: LightGroup[];
   scenes: Scene[];

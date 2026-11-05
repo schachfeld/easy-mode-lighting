@@ -19,12 +19,13 @@ import { dialogsSettled } from "./dialogs";
 import { plural } from "./format";
 import { LightEditor } from "./LightEditor";
 import { LightGroupSettings } from "./LightGroupSettings";
+import { RoomDialog, type RoomInput } from "./RoomDialog";
 import { RoomPage } from "./RoomPage";
 import { RoomsPage, type RoomFilter } from "./RoomsPage";
 import { SceneCard } from "./SceneCard";
 import { SceneEditor } from "./SceneEditor";
 import { ScenesPage, type SceneFilter } from "./ScenesPage";
-import type { Home, Light, LightSettings, Scene } from "./types";
+import type { Home, Light, LightSettings, Room, Scene } from "./types";
 
 import { serverClient, type GlowClient } from "./platform/client";
 import { useLiveLights } from "./live";
@@ -83,6 +84,10 @@ export default function App({
   } | null>(null);
   const [lightEditor, setLightEditor] = useState<string | null>(null);
   const [customizeRoom, setCustomizeRoom] = useState<string | null>(null);
+  const [roomDialog, setRoomDialog] = useState<{
+    roomId?: string;
+    lightIds?: string[];
+  } | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   // Only saving scenes and preferences blocks input. Light controls stay live.
   const [busy, setBusy] = useState(false);
@@ -235,7 +240,32 @@ export default function App({
     setRoomId(nextRoom);
     window.scrollTo({ top: 0, behavior: "instant" });
   }
+  // Rooms are Home Assistant areas, so these also change them there.
+  async function saveRoom(input: RoomInput, editId?: string) {
+    setBusy(true);
+    try {
+      const result = (await client.execute(
+        editId ? "PUT" : "POST",
+        editId ? `rooms/${encodeURIComponent(editId)}` : "rooms",
+        input,
+      )) as Room;
+      setToast({
+        message: editId ? "Room saved" : `${input.name} created`,
+        error: false,
+      });
+      if (!editId) navigate("rooms", result.id);
+      return true;
+    } catch (error) {
+      showError(error);
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
   const room = home?.rooms.find((r) => r.id === roomId);
+  const assignableRooms = (home?.areas ?? home?.rooms ?? []).filter(
+    (r) => r.id !== "unassigned",
+  );
   useEffect(() => {
     document.title = room
       ? `${room.name} · Glow`
@@ -392,6 +422,11 @@ export default function App({
                   onLightsChange={lightsAction}
                   onAdjustLight={setLightEditor}
                   onCustomize={() => setCustomizeRoom(room.id)}
+                  onEditRoom={
+                    room.id === "unassigned"
+                      ? undefined
+                      : () => setRoomDialog({ roomId: room.id })
+                  }
                   onCreateScene={() => setEditor({ roomId: room.id })}
                   renderScene={renderScene}
                 />
@@ -405,6 +440,7 @@ export default function App({
                   onHelp={() => setConnectionOpen(true)}
                   onLightsChange={lightsAction}
                   onAllOff={allLightsOff}
+                  onCreateRoom={() => setRoomDialog({})}
                 />
               ) : (
                 <ScenesPage
@@ -471,9 +507,35 @@ export default function App({
           }
         />
       )}
+      {home && roomDialog && (
+        <RoomDialog
+          home={home}
+          room={assignableRooms.find((r) => r.id === roomDialog.roomId)}
+          initialLightIds={roomDialog.lightIds}
+          busy={busy}
+          errorMessage={toast?.error ? toast.message : undefined}
+          onClose={() => setRoomDialog(null)}
+          onSave={(input) => saveRoom(input, roomDialog.roomId)}
+        />
+      )}
       {currentLight && (
         <LightEditor
           light={currentLight}
+          rooms={assignableRooms}
+          onMove={(target) =>
+            action(
+              "light-rooms",
+              { ids: [currentLight.id], roomId: target },
+              "PUT",
+              `Moved to ${assignableRooms.find((r) => r.id === target)?.name ?? "Other lights"}`,
+            )
+          }
+          onNewRoom={() => {
+            setLightEditor(null);
+            setRoomDialog({
+              lightIds: lightTargets(home!, [currentLight.id]).map((l) => l.id),
+            });
+          }}
           roomName={home?.rooms.find((r) => r.id === currentLight.roomId)?.name}
           disabled={disabled}
           error={toast?.error ? toast.message : undefined}

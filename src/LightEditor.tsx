@@ -7,7 +7,7 @@ import {
 import { ColorWheel } from "./ColorWheel";
 import { Brightness, Modal, Toggle, WhiteSlider } from "./components";
 import { plural } from "./format";
-import type { Light, LightGroup, LightsAction } from "./types";
+import type { Light, LightGroup, LightsAction, Room } from "./types";
 
 const swatches = [
   "#f5bf76",
@@ -24,6 +24,8 @@ const whites = [
   { name: "Cool", kelvin: 6000 },
 ];
 
+const newRoom = "glow:new-room";
+
 // The adjust dialog for a single light or a light group.
 export function LightEditor({
   light,
@@ -32,6 +34,9 @@ export function LightEditor({
   error,
   onChange,
   onClose,
+  rooms,
+  onMove,
+  onNewRoom,
 }: {
   light: Light | LightGroup;
   roomName?: string;
@@ -39,6 +44,10 @@ export function LightEditor({
   error?: string;
   onChange: LightsAction;
   onClose: () => void;
+  // Every room the light can join, including rooms without lights yet.
+  rooms: Room[];
+  onMove: (roomId: string) => void;
+  onNewRoom: () => void;
 }) {
   const locked = disabled || !light.available;
   const supportedKelvin = (kelvin: number) =>
@@ -179,6 +188,39 @@ export function LightEditor({
             })}
           </div>
         </>
+      )}
+      <div className="field-heading">
+        <label className="field-label" htmlFor="light-room">
+          Room
+        </label>
+      </div>
+      <select
+        id="light-room"
+        className="text-input room-select"
+        value={light.roomId}
+        disabled={disabled || light.movable === false}
+        onChange={(event) =>
+          event.target.value === newRoom
+            ? onNewRoom()
+            : onMove(event.target.value)
+        }
+      >
+        {rooms.map((room) => (
+          <option key={room.id} value={room.id}>
+            {room.name}
+          </option>
+        ))}
+        <option value="unassigned" disabled={light.roomFromDevice}>
+          No room
+        </option>
+        <option value={newRoom}>New room…</option>
+      </select>
+      {(light.movable === false || light.roomFromDevice) && (
+        <p className="room-select-note">
+          {light.movable === false
+            ? "This light has no unique ID in Home Assistant, so its room can only be set in its integration."
+            : "Its device sets this room in Home Assistant. Choosing another room moves only this light."}
+        </p>
       )}
       <div className="modal-footer">
         <button className="button primary" onClick={onClose}>

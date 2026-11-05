@@ -1,4 +1,4 @@
-import { ArrowRight, House, Lightbulb, Moon, Power } from "lucide-react";
+import { ArrowRight, House, Lightbulb, Moon, Plus, Power } from "lucide-react";
 import { plural } from "./format";
 import { RoomCard } from "./RoomCard";
 import type { Home, LightsAction } from "./types";
@@ -14,6 +14,7 @@ export function RoomsPage({
   onHelp,
   onLightsChange,
   onAllOff,
+  onCreateRoom,
 }: {
   home: Home;
   disabled: boolean;
@@ -23,6 +24,7 @@ export function RoomsPage({
   onHelp: () => void;
   onLightsChange: LightsAction;
   onAllOff: () => void;
+  onCreateRoom: () => void;
 }) {
   const lit = home.lights.filter((l) => l.on && l.available);
   const litRooms = new Set(lit.map((l) => l.roomId));
@@ -62,21 +64,31 @@ export function RoomsPage({
         </div>
       </div>
       <section className="section rooms-section">
-        <div className="room-filters" role="group" aria-label="Filter rooms">
+        <div className="rooms-toolbar">
+          <div className="room-filters" role="group" aria-label="Filter rooms">
+            <button
+              className={filter === "all" ? "selected" : ""}
+              aria-pressed={filter === "all"}
+              onClick={() => onFilterChange("all")}
+            >
+              All rooms
+            </button>
+            <button
+              className={filter === "on" ? "selected" : ""}
+              aria-pressed={filter === "on"}
+              onClick={() => onFilterChange("on")}
+            >
+              <span className="tiny-dot" />
+              Lights on
+            </button>
+          </div>
           <button
-            className={filter === "all" ? "selected" : ""}
-            aria-pressed={filter === "all"}
-            onClick={() => onFilterChange("all")}
+            className="button secondary"
+            disabled={disabled}
+            onClick={onCreateRoom}
           >
-            All rooms
-          </button>
-          <button
-            className={filter === "on" ? "selected" : ""}
-            aria-pressed={filter === "on"}
-            onClick={() => onFilterChange("on")}
-          >
-            <span className="tiny-dot" />
-            Lights on
+            <Plus size={15} />
+            Create room
           </button>
         </div>
         <div className="rooms-grid">
@@ -97,8 +109,8 @@ export function RoomsPage({
             <House size={32} />
             <h3>No rooms yet</h3>
             <p>
-              Add lights to Areas in Home Assistant and they’ll appear here
-              automatically. Unassigned lights appear in “Other lights”.
+              Create a room and choose its lights. Lights in Home Assistant
+              areas appear here automatically.
             </p>
             <button className="button secondary" onClick={onHelp}>
               How it works

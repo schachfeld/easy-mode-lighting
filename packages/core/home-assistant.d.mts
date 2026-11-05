@@ -32,6 +32,7 @@ export class HomeAssistant {
     id: string,
     config?: object,
   ): Promise<unknown>;
+  registryUpdate(type: string, data: object): Promise<any>;
   call(
     domain: string,
     service: string,

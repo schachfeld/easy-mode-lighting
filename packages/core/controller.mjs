@@ -1,6 +1,7 @@
 import {
   mapHome,
   palettes,
+  roomStyle,
   validateSettings,
   serviceSettings,
 } from "./model.mjs";
@@ -20,7 +21,13 @@ export function createCore({
   const state = () => ({
     ...(demo
       ? {
-          rooms: store.data.rooms,
+          rooms: [
+            ...store.data.rooms,
+            ...(store.data.lights.some((l) => l.roomId === "unassigned")
+              ? [{ id: "unassigned", name: "Other lights", style: "living" }]
+              : []),
+          ],
+          areas: store.data.rooms,
           lights: store.data.lights,
           scenes: store.data.scenes,
         }
@@ -137,6 +144,153 @@ export function createCore({
       ...store.data,
       groupDisplay: { ...store.data.groupDisplay, [groupId]: display },
     });
+    broadcast();
+    return { ok: true };
+  });
+
+  // Rooms are Home Assistant areas. A light joins a room by setting its
+  // entity's area, so the change shows everywhere in Home Assistant too.
+  const roomName = (name, exceptId) => {
+    if (typeof name !== "string" || !name.trim() || name.trim().length > 50)
+      throw new Error("Give your room a name of 1–50 characters.");
+    const areas = state().areas ?? [];
+    if (
+      areas.some(
+        (area) =>
+          area.id !== exceptId &&
+          area.name.toLowerCase() === name.trim().toLowerCase(),
+      )
+    )
+      throw new Error(`A room called ${name.trim()} already exists.`);
+    return name.trim();
+  };
+  const idList = (ids) => {
+    if (
+      !Array.isArray(ids) ||
+      ids.length > 500 ||
+      ids.some((id) => typeof id !== "string")
+    )
+      throw new Error("Choose the lights for this room.");
+    return ids;
+  };
+  // Moves lights, and the members of any groups among them, into a room.
+  // A group whose members all move goes along, so it stays one control.
+  async function moveLights(ids, roomId) {
+    const home = state();
+    const leaves = lightTargets(home, ids);
+    const moving = new Set(leaves.map((light) => light.id));
+    const groups = (home.groups ?? []).filter((group) =>
+      group.memberIds.every((id) => moving.has(id)),
+    );
+    const target = roomId === "unassigned" ? null : roomId;
+    for (const light of leaves) {
+      if (light.movable === false)
+        throw new Error(
+          `${light.name} has no unique ID in Home Assistant, so it cannot be given a room. Assign it in its integration's settings instead.`,
+        );
+      if (!target && light.roomFromDevice)
+        throw new Error(
+          `${light.name} gets its room from its device. Change the device's area in Home Assistant to remove it from this room.`,
+        );
+    }
+    const entities = [
+      ...leaves.filter((light) => light.roomId !== roomId),
+      ...groups.filter(
+        (group) => group.roomId !== roomId && group.movable !== false,
+      ),
+    ];
+    if (demo) {
+      await store.save({
+        ...store.data,
+        lights: store.data.lights.map((light) =>
+          entities.some((e) => e.id === light.id)
+            ? { ...light, roomId: target ?? "unassigned" }
+            : light,
+        ),
+      });
+      return;
+    }
+    for (const entity of entities)
+      await ha.registryUpdate("config/entity_registry/update", {
+        entity_id: entity.id,
+        area_id: target,
+      });
+  }
+  handlers.set("POST rooms", async ({ name, lightIds = [] }) => {
+    requireConnection();
+    const ids = idList(lightIds);
+    const cleanName = roomName(name);
+    let room;
+    if (demo) {
+      room = {
+        id: `room-${randomUUID()}`,
+        name: cleanName,
+        style: roomStyle(cleanName),
+      };
+      await store.save({ ...store.data, rooms: [...store.data.rooms, room] });
+    } else {
+      const area = await ha.registryUpdate("config/area_registry/create", {
+        name: cleanName,
+      });
+      room = { id: area.area_id, name: area.name, style: roomStyle(area.name) };
+    }
+    if (ids.length) await moveLights(ids, room.id);
+    broadcast();
+    return room;
+  });
+  handlers.set("PUT rooms/:id", async ({ name, lightIds }, id) => {
+    requireConnection();
+    const home = state();
+    const area = home.areas?.find((area) => area.id === id);
+    if (!area)
+      throw Object.assign(new Error("This room no longer exists."), {
+        status: 404,
+      });
+    if (name !== undefined && name !== area.name) {
+      const cleanName = roomName(name, id);
+      if (demo)
+        await store.save({
+          ...store.data,
+          rooms: store.data.rooms.map((room) =>
+            room.id === id
+              ? { ...room, name: cleanName, style: roomStyle(cleanName) }
+              : room,
+          ),
+        });
+      else
+        await ha.registryUpdate("config/area_registry/update", {
+          area_id: id,
+          name: cleanName,
+        });
+    }
+    if (lightIds !== undefined) {
+      const wanted = new Set(
+        lightTargets(home, idList(lightIds)).map((l) => l.id),
+      );
+      const current = home.lights.filter((l) => l.roomId === id);
+      const removed = current.filter((l) => !wanted.has(l.id));
+      const added = [...wanted].filter(
+        (lightId) => !current.some((l) => l.id === lightId),
+      );
+      if (removed.length)
+        await moveLights(
+          removed.map((l) => l.id),
+          "unassigned",
+        );
+      if (added.length) await moveLights(added, id);
+    }
+    broadcast();
+    return { ok: true };
+  });
+  handlers.set("PUT light-rooms", async ({ ids, roomId }) => {
+    requireConnection();
+    if (!idList(ids).length) throw new Error("Choose a light to move.");
+    if (
+      roomId !== "unassigned" &&
+      !state().areas?.some((area) => area.id === roomId)
+    )
+      throw new Error("This room no longer exists. Choose another room.");
+    await moveLights(ids, roomId);
     broadcast();
     return { ok: true };
   });
@@ -358,14 +512,19 @@ export function createCore({
     },
     execute(method, path, body = {}) {
       const parts = path.split("/");
-      const id =
-        parts[0] === "scenes" && parts.length > 1
-          ? decodeURIComponent(parts[1])
-          : undefined;
+      let id;
+      try {
+        id =
+          ["scenes", "rooms"].includes(parts[0]) && parts.length > 1
+            ? decodeURIComponent(parts[1])
+            : undefined;
+      } catch {
+        id = undefined;
+      }
       const key =
         id === undefined
           ? path
-          : ["scenes", ":id", ...parts.slice(2)].join("/");
+          : [parts[0], ":id", ...parts.slice(2)].join("/");
       const handler = handlers.get(`${method} ${key}`);
       if (!handler)
         return Promise.reject(

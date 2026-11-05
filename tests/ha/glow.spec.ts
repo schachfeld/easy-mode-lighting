@@ -1,5 +1,10 @@
 import { test, expect, type Page } from "@playwright/test";
-import { HomeAssistantClient, resetLights } from "./home-assistant";
+import {
+  arrangeHome,
+  HomeAssistantClient,
+  lights,
+  resetLights,
+} from "./home-assistant";
 
 const ha = new HomeAssistantClient(
   process.env.GLOW_HA_URL!,
@@ -183,4 +188,116 @@ test("scenes made in Glow are saved, applied, and deleted in Home Assistant", as
     button(page, "Activate Reading corner in Living room"),
   ).toHaveCount(0);
   await expect.poll(haScene).toBeUndefined();
+});
+
+// What Home Assistant itself says about rooms: area names and each light's area.
+async function areaLayout() {
+  const areas: { area_id: string; name: string }[] = await ha.ws(
+    "config/area_registry/list",
+  );
+  const entities: { entity_id: string; area_id: string | null }[] = await ha.ws(
+    "config/entity_registry/list",
+  );
+  const name = (id: string | null) =>
+    areas.find((area) => area.area_id === id)?.name ?? null;
+  return Object.fromEntries(
+    lights.map((id) => [
+      id,
+      name(entities.find((e) => e.entity_id === id)?.area_id ?? null),
+    ]),
+  );
+}
+
+test.describe("rooms", () => {
+  // Put every light back where global setup arranged it.
+  test.afterEach(async () => {
+    const areas: { area_id: string; name: string }[] = await ha.ws(
+      "config/area_registry/list",
+    );
+    for (const area of areas.filter((a) =>
+      ["Hallway", "Lounge"].includes(a.name),
+    ))
+      if (area.name === "Lounge")
+        await ha.ws("config/area_registry/update", {
+          area_id: area.area_id,
+          name: "Living room",
+        });
+      else
+        await ha.ws("config/area_registry/delete", { area_id: area.area_id });
+    for (const entity_id of lights)
+      await ha.ws("config/entity_registry/update", {
+        entity_id,
+        area_id: null,
+      });
+    await arrangeHome(ha);
+  });
+
+  test("a new room becomes a Home Assistant area with the chosen lights", async ({
+    page,
+  }) => {
+    await button(page, "Create room").click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Room name", { exact: true }).fill("Hallway");
+    await dialog.getByRole("checkbox", { name: /Porch light/ }).check();
+    await dialog.getByRole("checkbox", { name: /Sofa lamp/ }).check();
+    await expect(dialog.getByText("Moves from Living room")).toBeVisible();
+    await dialog.getByRole("button", { name: "Create room" }).click();
+    await expect(dialog).not.toBeVisible();
+
+    await expect.poll(areaLayout).toEqual({
+      "light.sofa_lamp": "Hallway",
+      "light.ceiling_light": "Living room",
+      "light.bedside_lamp": "Bedroom",
+      "light.wardrobe_light": "Bedroom",
+      "light.porch_light": "Hallway",
+    });
+    // Glow opens the new room, and the porch light no longer has to sit
+    // in “Other lights”.
+    await expect(page.getByRole("heading", { name: "Hallway" })).toBeVisible();
+    await expect(control(page, "switch", "Sofa lamp power")).toBeVisible();
+    await expect(control(page, "switch", "Porch light power")).toBeVisible();
+    await button(page, "All rooms").click();
+    await expect(button(page, "Open Hallway")).toBeVisible();
+    await expect(button(page, "Open Other lights")).toHaveCount(0);
+  });
+
+  test("lights move between rooms, and rooms can be renamed", async ({
+    page,
+  }) => {
+    await button(page, "Open Bedroom").click();
+    await page
+      .locator(".light-card", { hasText: "Bedside lamp" })
+      .getByRole("button", { name: "Adjust light" })
+      .click();
+    await page.getByLabel("Room", { exact: true }).selectOption("Living room");
+    await expect
+      .poll(async () => (await areaLayout())["light.bedside_lamp"])
+      .toBe("Living room");
+    await expect(page.getByRole("dialog")).toContainText("Living room");
+    await button(page, "Done").click();
+    await expect(control(page, "switch", "Bedside lamp power")).toHaveCount(0);
+
+    await button(page, "All rooms").click();
+    await button(page, "Open Living room").click();
+    await expect(control(page, "switch", "Bedside lamp power")).toBeVisible();
+    await button(page, "Edit room").click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Room name", { exact: true }).fill("Lounge");
+    await dialog.getByRole("checkbox", { name: /Ceiling light/ }).uncheck();
+    await dialog.getByRole("button", { name: "Save room" }).click();
+    await expect(dialog).not.toBeVisible();
+
+    await expect.poll(areaLayout).toEqual({
+      "light.sofa_lamp": "Lounge",
+      "light.ceiling_light": null,
+      "light.bedside_lamp": "Lounge",
+      "light.wardrobe_light": "Bedroom",
+      "light.porch_light": null,
+    });
+    await expect(page.getByRole("heading", { name: "Lounge" })).toBeVisible();
+    await expect(control(page, "switch", "Ceiling light power")).toHaveCount(0);
+    await button(page, "All rooms").click();
+    await button(page, "Open Other lights").click();
+    await expect(control(page, "switch", "Ceiling light power")).toBeVisible();
+  });
 });
