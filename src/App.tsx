@@ -28,6 +28,7 @@ import type { Home, Light, LightSettings, Scene } from "./types";
 
 import { serverClient, type GlowClient } from "./platform/client";
 import { useLiveLights } from "./live";
+import glowIcon from "../src-tauri/app-icon.svg";
 
 type Toast = {
   message: string;
@@ -277,9 +278,7 @@ export default function App({
           onClick={() => navigate("rooms")}
           aria-label="Glow home"
         >
-          <span className="brand-mark">
-            <Sun size={25} strokeWidth={1.8} />
-          </span>
+          <img className="brand-mark" src={glowIcon} alt="" />
           <span>
             glow<span className="brand-period">.</span>
           </span>

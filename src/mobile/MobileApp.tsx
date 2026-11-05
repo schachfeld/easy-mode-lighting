@@ -22,6 +22,7 @@ import {
 } from "./auth";
 import type { AccessGrant } from "../../packages/core/auth.mjs";
 import { connectionUrl } from "../../packages/core/connection.mjs";
+import glowIcon from "../../src-tauri/app-icon.svg";
 
 const host = (connection: Connection) => {
   try {
@@ -324,9 +325,7 @@ export default function MobileApp() {
     <main className="connect-page">
       <section className="connect-card" aria-labelledby="connect-title">
         <div className="connect-brand">
-          <span>
-            <Lightbulb size={26} />
-          </span>{" "}
+          <img src={glowIcon} alt="" />
           glow
         </div>
         <div className="connect-art" aria-hidden="true">

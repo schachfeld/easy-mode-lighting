@@ -122,12 +122,8 @@ button:active:not(:disabled) {
 .brand-mark {
   height: 37px;
   width: 37px;
-  background: var(--accent);
-  color: #fff8ed;
-  display: grid;
-  place-items: center;
   border-radius: 12px;
-  box-shadow: 0 4px 12px #d8754520;
+  box-shadow: 0 4px 12px #d8754530;
 }
 .brand-period {
   color: var(--accent);
@@ -1925,9 +1921,6 @@ h1 {
     width: 28px;
     border-radius: 9px;
   }
-  .brand-mark svg {
-    width: 21px;
-  }
   .home-label,
   .sidebar-bottom {
     display: none;
@@ -2416,13 +2409,11 @@ h1 {
   letter-spacing: -1px;
   color: #253c32;
 }
-.connect-brand > span {
-  display: grid;
-  place-items: center;
+.connect-brand > img {
   width: 45px;
   height: 45px;
-  background: #e5eadd;
-  border-radius: 16px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px #d8754530;
 }
 .connect-art {
   position: relative;
