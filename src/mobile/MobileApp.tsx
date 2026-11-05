@@ -22,7 +22,8 @@ import {
 } from "./auth";
 import type { AccessGrant } from "../../packages/core/auth.mjs";
 import { connectionUrl } from "../../packages/core/connection.mjs";
-import glowIcon from "../../src-tauri/app-icon.svg";
+// The add-on build has no src-tauri/, so use the copy of the app icon in public/.
+const glowIcon = `${import.meta.env.BASE_URL}favicon.svg`;
 
 const host = (connection: Connection) => {
   try {
