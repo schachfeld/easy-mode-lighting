@@ -281,6 +281,9 @@ button:active:not(:disabled) {
 .nav-item:hover {
   background: var(--hover);
 }
+.phone-settings {
+  display: none;
+}
 .nav-item.selected {
   background: var(--selected);
   color: var(--selected-ink);
@@ -2069,6 +2072,10 @@ h1 {
   .sidebar-bottom {
     display: none;
   }
+  .nav-item.phone-settings {
+    display: flex;
+    padding: 9px;
+  }
   .sidebar nav {
     display: flex;
     align-items: center;
@@ -2367,6 +2374,10 @@ h1 {
   }
 }
 @media (max-width: 370px) {
+  /* Make room for the settings button; the logo still names the app. */
+  .brand > span {
+    display: none;
+  }
   main {
     padding-left: 16px;
     padding-right: 16px;

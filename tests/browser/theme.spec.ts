@@ -35,3 +35,19 @@ test("Firefly is the default theme, and Daylight can be chosen and is remembered
   await expect(page.locator("html")).not.toHaveAttribute("data-theme");
   expect(await background(page)).toBe("rgb(18, 21, 17)");
 });
+
+test("Phones reach Settings & help from the navigation bar", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/");
+  const settings = page.getByRole("button", { name: "Settings & help" });
+  await expect(settings).toBeVisible();
+  await expect(settings).toBeInViewport({ ratio: 1 });
+  await settings.click();
+  await expect(
+    page.getByRole("dialog", { name: "Settings & help" }),
+  ).toBeVisible();
+  await page.getByRole("radio", { name: /Daylight/ }).check();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "daylight");
+});
