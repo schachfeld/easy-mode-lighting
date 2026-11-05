@@ -1,6 +1,7 @@
 import { Check, ExternalLink, House, Radio, Sparkles } from "lucide-react";
 import { Modal } from "./components";
 import type { GlowClient } from "./platform/client";
+import { themes, useTheme } from "./theme";
 import type { Home } from "./types";
 
 export function ConnectionHelp({
@@ -15,8 +16,9 @@ export function ConnectionHelp({
   onClose: () => void;
 }) {
   const demo = home?.mode === "demo";
+  const [theme, setTheme] = useTheme();
   return (
-    <Modal title="Connection & help" onClose={onClose}>
+    <Modal title="Settings & help" onClose={onClose}>
       <div className={`connection-info ${home?.mode === "live" ? "live" : ""}`}>
         <Radio size={23} />
         <div>
@@ -34,6 +36,33 @@ export function ConnectionHelp({
           </p>
         </div>
       </div>
+      <fieldset className="theme-setting">
+        <legend className="help-heading">Appearance</legend>
+        <div className="group-display-options">
+          {themes.map((option) => (
+            <label
+              key={option.id}
+              className={theme === option.id ? "selected" : ""}
+            >
+              <input
+                type="radio"
+                name="theme"
+                value={option.id}
+                checked={theme === option.id}
+                onChange={() => setTheme(option.id)}
+              />
+              <span>
+                <strong>{option.name}</strong>
+                <small>{option.description}</small>
+              </span>
+              <span
+                className={`theme-preview theme-preview-${option.id}`}
+                aria-hidden="true"
+              />
+            </label>
+          ))}
+        </div>
+      </fieldset>
       {demo && (
         <>
           <h3 className="help-heading">Connect to Home Assistant</h3>

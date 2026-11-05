@@ -29,6 +29,8 @@ import type { Home, Light, LightSettings, Room, Scene } from "./types";
 
 import { serverClient, type GlowClient } from "./platform/client";
 import { useLiveLights } from "./live";
+// The add-on build has no src-tauri/, so use the copy of the app icon in public/.
+const glowIcon = `${import.meta.env.BASE_URL}favicon.svg`;
 
 type Toast = {
   message: string;
@@ -307,9 +309,7 @@ export default function App({
           onClick={() => navigate("rooms")}
           aria-label="Glow home"
         >
-          <span className="brand-mark">
-            <Sun size={25} strokeWidth={1.8} />
-          </span>
+          <img className="brand-mark" src={glowIcon} alt="" />
           <span>
             glow<span className="brand-period">.</span>
           </span>
@@ -338,11 +338,19 @@ export default function App({
             <Sparkles size={19} />
             <span>All scenes</span>
           </button>
+          {/* Phones hide the sidebar footer, so settings get their own button here. */}
+          <button
+            className="nav-item phone-settings"
+            aria-label="Settings & help"
+            onClick={() => setConnectionOpen(true)}
+          >
+            <Settings2 size={19} />
+          </button>
         </nav>
         <div className="sidebar-bottom">
           <button className="nav-item" onClick={() => setConnectionOpen(true)}>
             <Settings2 size={18} />
-            <span>Connection & help</span>
+            <span>Settings & help</span>
           </button>
           <div className="powered-by">
             <span
