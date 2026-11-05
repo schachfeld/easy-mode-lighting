@@ -308,6 +308,14 @@ export default function App({
             <Sparkles size={19} />
             <span>All scenes</span>
           </button>
+          {/* Phones hide the sidebar footer, so settings get their own button here. */}
+          <button
+            className="nav-item phone-settings"
+            aria-label="Settings & help"
+            onClick={() => setConnectionOpen(true)}
+          >
+            <Settings2 size={19} />
+          </button>
         </nav>
         <div className="sidebar-bottom">
           <button className="nav-item" onClick={() => setConnectionOpen(true)}>
