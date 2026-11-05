@@ -311,7 +311,7 @@ export default function App({
         <div className="sidebar-bottom">
           <button className="nav-item" onClick={() => setConnectionOpen(true)}>
             <Settings2 size={18} />
-            <span>Connection & help</span>
+            <span>Settings & help</span>
           </button>
           <div className="powered-by">
             <span
