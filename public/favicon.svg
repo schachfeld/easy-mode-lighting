@@ -1,1 +1,122 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="20" fill="#ed794f"/><g fill="none" stroke="#fff8ef" stroke-width="4" stroke-linecap="round"><circle cx="32" cy="32" r="10"/><path d="M32 10v5m0 34v5M10 32h5m34 0h5M16 16l4 4m24 24 4 4M16 48l4-4m24-24 4-4"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#111411"/>
+      <stop offset="0.65" stop-color="#1d221c"/>
+      <stop offset="1" stop-color="#151814"/>
+    </linearGradient>
+    <radialGradient id="roomBloom" cx="512" cy="540" r="460" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#df7855" stop-opacity="0.38"/>
+      <stop offset="0.58" stop-color="#b84f30" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#111411" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="table" x1="0" y1="654" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#241f1c"/>
+      <stop offset="0.38" stop-color="#1a1614"/>
+      <stop offset="1" stop-color="#0e0c0b"/>
+    </linearGradient>
+    <radialGradient id="castPool" cx="512" cy="796" r="446" gradientTransform="translate(0 525) scale(1 0.34)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffe29a" stop-opacity="0.96"/>
+      <stop offset="0.38" stop-color="#df7855" stop-opacity="0.78"/>
+      <stop offset="0.76" stop-color="#b84f30" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#1a1614" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="glassBody" x1="292" y1="310" x2="732" y2="780" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#381c10" stop-opacity="0.92"/>
+      <stop offset="0.48" stop-color="#6e2f17" stop-opacity="0.86"/>
+      <stop offset="0.85" stop-color="#ad4d29" stop-opacity="0.90"/>
+      <stop offset="1" stop-color="#4f2010" stop-opacity="0.94"/>
+    </linearGradient>
+    <radialGradient id="innerHearth" cx="508" cy="558" r="236" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffca70" stop-opacity="0.52"/>
+      <stop offset="0.6" stop-color="#df7855" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#2e150b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="meniscus" x1="316" y1="748" x2="708" y2="748" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b84f30"/>
+      <stop offset="0.5" stop-color="#ffe094"/>
+      <stop offset="1" stop-color="#c65935"/>
+    </linearGradient>
+    <linearGradient id="specLeft" x1="0" y1="395" x2="0" y2="730" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff8ef" stop-opacity="0.68"/>
+      <stop offset="0.65" stop-color="#fff8ef" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#ffd399" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="copperSide" x1="348" y1="226" x2="676" y2="226" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c96540"/>
+      <stop offset="0.28" stop-color="#f09a6e"/>
+      <stop offset="0.72" stop-color="#b84f30"/>
+      <stop offset="1" stop-color="#782d17"/>
+    </linearGradient>
+    <filter id="softPool" filterUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <filter id="flyHalo" filterUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <feGaussianBlur stdDeviation="25"/>
+    </filter>
+    <filter id="flyTight" filterUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#wall)"/>
+  <rect width="1024" height="1024" fill="url(#roomBloom)"/>
+  <rect x="0" y="654" width="1024" height="370" fill="url(#table)"/>
+  <line x1="0" y1="654" x2="1024" y2="654" stroke="#3b332d" stroke-width="4"/>
+  <ellipse cx="512" cy="804" rx="444" ry="142" fill="url(#castPool)" filter="url(#softPool)"/>
+  <ellipse cx="512" cy="824" rx="268" ry="68" fill="#ffe194" opacity="0.58" filter="url(#flyTight)"/>
+  <ellipse cx="512" cy="762" rx="228" ry="58" fill="#170b06" opacity="0.94"/>
+  <path d="M 364 276 L 364 308 C 364 346 292 368 292 428 L 292 750 A 220 54 0 0 0 732 750 L 732 428 C 732 368 660 346 660 308 L 660 276 Z"
+        fill="url(#glassBody)"/>
+  <path d="M 364 276 L 364 308 C 364 346 292 368 292 428 L 292 750 A 220 54 0 0 0 732 750 L 732 428 C 732 368 660 346 660 308 L 660 276 Z"
+        fill="url(#innerHearth)"/>
+  <ellipse cx="512" cy="746" rx="202" ry="44" fill="url(#meniscus)" opacity="0.9"/>
+  <ellipse cx="512" cy="740" rx="178" ry="34" fill="#592310" opacity="0.65"/>
+  <path d="M 322 748 A 196 42 0 0 0 702 748" fill="none" stroke="#fff6de" stroke-width="11" stroke-linecap="round" opacity="0.88"/>
+  <g filter="url(#flyHalo)">
+    <circle cx="462" cy="502" r="78" fill="#ffad47"/>
+    <circle cx="608" cy="614" r="68" fill="#ffa03d"/>
+    <circle cx="392" cy="638" r="50" fill="#df7855"/>
+    <circle cx="586" cy="428" r="46" fill="#ffbc59"/>
+  </g>
+  <g filter="url(#flyTight)">
+    <circle cx="462" cy="502" r="44" fill="#ffecab"/>
+    <circle cx="608" cy="614" r="38" fill="#ffe694"/>
+    <circle cx="392" cy="638" r="25" fill="#ffd980"/>
+    <circle cx="586" cy="428" r="23" fill="#ffe694"/>
+  </g>
+  <g transform="translate(462 502) rotate(-26)">
+    <ellipse cx="-28" cy="-10" rx="29" ry="13" transform="rotate(-24 -28 -10)" fill="#fff8ef" opacity="0.78"/>
+    <ellipse cx="28" cy="-10" rx="29" ry="13" transform="rotate(24 28 -10)" fill="#fff8ef" opacity="0.78"/>
+    <circle cx="0" cy="-26" r="11" fill="#4a2414"/>
+    <rect x="-21" y="-15" width="42" height="54" rx="21" fill="#ffe485"/>
+    <rect x="-16" y="-7" width="32" height="42" rx="16" fill="#ffffff"/>
+  </g>
+  <g transform="translate(608 614) rotate(22)">
+    <ellipse cx="-23" cy="-8" rx="24" ry="11" transform="rotate(-22 -23 -8)" fill="#fff8ef" opacity="0.72"/>
+    <ellipse cx="23" cy="-8" rx="24" ry="11" transform="rotate(22 23 -8)" fill="#fff8ef" opacity="0.72"/>
+    <circle cx="0" cy="-21" r="9" fill="#4a2414"/>
+    <rect x="-17" y="-12" width="34" height="44" rx="17" fill="#ffe07d"/>
+    <rect x="-13" y="-5" width="26" height="34" rx="13" fill="#ffffff"/>
+  </g>
+  <circle cx="392" cy="638" r="18" fill="#fffdf2"/>
+  <circle cx="586" cy="428" r="16" fill="#fffdf2"/>
+  <path d="M 332 434 C 332 412 352 398 362 398 C 354 418 354 434 354 456 L 354 706 C 354 720 332 716 332 700 Z"
+        fill="url(#specLeft)"/>
+  <path d="M 330 396 Q 408 352 496 354" fill="none" stroke="#fff8ef" stroke-width="14" stroke-linecap="round" opacity="0.62"/>
+  <path d="M 696 440 V 706" fill="none" stroke="#ffc685" stroke-width="12" stroke-linecap="round" opacity="0.48"/>
+  <path d="M 364 276 L 364 308 C 364 346 292 368 292 428 L 292 750 A 220 54 0 0 0 732 750 L 732 428 C 732 368 660 346 660 308 L 660 276"
+        fill="none" stroke="#ffebd0" stroke-opacity="0.86" stroke-width="22" stroke-linejoin="round"/>
+  <path d="M 358 278 A 154 32 0 0 0 666 278 L 666 298 A 154 32 0 0 1 358 298 Z" fill="#2b2e29"/>
+  <path d="M 348 208 Q 348 200.5 356 200.3 A 164 5.5 0 0 1 668 200.3 Q 676 200.5 676 208 L 676 275 A 164 22 0 0 1 348 275 Z" fill="url(#copperSide)"/>
+  <g stroke="#5e2110" stroke-width="6" opacity="0.42">
+    <line x1="390" y1="208" x2="390" y2="280"/>
+    <line x1="430" y1="207" x2="430" y2="284"/>
+    <line x1="471" y1="207" x2="471" y2="286"/>
+    <line x1="512" y1="206" x2="512" y2="287"/>
+    <line x1="553" y1="207" x2="553" y2="286"/>
+    <line x1="594" y1="207" x2="594" y2="284"/>
+    <line x1="634" y1="208" x2="634" y2="280"/>
+  </g>
+  <path d="M 353 200.7 A 164 5.5 0 0 1 671 200.7" fill="none" stroke="#ffd7b8" stroke-width="7" stroke-linecap="round"/>
+  <path d="M 360 276.3 A 164 22 0 0 0 664 276.3" fill="none" stroke="#ffe5c4" stroke-width="6" stroke-linecap="round" opacity="0.65"/>
+</svg>
