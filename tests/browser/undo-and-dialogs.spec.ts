@@ -44,7 +44,10 @@ test("going back closes a dialog instead of leaving the page", async ({
   await page.goto("/");
   await office.click();
   await expect(page).toHaveURL(/#\/rooms\/office$/);
-  await page.getByRole("button", { name: "Adjust light" }).first().click();
+  await page
+    .locator(".light-card:not(.light-group-card) .light-name-button:visible")
+    .first()
+    .click();
   await expect(dialog).toBeVisible();
   await page.goBack();
   await expect(dialog).toBeHidden();
@@ -54,7 +57,10 @@ test("going back closes a dialog instead of leaving the page", async ({
   ).toBeVisible();
 
   // A dialog closed with its own buttons leaves no extra step behind.
-  await page.getByRole("button", { name: "Adjust light" }).first().click();
+  await page
+    .locator(".light-card:not(.light-group-card) .light-name-button:visible")
+    .first()
+    .click();
   await page.getByRole("button", { name: "Done", exact: true }).click();
   await expect(dialog).toBeHidden();
   await page.waitForFunction(() => !history.state?.glowDialog);
@@ -65,7 +71,10 @@ test("going back closes a dialog instead of leaving the page", async ({
   // must not be undone when that step lands. Close the dialog, let its step
   // back start, and navigate before the browser finishes it.
   await office.click();
-  await page.getByRole("button", { name: "Adjust light" }).first().click();
+  await page
+    .locator(".light-card:not(.light-group-card) .light-name-button:visible")
+    .first()
+    .click();
   await expect(dialog).toBeVisible();
   await page.evaluate(async () => {
     const done = [...document.querySelectorAll("dialog button")].find(

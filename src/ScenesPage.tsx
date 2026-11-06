@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Heart, Sparkles } from "lucide-react";
+import { Heart, Palette } from "lucide-react";
 import type { Home, Scene } from "./types";
 
 // "all", "favorites", or a room id.
@@ -63,7 +63,7 @@ export function ScenesPage({
       <div className="all-scenes-grid">{scenes.map((s) => renderScene(s))}</div>
       {!scenes.length && (
         <div className="empty-state">
-          <Sparkles size={32} />
+          <Palette size={32} />
           <h3>No scenes yet</h3>
           <p>
             {filter === "favorites"
@@ -76,7 +76,7 @@ export function ScenesPage({
               filter === "favorites" ? onFilterChange("all") : onShowRooms()
             }
           >
-            {filter === "favorites" ? "Explore scenes" : "Go to rooms"}
+            {filter === "favorites" ? "Show all scenes" : "Go to rooms"}
           </button>
         </div>
       )}

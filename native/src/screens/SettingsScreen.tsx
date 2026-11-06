@@ -4,8 +4,8 @@ import {
   ExternalLink,
   House,
   LogOut,
+  Palette,
   Radio,
-  Sparkles,
 } from "lucide-react-native";
 import { useGlow } from "../glow";
 import { useSession } from "../session";
@@ -98,7 +98,7 @@ export function SettingsScreen() {
             </Txt>
           </View>
           <View style={styles.detail}>
-            <Sparkles size={18} color={colors.leaf} />
+            <Palette size={18} color={colors.leaf} />
             {demo ? (
               <Txt size={14} tone="textSecondary" style={styles.detailText}>
                 <Txt size={14} weight="semibold">

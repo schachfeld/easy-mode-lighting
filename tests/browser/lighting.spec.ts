@@ -101,7 +101,10 @@ test("rooms, light controls, complete scene lifecycle, persistence, and mobile l
       exact: true,
     }),
   ).toHaveCount(0);
-  await page.getByRole("button", { name: "Adjust light" }).first().click();
+  await page
+    .locator(".light-card:not(.light-group-card) .light-name-button:visible")
+    .first()
+    .click();
   await page.getByRole("button", { name: "Cool", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Cool", exact: true }),

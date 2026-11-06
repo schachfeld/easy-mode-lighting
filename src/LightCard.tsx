@@ -36,6 +36,7 @@ export function LightCard({
       <div className="light-card-heading">
         <button
           className="light-name-button"
+          aria-label={`Adjust ${light.name}`}
           onClick={() => onAdjust(light.id)}
         >
           <span
@@ -56,6 +57,7 @@ export function LightCard({
                 : lightDescription(light)}
             </small>
           </span>
+          <ChevronRight className="light-name-chevron" size={15} aria-hidden />
         </button>
         <Toggle
           label={`${light.name} power`}
@@ -78,10 +80,6 @@ export function LightCard({
           }
         />
       )}
-      <button className="light-adjust-link" onClick={() => onAdjust(light.id)}>
-        {members ? "Adjust group" : "Adjust light"}
-        <ChevronRight size={13} />
-      </button>
       {members && (
         <details className="light-group-details">
           <summary>

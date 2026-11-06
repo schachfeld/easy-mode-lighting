@@ -101,7 +101,7 @@ export function RoomsPage({
               automatically. Unassigned lights appear in “Other lights”.
             </p>
             <button className="button secondary" onClick={onHelp}>
-              How it works
+              Open Settings &amp; help
             </button>
           </div>
         ) : (

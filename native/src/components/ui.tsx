@@ -293,12 +293,7 @@ export function FieldLabel({
   style?: StyleProp<TextStyle>;
 }) {
   return (
-    <Txt
-      size={12}
-      weight="semibold"
-      tone="muted"
-      style={[{ letterSpacing: 0.6, textTransform: "uppercase" }, style]}
-    >
+    <Txt size={14} weight="semibold" tone="textSecondary" style={style}>
       {children}
     </Txt>
   );

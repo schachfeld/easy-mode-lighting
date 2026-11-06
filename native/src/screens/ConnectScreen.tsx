@@ -59,22 +59,19 @@ export function ConnectScreen() {
       >
         <View style={styles.brand}>
           <Image source={icon} style={styles.brandMark} />
-          <Txt size={26} weight="bold" style={{ letterSpacing: -1.3 }}>
-            glow
-          </Txt>
+          <View>
+            <Txt size={26} weight="bold" style={{ letterSpacing: -1.3 }}>
+              glow
+            </Txt>
+            <Txt size={13} tone="leaf">
+              Your home, in a good light
+            </Txt>
+          </View>
         </View>
         <View style={styles.art}>
           <View style={[styles.halo, { backgroundColor: colors.glowHalo }]} />
           <Lightbulb size={64} strokeWidth={1.2} color={colors.glowInk} />
         </View>
-        <Txt
-          size={11}
-          weight="semibold"
-          tone="leaf"
-          style={{ letterSpacing: 1.4 }}
-        >
-          YOUR HOME, IN A GOOD LIGHT
-        </Txt>
         <Txt
           accessibilityRole="header"
           size={30}

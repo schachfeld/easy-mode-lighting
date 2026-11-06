@@ -201,6 +201,7 @@ export function LightCard({
                 : lightDescription(light)}
             </Txt>
           </View>
+          <ChevronRight size={18} color={colors.faint} />
         </Pressable>
         <Toggle
           label={`${light.name} power`}
@@ -223,19 +224,8 @@ export function LightCard({
           }
         />
       )}
-      <View style={styles.cardLinks}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => onAdjust(light.id)}
-          hitSlop={8}
-          style={styles.link}
-        >
-          <Txt size={13} weight="medium" tone="accentDark">
-            {members ? "Adjust group" : "Adjust light"}
-          </Txt>
-          <ChevronRight size={14} color={colors.accentDark} />
-        </Pressable>
-        {members && (
+      {members && (
+        <View style={styles.cardLinks}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`Individual lights in ${light.name}`}
@@ -253,8 +243,8 @@ export function LightCard({
               style={expanded && { transform: [{ rotate: "180deg" }] }}
             />
           </Pressable>
-        )}
-      </View>
+        </View>
+      )}
       {members && expanded && (
         <View style={{ gap: 10 }}>
           {members.map((member) => (
@@ -346,7 +336,7 @@ export function SceneCard({
       <View style={styles.sceneTools}>
         {(scene.source === "home-assistant" || scene.haSceneId) && (
           <Txt
-            size={10}
+            size={11}
             weight="medium"
             tone="okInk"
             style={[

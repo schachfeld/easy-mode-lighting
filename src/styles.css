@@ -33,14 +33,14 @@
   --text: #f1e8d8;
   --text-secondary: #c4b9a6;
   --muted: #a09886;
-  --faint: #7d776b;
+  --faint: #969085;
   --leaf: #eba66c;
   --accent: #df7855;
   --accent-dark: #f09a6e;
   --accent-hover: #ec8a64;
   --on-accent: #1f0e07;
   --selection: #6a3220;
-  --focus: #df7855aa;
+  --focus: #df7855;
   --ok-bg: #182219;
   --ok-border: #2c3c2c;
   --ok-ink: #a6c48f;
@@ -87,53 +87,53 @@
   --surface-sunken: #f2f2e9;
   --hover: #e8e9df;
   --selected: #e7ebdd;
-  --selected-ink: #5f7149;
+  --selected-ink: #56663f;
   --border: #e6e6dd;
   --border-strong: #dadcd0;
   --border-selected: #b3bd97;
   --text: #373b35;
-  --text-secondary: #72766c;
-  --muted: #8d9082;
-  --faint: #a7aa98;
-  --leaf: #7f906a;
+  --text-secondary: #51534c;
+  --muted: #606257;
+  --faint: #666957;
+  --leaf: #5f6b4f;
   --accent: #df7855;
-  --accent-dark: #b84f30;
+  --accent-dark: #a8482c;
   --accent-hover: #ce6948;
-  --on-accent: #fffaf5;
+  --on-accent: #1f0e07;
   --selection: #f4d2c1;
-  --focus: #df785588;
+  --focus: #a8482c;
   --ok-bg: #eff3e9;
   --ok-border: #dde4cf;
-  --ok-ink: #7f8f69;
-  --ok-ink-strong: #73855a;
+  --ok-ink: #626f51;
+  --ok-ink-strong: #5a6846;
   --warn-bg: #f6eedf;
   --warn-border: #ebddc5;
-  --warn-ink: #ad8f5c;
-  --warn-ink-strong: #8e7e57;
-  --warn-dot: #b8925c;
-  --status-on: #849b72;
-  --danger-ink: #ad6550;
-  --danger-fill: #bc745f;
+  --warn-ink: #7d663f;
+  --warn-ink-strong: #6b5f42;
+  --warn-dot: #a47e47;
+  --status-on: #768d64;
+  --danger-ink: #965846;
+  --danger-fill: #a55b45;
   --danger-on: #fff7f2;
   --danger-bg: #f8ebe4;
   --danger-border: #eed6c7;
-  --toggle-on: #b9935d;
+  --toggle-on: #a78048;
   --toggle-off: #c1c5b8;
-  --toggle-off-border: #b8bdaa;
+  --toggle-off-border: #838b6c;
   --knob: #fefdf7;
-  --glow-ink: #c2ab78;
+  --glow-ink: #9e8348;
   --glow-deep: #7e6745;
   --glow-halo: #f8db99;
   --glow-halo-soft: #f7ead0;
-  --slider-fill: #b5bd98;
+  --slider-fill: #828d5a;
   --slider-track: #e8e9df;
-  --thumb-border: #b3bb94;
+  --thumb-border: #88935e;
   --white-warm: #f5f0df;
   --white-soft: #f7f3e8;
   --white-neutral: #f2f3ef;
   --white-cool: #edf1f3;
-  --white-neutral-ink: #a5b1a5;
-  --white-cool-ink: #9faeb8;
+  --white-neutral-ink: #617061;
+  --white-cool-ink: #5b6e7a;
   --backdrop: #333a3260;
   --modal-shadow: #2c35272b;
 }
@@ -179,8 +179,9 @@ select {
   outline-offset: 5px;
 }
 button:focus-visible,
+summary:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
 }
 input:focus-visible,
 select:focus-visible {
@@ -693,6 +694,7 @@ h1 {
   font-weight: 500;
   white-space: nowrap;
   min-height: 37px;
+  position: relative;
 }
 .button.secondary {
   border: 1px solid var(--border-strong);
@@ -768,7 +770,7 @@ h1 {
 }
 :root[data-theme="daylight"] .room-living {
   --room-bg: #f0dfc8;
-  --room-ink: #a88961;
+  --room-ink: #967852;
   --room-glow: #ffecad;
 }
 .room-living {
@@ -777,9 +779,9 @@ h1 {
 }
 :root[data-theme="daylight"] .room-bedroom {
   --room-bg: #deddec;
-  --room-ink: #9187a9;
+  --room-ink: #81759c;
   --room-glow: #f2d3e9;
-  --room-on: #a79abb;
+  --room-on: #9080aa;
 }
 .room-bedroom {
   --room-bg: #262335;
@@ -788,7 +790,7 @@ h1 {
 }
 :root[data-theme="daylight"] .room-kitchen {
   --room-bg: #e5e8dc;
-  --room-ink: #8d9b7d;
+  --room-ink: #768466;
   --room-glow: #f2f0cf;
 }
 .room-kitchen {
@@ -797,9 +799,9 @@ h1 {
 }
 :root[data-theme="daylight"] .room-dining {
   --room-bg: #eddbd4;
-  --room-ink: #b08b79;
+  --room-ink: #9c715c;
   --room-glow: #ffe0b8;
-  --room-on: #bb937f;
+  --room-on: #ad7d64;
 }
 .room-dining {
   --room-bg: #2e211c;
@@ -808,7 +810,7 @@ h1 {
 }
 :root[data-theme="daylight"] .room-office {
   --room-bg: #dfe6e8;
-  --room-ink: #889ca2;
+  --room-ink: #6b8289;
   --room-glow: #d3eef2;
 }
 .room-office {
@@ -817,7 +819,7 @@ h1 {
 }
 :root[data-theme="daylight"] .room-bathroom {
   --room-bg: #e4e6df;
-  --room-ink: #919c8a;
+  --room-ink: #76826e;
   --room-glow: #e9f0cf;
 }
 .room-bathroom {
@@ -826,7 +828,7 @@ h1 {
 }
 :root[data-theme="daylight"] .room-garden {
   --room-bg: #dfe6d4;
-  --room-ink: #819878;
+  --room-ink: #6e8565;
   --room-glow: #e4f4be;
 }
 .room-garden {
@@ -873,6 +875,17 @@ h1 {
   position: absolute;
   width: 44px;
   height: 44px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+/* Like the switch, small buttons keep their look but get a 44px touch area. */
+.icon-button:after,
+.button:after {
+  content: "";
+  position: absolute;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -1096,8 +1109,12 @@ h1 {
   padding: 0;
   min-width: 0;
 }
-.light-name-button > span:last-child {
+.light-name-button > span:nth-child(2) {
   min-width: 0;
+}
+.light-name-chevron {
+  flex-shrink: 0;
+  color: var(--faint);
 }
 .bulb-icon {
   background: var(--surface-sunken);
@@ -1124,17 +1141,6 @@ h1 {
 }
 .light-on {
   background: var(--surface-raised);
-}
-.light-adjust-link {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 2px;
-  width: 100%;
-  font-size: 9px;
-  color: var(--muted);
-  margin-top: 13px;
-  padding: 0;
 }
 .scene-page-heading .room-filters {
   margin: 0;
@@ -1387,7 +1393,7 @@ h1 {
   --size: 156px;
 }
 .color-wheel:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 8px;
 }
 .color-wheel.disabled {
@@ -1716,7 +1722,11 @@ h1 {
   padding: 13px 6px;
   color: var(--glow-ink);
   background: var(--white-warm);
-  font-size: 10px;
+  font-size: 12px;
+}
+/* The icon carries the tint; the name needs text contrast in every theme. */
+.white-presets button span {
+  color: var(--text-secondary);
 }
 .white-presets button:nth-child(2) {
   background: var(--white-soft);
@@ -2241,12 +2251,10 @@ h1 {
     line-height: 1.7;
   }
   .button {
-    font-size: 10px;
     padding: 9px 12px;
   }
   .all-off {
     padding: 7px 9px;
-    font-size: 9px;
   }
   .lights-grid {
     grid-template-columns: 1fr;
@@ -2272,9 +2280,6 @@ h1 {
   }
   .light-card .brightness.compact > svg {
     width: 16px;
-  }
-  .light-adjust-link {
-    font-size: 10px;
   }
   .all-scenes-grid {
     margin-top: 22px;
@@ -2431,9 +2436,6 @@ h1 {
 .light-name-button small {
   font-size: 11px;
   color: var(--text-secondary);
-}
-.light-adjust-link {
-  font-size: 11px;
 }
 .all-off {
   font-size: 11px;

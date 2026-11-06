@@ -1,4 +1,4 @@
-import { Check, ExternalLink, House, Radio, Sparkles } from "lucide-react";
+import { Check, ExternalLink, House, Palette, Radio } from "lucide-react";
 import { Modal } from "./components";
 import type { GlowClient } from "./platform/client";
 import { themes, useTheme } from "./theme";
@@ -114,7 +114,7 @@ export function ConnectionHelp({
           </p>
         </div>
         <div>
-          <Sparkles size={18} />
+          <Palette size={18} />
           <p>
             {demo ? (
               <>
