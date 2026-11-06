@@ -2,7 +2,7 @@
 
 ## Which apps are current
 
-Glow has two current versions: the Home Assistant add-on (`server/` and the React UI in `src/`) and the React Native phone app in `native/`. The Tauri phone app (`src-tauri/` and `src/mobile/`) is deprecated. Make phone features and fixes in `native/`, not in the Tauri app, and do not upload Tauri builds to TestFlight: both apps share the bundle ID `io.github.schachfeld.glow`.
+The React Native phone app in `native/` is the main focus of Glow: new features and design work go there first. The Home Assistant add-on (`server/` and the React UI in `src/`) is the other current version. The Tauri phone app (`src-tauri/` and `src/mobile/`) is deprecated. Make phone features and fixes in `native/`, not in the Tauri app, and do not upload Tauri builds to TestFlight: both apps share the bundle ID `io.github.schachfeld.glow`.
 
 ## Test new features against a real Home Assistant
 

@@ -1,13 +1,12 @@
 # Glow
 
-**Your home, in a good light.** A room-first lighting app for Home Assistant, inspired by the simplicity of Hue.
+**Your home, in a good light.** A room-first Home Assistant lighting app for your phone, inspired by the simplicity of Hue.
 
 Open a room, set its brightness, tap a scene, or make one of your own. No dashboard builder or YAML required.
 
-Glow comes in two current versions:
+Glow is first and foremost a **phone app for iOS and Android**: the React Native app in [`native/`](native/README.md). It connects straight to your Home Assistant, with nothing to install there. See [Phone app](#phone-app).
 
-- **The Home Assistant add-on**, which you install in Home Assistant and open from its sidebar. See [Install on Home Assistant OS](#install-on-home-assistant-os).
-- **The phone app for iOS and Android**, a React Native app in [`native/`](native/README.md). See [Phone app](#phone-app).
+Glow is also available as a **Home Assistant add-on**, for using it in a browser from Home Assistant's sidebar. See [Home Assistant add-on](#home-assistant-add-on).
 
 The Tauri phone app in `src-tauri/` is deprecated. See [Deprecated Tauri app](#deprecated-tauri-app).
 
@@ -21,15 +20,40 @@ The Tauri phone app in `src-tauri/` is deprecated. See [Deprecated Tauri app](#d
 - Activate existing Home Assistant scenes alongside your Glow scenes.
 - Undo **All lights off** to bring back every light's brightness and color.
 - See changes from other devices and Home Assistant instantly, and watch your lights follow sliders and colors as you drag.
-- Use the same interface on a phone, tablet, or desktop.
+- Use it on your phone, or in a browser on a tablet or desktop through the add-on.
 
-## Install on Home Assistant OS
+## Phone app
+
+The phone app is the main way to use Glow, and where new features land first. It is a React Native (Expo) app for iOS and Android in [`native/`](native/README.md).
+
+It connects directly to Home Assistant over its WebSocket API; you do not need the Glow add-on. Sign in with your Home Assistant account through your browser, or with a long-lived access token. Glow stays signed in using the iOS Keychain or Android Keystore. Scenes are saved in Home Assistant, so they are available in automations and in the add-on too. On iOS 26 and later, it uses the system's Liquid Glass tab bar.
+
+iOS test builds are distributed through TestFlight. To run it from source on a simulator, emulator, or device:
+
+```sh
+cd native
+npm ci
+npm run ios       # macOS with Xcode
+npm run android   # Android Studio with an emulator
+```
+
+See [`native/README.md`](native/README.md) for everything else, including release builds and trying it against a Home Assistant in Docker. Account sign-in requires publishing the public identity page described in [the mobile guide](MOBILE.md#publish-the-login-identity-page).
+
+### Deprecated Tauri app
+
+The Tauri 2 app in `src-tauri/`, with its frontend in `src/mobile/`, is deprecated and replaced by the React Native app. It still builds, but gets no new features or design changes; make phone changes in `native/`. Its build steps are in [the mobile guide](MOBILE.md). Both apps use the bundle ID `io.github.schachfeld.glow`, so TestFlight treats them as one app: do not upload a Tauri build after a React Native one.
+
+## Home Assistant add-on
+
+The add-on runs Glow inside Home Assistant, so you can use it in a browser from the sidebar on any device. It shares the phone app's lighting core and scenes.
+
+### Install on Home Assistant OS
 
 Source code is hosted at [schachfeld/easy-mode-lighting](https://github.com/schachfeld/easy-mode-lighting). Until the first tagged release is published, use the local installation below.
 
 After the first successful release, add `https://github.com/schachfeld/easy-mode-lighting#home-assistant` in the Home Assistant app store's **Repositories** menu. Install **Glow** from that repository. Later releases appear as normal app updates, with prebuilt images for both supported architectures. The `home-assistant` branch is created automatically by the first successful release.
 
-### Local installation
+#### Local installation
 
 1. Download or build **`artifacts/glow-addon.tar.gz`**. To build it from source, run `npm ci` and `npm run package:addon`.
 2. Extract it into Home Assistant’s `/local_apps` directory, so the app configuration is at **`/local_apps/glow/config.yaml`**. For example, use the `local_apps` share exposed by Home Assistant’s Samba share app. On older versions, the directory and share are named `addons`, giving `/addons/glow/config.yaml`. Copy the extracted `glow` folder, not the archive itself. See [Home Assistant’s local app instructions](https://developers.home-assistant.io/docs/apps/tutorial/).
@@ -41,7 +65,7 @@ Glow connects through Home Assistant’s internal API automatically. You do not 
 
 Supports **amd64** and **aarch64**. The first install requires internet access to download the container base and dependencies. The installed interface, including its fonts and illustrations, is served locally.
 
-## Try it on this computer
+### Try the add-on on this computer
 
 Requires Node.js 22.12+ (Node.js 24 recommended).
 
@@ -72,16 +96,6 @@ For development against a real instance, set `HA_URL` and `HA_TOKEN` on the serv
 | `PORT`             | `8099`            | Backend HTTP port                                                   |
 | `HOST`             | `127.0.0.1`       | Standalone listen address; the HA OS app uses ingress only          |
 
-## Phone app
-
-The current phone app for iOS and Android is the React Native (Expo) app in [`native/`](native/README.md). It shares the add-on's lighting core and connects directly to Home Assistant over its WebSocket API, without the Glow add-on. It includes Home Assistant account sign-in through your browser, stays signed in using the iOS Keychain or Android Keystore, and saves scenes in Home Assistant, so they appear in the add-on too. Manual access tokens remain supported. Account sign-in requires publishing the public identity page described in [the mobile guide](MOBILE.md#publish-the-login-identity-page).
-
-See [`native/README.md`](native/README.md) to run and build it.
-
-### Deprecated Tauri app
-
-The Tauri 2 app in `src-tauri/`, with its frontend in `src/mobile/`, is deprecated and replaced by the React Native app. It still builds, but gets no new features or design changes; make phone changes in `native/`. Its build steps are in [the mobile guide](MOBILE.md). Both apps use the bundle ID `io.github.schachfeld.glow`, so TestFlight treats them as one app: do not upload a Tauri build after a React Native one.
-
 ## Scene storage
 
 In live mode, saving a scene writes a persistent Home Assistant scene to `scenes.yaml`, available to dashboards, automations, mobile, and the add-on. This uses the Home Assistant scene editor API and requires an administrator connection, the `config` integration, and `scene: !include scenes.yaml` (standard Home Assistant defaults). Editing or deleting a published scene in Glow updates or deletes it in Home Assistant.
@@ -91,6 +105,17 @@ Glow keeps editor settings, favorites, and older local scenes in `/data/scenes.j
 Glow applies its scenes through Home Assistant’s `scene.apply` service. They are **not added to Home Assistant’s scene registry**, and therefore do not appear in its automation scene picker. Existing Home Assistant scenes can be activated and favorited in Glow; edit or delete those in Home Assistant. Multi-room native scenes appear in All scenes. If a saved scene references a removed or unavailable bulb, Glow asks you to fix or edit it rather than silently applying an incomplete scene.
 
 ## Development and checks
+
+Phone app, from `native/`:
+
+```sh
+npm run typecheck
+npx expo-doctor
+```
+
+Try phone changes on a simulator or emulator against a Home Assistant in Docker, as described in [`native/e2e/README.md`](native/e2e/README.md).
+
+Add-on and shared core, from the repository root:
 
 ```sh
 npm test
@@ -112,5 +137,7 @@ The server uses the official [WebSocket API](https://developers.home-assistant.i
 Built with React, TypeScript, Vite, Express, and a small WebSocket client. No cloud service is required.
 
 ## Releasing updates
+
+Phone app builds are uploaded to TestFlight; see [`native/README.md`](native/README.md#release-to-testflight).
 
 GitHub Actions checks pull requests and changes to `main`. Pushing a version tag publishes the multi-architecture image, verifies anonymous downloads and container startup, creates a GitHub release, and updates the Home Assistant catalog. See [the release guide](RELEASING.md) for version preparation, the first release, and recovery from failed publication.

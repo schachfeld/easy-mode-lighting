@@ -59,6 +59,42 @@ npm run build:android
 
 Without a release keystore, the APK is signed with the debug key. Configure signing, or use EAS Build, before distributing it.
 
+## Release to TestFlight
+
+There is no CI workflow for this app yet; build and upload from a Mac with Xcode. You need an App Store Connect API key with access to the Glow app (bundle ID `io.github.schachfeld.glow`), its key ID and issuer ID, and the team ID.
+
+1. Look up the latest build number of the current version in App Store Connect. The new build needs a higher one.
+2. Generate the iOS project from `app.json`. CocoaPods needs a UTF-8 locale:
+
+   ```sh
+   export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+   npx expo prebuild --platform ios --clean
+   ```
+
+3. Set the build number. `app.json` does not set one, so it is `1` after prebuild:
+
+   ```sh
+   /usr/libexec/PlistBuddy -c "Set :CFBundleVersion <build>" ios/Glow/Info.plist
+   ```
+
+4. Archive, export and upload, signing with the API key:
+
+   ```sh
+   auth=(-allowProvisioningUpdates -authenticationKeyPath <AuthKey.p8> -authenticationKeyID <key ID> -authenticationKeyIssuerID <issuer ID>)
+   xcodebuild -workspace ios/Glow.xcworkspace -scheme Glow -configuration Release \
+     -destination 'generic/platform=iOS' -archivePath build/Glow.xcarchive \
+     DEVELOPMENT_TEAM=<team ID> CODE_SIGN_STYLE=Automatic "${auth[@]}" archive
+   xcodebuild -exportArchive -archivePath build/Glow.xcarchive -exportPath build/export \
+     -exportOptionsPlist ExportOptions.plist "${auth[@]}"
+   xcrun altool --upload-app -f build/export/Glow.ipa -t ios --apiKey <key ID> --apiIssuer <issuer ID>
+   ```
+
+   `ExportOptions.plist` sets `method` to `app-store-connect` and `teamID` to your team ID.
+
+Expo copies `assets/icon.png` into the app's icon set. To confirm the icon is in a build, run `xcrun assetutil --info build/Glow.xcarchive/Products/Applications/Glow.app/Assets.car` and look for `AppIcon`.
+
+The deprecated Tauri app uses the same bundle ID. Do not upload a Tauri build after a React Native one; testers would get the Tauri app as the newest build.
+
 ## Test against Home Assistant
 
 See `e2e/README.md`.
