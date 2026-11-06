@@ -1,4 +1,4 @@
-name: Mobile Android build
+name: Mobile Android build (deprecated Tauri app)
 
 on:
   workflow_dispatch:

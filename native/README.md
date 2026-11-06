@@ -1,12 +1,12 @@
 # Glow for iOS and Android (React Native)
 
-A native rewrite of the Glow phone app with [Expo](https://docs.expo.dev/) (SDK 58) and React Native. It connects straight to Home Assistant, like the Tauri app in `src-tauri/`, and needs no Glow add-on or server.
+The current Glow phone app, built with [Expo](https://docs.expo.dev/) (SDK 58) and React Native. Together with the Home Assistant add-on, it is the current version of Glow. It replaces the deprecated Tauri app in `src-tauri/`. It connects straight to Home Assistant and needs no Glow add-on or server.
 
 The lighting logic is not duplicated. The app imports `packages/core` (Home Assistant client, room and group mapping, scenes, validation, colors, sign-in) and `src/live.ts` (optimistic light updates and command pacing) from the repository. Only the interface and the platform layer are written for React Native.
 
 ## What it does
 
-Everything the Tauri phone app does:
+Everything the deprecated Tauri phone app did:
 
 - Sign in with your Home Assistant account in the system browser, or with a long-lived access token.
 - Stay signed in. The sign-in is kept in the Keychain or the Android Keystore, and Glow reopens your home on launch. A sign-in Home Assistant no longer accepts is forgotten.

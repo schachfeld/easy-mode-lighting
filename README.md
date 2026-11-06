@@ -4,6 +4,13 @@
 
 Open a room, set its brightness, tap a scene, or make one of your own. No dashboard builder or YAML required.
 
+Glow comes in two current versions:
+
+- **The Home Assistant add-on**, which you install in Home Assistant and open from its sidebar. See [Install on Home Assistant OS](#install-on-home-assistant-os).
+- **The phone app for iOS and Android**, a React Native app in [`native/`](native/README.md). See [Phone app](#phone-app).
+
+The Tauri phone app in `src-tauri/` is deprecated. See [Deprecated Tauri app](#deprecated-tauri-app).
+
 ## What you can do
 
 - See your rooms automatically, using your Home Assistant Areas.
@@ -65,13 +72,15 @@ For development against a real instance, set `HA_URL` and `HA_TOKEN` on the serv
 | `PORT`             | `8099`            | Backend HTTP port                                                   |
 | `HOST`             | `127.0.0.1`       | Standalone listen address; the HA OS app uses ingress only          |
 
-## Standalone mobile app
+## Phone app
 
-The same React interface and lighting core also power a Tauri 2 app for Android and iOS. Mobile connects directly to Home Assistant over its WebSocket API, without installing the Glow add-on. It includes Home Assistant account sign-in through your browser, stays signed in using the iOS Keychain or Android Keystore, and saves scenes in Home Assistant. Manual access tokens remain supported. Account sign-in requires publishing the public identity page described in the mobile guide.
+The current phone app for iOS and Android is the React Native (Expo) app in [`native/`](native/README.md). It shares the add-on's lighting core and connects directly to Home Assistant over its WebSocket API, without the Glow add-on. It includes Home Assistant account sign-in through your browser, stays signed in using the iOS Keychain or Android Keystore, and saves scenes in Home Assistant, so they appear in the add-on too. Manual access tokens remain supported. Account sign-in requires publishing the public identity page described in [the mobile guide](MOBILE.md#publish-the-login-identity-page).
 
-See [the mobile guide](MOBILE.md) for prerequisites, build commands, architecture, and storage behavior. Preview its connection screen with `npm run dev:mobile`; build its frontend with `npm run build:mobile`. New scenes are saved in Home Assistant and appear in both mobile and the add-on.
+See [`native/README.md`](native/README.md) to run and build it.
 
-A native React Native rewrite of the phone app lives in [`native/`](native/README.md). It shares the same lighting core and offers the same features with a native interface.
+### Deprecated Tauri app
+
+The Tauri 2 app in `src-tauri/`, with its frontend in `src/mobile/`, is deprecated and replaced by the React Native app. It still builds, but gets no new features or design changes; make phone changes in `native/`. Its build steps are in [the mobile guide](MOBILE.md). Both apps use the bundle ID `io.github.schachfeld.glow`, so TestFlight treats them as one app: do not upload a Tauri build after a React Native one.
 
 ## Scene storage
 
@@ -96,7 +105,7 @@ npm run package:addon
 
 Integration tests use a real local WebSocket server to exercise authentication, discovery, service calls, live events, reconnecting, unavailable lights, and persistence. Browser tests cover the room controls, scene lifecycle, undo, dialogs and the back button, updates between tabs, and phone layout. Browser screenshots are written to `artifacts/`.
 
-`npm run test:ha` needs Docker and a prior `npm run build` and `npm run build:mobile`. It starts a real Home Assistant container (pinned in `tests/ha/home-assistant.ts`; override with `HA_IMAGE`), onboards an owner account, and loads in-memory mock lights from `tests/ha/config/custom_components`. A production Glow server connects to it with a long-lived token, and the tests drive the UI while checking the light states, scenes, and areas in Home Assistant itself. The mobile app signs in through Home Assistant's real login page, then renews and loses access as Home Assistant grants and revokes it. Inside the container, Glow's identity host resolves to a local HTTPS server that serves `auth-client/index.html`, so sign-in uses the production client ID without internet access. Only the native shell is simulated; its token exchange mirrors `src-tauri/src/auth.rs`.
+`npm run test:ha` needs Docker and a prior `npm run build` and `npm run build:mobile`. It starts a real Home Assistant container (pinned in `tests/ha/home-assistant.ts`; override with `HA_IMAGE`), onboards an owner account, and loads in-memory mock lights from `tests/ha/config/custom_components`. A production Glow server connects to it with a long-lived token, and the tests drive the UI while checking the light states, scenes, and areas in Home Assistant itself. The deprecated Tauri app's frontend signs in through Home Assistant's real login page, then renews and loses access as Home Assistant grants and revokes it. Inside the container, Glow's identity host resolves to a local HTTPS server that serves `auth-client/index.html`, so sign-in uses the production client ID without internet access. Only the native shell is simulated; its token exchange mirrors `src-tauri/src/auth.rs`.
 
 The server uses the official [WebSocket API](https://developers.home-assistant.io/docs/api/websocket/) and [app communication API](https://developers.home-assistant.io/docs/apps/communication/). The app only exposes its UI through authenticated Home Assistant ingress and rejects requests arriving directly from other containers. Scene changes require JSON and reject browser cross-site requests.
 

@@ -1,5 +1,9 @@
 # Working on Glow
 
+## Which apps are current
+
+Glow has two current versions: the Home Assistant add-on (`server/` and the React UI in `src/`) and the React Native phone app in `native/`. The Tauri phone app (`src-tauri/` and `src/mobile/`) is deprecated. Make phone features and fixes in `native/`, not in the Tauri app, and do not upload Tauri builds to TestFlight: both apps share the bundle ID `io.github.schachfeld.glow`.
+
 ## Test new features against a real Home Assistant
 
 Before you call a feature done, test it against Home Assistant running in Docker. Unit tests and demo-mode browser tests are not enough on their own.
@@ -10,6 +14,7 @@ npm run build:mobile
 npm run test:ha
 ```
 
-- Add tests for the feature to `tests/ha/glow.spec.ts`, or to `tests/ha/sign-in.spec.ts` for mobile sign-in. Check the result in Home Assistant itself, through its states, services, registries, or scene configuration, not only in the UI.
+- Add tests for the feature to `tests/ha/glow.spec.ts`, or to `tests/ha/sign-in.spec.ts` for sign-in (which covers the deprecated Tauri app's frontend). Check the result in Home Assistant itself, through its states, services, registries, or scene configuration, not only in the UI.
 - If the feature needs another kind of light, add a mock light to `tests/ha/config/configuration.yaml`. The mock integration is in `tests/ha/config/custom_components/glow_mock_lights/`.
+- For a change to the phone app in `native/`, also try it on an iOS Simulator or Android Emulator against the Home Assistant from `node --experimental-transform-types native/e2e/home-assistant.ts`, as described in `native/e2e/README.md`. There are no automated device tests yet.
 - If Docker is unavailable, say so instead of skipping the suite silently.
