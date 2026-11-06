@@ -25,7 +25,7 @@ It also has a demo home (**Explore a demo home** on the sign-in screen), the sam
 ## Differences from the Tauri app
 
 - **No passphrase vault.** The Tauri app falls back to a passphrase-protected Stronghold vault when a platform has no secure storage. iOS and Android always have secure storage, so the vault is not needed. A sign-in saved by the Tauri app cannot be read by this app; sign in once after switching.
-- **Navigation** uses a native tab bar (Rooms, Scenes, Settings) and stack. Dialogs are bottom sheets, and the Android back gesture closes them.
+- **Navigation** uses a tab bar (Rooms, Scenes, Settings) and a native stack. On iOS it is the system tab bar, which is Liquid Glass on iOS 26 and later; the system appearance follows the Glow theme so the glass matches it. Android keeps a tab bar in the theme's colors. Dialogs are bottom sheets, and the Android back gesture closes them.
 - **Network requests** for sign-in and scenes use Expo's native fetch with redirects turned off, so tokens are only sent to the address you entered, as in the Rust code.
 
 ## Develop

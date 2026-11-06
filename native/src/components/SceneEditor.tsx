@@ -306,16 +306,14 @@ export function SceneEditor({
               {current.on && (
                 <View style={styles.lightSettings}>
                   {light.dimmable && (
-                    <View style={{ flex: 1 }}>
-                      <Brightness
-                        value={current.brightness}
-                        label={`${light.name} scene brightness`}
-                        onChange={(brightness) =>
-                          setLight(light.id, { brightness })
-                        }
-                        compact
-                      />
-                    </View>
+                    <Brightness
+                      value={current.brightness}
+                      label={`${light.name} scene brightness`}
+                      onChange={(brightness) =>
+                        setLight(light.id, { brightness })
+                      }
+                      compact
+                    />
                   )}
                   {(light.colorSupported || light.temperatureSupported) && (
                     <Pressable
@@ -419,15 +417,17 @@ const styles = StyleSheet.create({
   },
   light: { borderWidth: 1, borderRadius: 14, padding: 14, gap: 10 },
   lightHeading: { flexDirection: "row", alignItems: "center", gap: 10 },
-  lightSettings: { flexDirection: "row", alignItems: "center", gap: 12 },
+  // The brightness slider gets the full width, with the color button below it.
+  lightSettings: { gap: 8 },
   colorButton: {
+    alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     borderWidth: 1,
-    borderRadius: 18,
-    paddingHorizontal: 10,
-    minHeight: 36,
+    borderRadius: 22,
+    paddingHorizontal: 12,
+    minHeight: 44,
   },
   dot: { width: 16, height: 16, borderRadius: 8 },
   confirm: { flex: 1, gap: 10 },

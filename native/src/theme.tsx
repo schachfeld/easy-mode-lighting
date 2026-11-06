@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { Appearance } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // The same two themes as the web app. Firefly is the default: the night-time
@@ -176,6 +177,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {});
   }, []);
+  // Native views (the Liquid Glass tab bar, the keyboard, system alerts) follow
+  // the system appearance, so match it to the theme rather than the device.
+  useEffect(() => {
+    Appearance.setColorScheme(theme === "firefly" ? "dark" : "light");
+  }, [theme]);
   const value = useMemo(
     () => ({
       theme,

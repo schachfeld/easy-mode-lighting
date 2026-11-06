@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -89,12 +90,22 @@ export function Overlays() {
   );
 }
 
+// The iOS system tab bar (Liquid Glass) floats over the page and cannot be
+// measured, so estimate it there. Android measures the JavaScript tab bar.
+function useEstimatedTabBarHeight() {
+  return useSafeAreaInsets().bottom + 64;
+}
+const glassTabs = Platform.OS === "ios";
+const useTabBarHeight = glassTabs
+  ? useEstimatedTabBarHeight
+  : useBottomTabBarHeight;
+
 // Toasts appear above the tab bar, and inside open dialogs as notices.
 export function ToastView() {
   const colors = useColors();
   const { toast, setToast, busy } = useGlow();
   // Rendered beside the tabs rather than in one, so estimate the tab bar.
-  const tabBar = useSafeAreaInsets().bottom + 64;
+  const tabBar = useEstimatedTabBarHeight();
   if (!toast && !busy) return null;
   return (
     <View
@@ -184,14 +195,17 @@ export function Page({
 }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const tabBar = useBottomTabBarHeight();
+  const tabBar = useTabBarHeight();
   const { home } = useGlow();
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: colors.bg }}
+      // On iOS the system adds the status bar and tab bar to the insets, so the
+      // page scrolls under the Liquid Glass bar.
+      contentInsetAdjustmentBehavior={glassTabs ? "automatic" : "never"}
       contentContainerStyle={{
-        paddingTop: insets.top + 12,
-        paddingBottom: tabBar + 90,
+        paddingTop: (glassTabs ? 0 : insets.top) + 12,
+        paddingBottom: (glassTabs ? 0 : tabBar) + 90,
         paddingHorizontal: 18,
         gap: 18,
         width: "100%",

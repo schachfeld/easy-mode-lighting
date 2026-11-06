@@ -103,6 +103,7 @@ function Track({
       accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
       onAccessibilityAction={disabled ? undefined : keyboard}
       style={styles.track}
+      hitSlop={trackSlop}
       onLayout={(event: LayoutChangeEvent) => {
         width.current = Math.max(1, event.nativeEvent.layout.width);
       }}
@@ -278,6 +279,10 @@ export function WhiteSlider({
   );
 }
 
+// Touches may start a little past either end of the track, in the gap beside
+// the icon and the value, so a thumb at 0% or 100% can be grabbed whole.
+const trackSlop = { left: 12, right: 12 };
+
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
@@ -285,9 +290,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   disabled: { opacity: 0.45 },
+  // At least 44pt (iOS) and 48dp (Android) tall, so it is easy to touch.
   track: {
     flex: 1,
-    height: 40,
+    height: 48,
     justifyContent: "center",
   },
   trackLine: {
