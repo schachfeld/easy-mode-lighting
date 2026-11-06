@@ -8,8 +8,8 @@ import {
 import { join } from "node:path";
 import { releaseInfo, compareVersions } from "./release-lib.mjs";
 
-export const repositoryUrl = "https://github.com/schachfeld/easy-mode-lighting";
-export const imageName = "ghcr.io/schachfeld/easy-mode-lighting";
+export const repositoryUrl = "https://github.com/schachfeld/glow";
+export const imageName = "ghcr.io/schachfeld/glow";
 
 export function writeCatalog(source, destination, { revision, digest }) {
   if (!/^[a-f0-9]{40}$/.test(revision ?? ""))

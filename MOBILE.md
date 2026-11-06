@@ -95,7 +95,7 @@ The app reconnects after connection loss and when returning to the foreground. R
 
 ## Publish the login identity page
 
-The default client identity is `https://schachfeld.github.io/easy-mode-lighting/`. Home Assistant must be able to fetch this public HTTPS page to approve the custom return link `glow-lighting://auth/callback`. The page is static metadata; login codes and credentials return directly to the native app.
+The default client identity is `https://schachfeld.github.io/glow/`. Home Assistant must be able to fetch this public HTTPS page to approve the custom return link `glow-lighting://auth/callback`. The page is static metadata; login codes and credentials return directly to the native app.
 
 1. Publish the changes containing `auth-client/index.html` and `.github/workflows/auth-identity.yml` to GitHub.
 2. In repository **Settings → Pages**, select **GitHub Actions** as the source.

@@ -1,8 +1,7 @@
 import { connectionUrl } from "./connection.mjs";
 
 export const REDIRECT_URI = "glow-lighting://auth/callback";
-export const DEFAULT_CLIENT_ID =
-  "https://schachfeld.github.io/easy-mode-lighting/";
+export const DEFAULT_CLIENT_ID = "https://schachfeld.github.io/glow/";
 export const LOGIN_LIFETIME = 10 * 60 * 1000;
 
 export function createLogin(

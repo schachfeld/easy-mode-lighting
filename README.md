@@ -49,9 +49,9 @@ The add-on runs Glow inside Home Assistant, so you can use it in a browser from 
 
 ### Install on Home Assistant OS
 
-Source code is hosted at [schachfeld/easy-mode-lighting](https://github.com/schachfeld/easy-mode-lighting). Until the first tagged release is published, use the local installation below.
+Source code is hosted at [schachfeld/glow](https://github.com/schachfeld/glow). Until the first tagged release is published, use the local installation below.
 
-After the first successful release, add `https://github.com/schachfeld/easy-mode-lighting#home-assistant` in the Home Assistant app store's **Repositories** menu. Install **Glow** from that repository. Later releases appear as normal app updates, with prebuilt images for both supported architectures. The `home-assistant` branch is created automatically by the first successful release.
+After the first successful release, add `https://github.com/schachfeld/glow#home-assistant` in the Home Assistant app store's **Repositories** menu. Install **Glow** from that repository. Later releases appear as normal app updates, with prebuilt images for both supported architectures. The `home-assistant` branch is created automatically by the first successful release.
 
 #### Local installation
 

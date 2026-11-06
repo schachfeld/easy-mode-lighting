@@ -23,7 +23,7 @@ test("account authorization uses the chosen instance, identity, callback and unp
   );
   assert.equal(
     url.searchParams.get("client_id"),
-    "https://schachfeld.github.io/easy-mode-lighting/",
+    "https://schachfeld.github.io/glow/",
   );
   assert.equal(url.searchParams.get("redirect_uri"), REDIRECT_URI);
   assert.equal(url.searchParams.get("state"), login.state);
