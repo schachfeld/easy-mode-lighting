@@ -1,17 +1,22 @@
-import type { ReactNode } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useState, type ReactNode } from "react";
+// Gesture Handler's scroll view gives way to a slider or the color wheel that
+// holds the touch.
+import {
+  GestureHandlerRootView,
+  ScrollView,
+} from "react-native-gesture-handler";
 import {
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { X } from "lucide-react-native";
 import { useColors } from "../theme";
+import { HoldContext } from "./hold";
 import { IconButton, Txt } from "./ui";
 
 // A bottom sheet for dialogs. The back gesture, the backdrop and the close
@@ -32,6 +37,7 @@ export function Sheet({
 }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const [held, setHeld] = useState(false);
   return (
     <Modal
       visible
@@ -86,10 +92,13 @@ export function Sheet({
               <IconButton icon={X} label="Close dialog" onPress={onClose} />
             </View>
             <ScrollView
+              scrollEnabled={!held}
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={styles.content}
             >
-              {children}
+              <HoldContext.Provider value={setHeld}>
+                {children}
+              </HoldContext.Provider>
             </ScrollView>
             {footer && (
               <View

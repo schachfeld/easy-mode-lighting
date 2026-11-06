@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { ArrowLeft, Plus, Settings2 } from "lucide-react";
 import {
   averageBrightness,
+  sliderTargets,
   lightTargets,
   roomLightLayout,
 } from "../packages/core/groups.mjs";
@@ -68,7 +69,10 @@ export function RoomPage({
             label="Room brightness"
             disabled={disabled || !anyAvailable}
             onChange={(brightness) =>
-              onLightsChange(lights, { on: true, brightness })
+              onLightsChange(sliderTargets(lights), {
+                on: true,
+                brightness,
+              })
             }
           />
         </div>

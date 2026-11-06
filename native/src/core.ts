@@ -2,6 +2,7 @@
 export * from "../../packages/core/types";
 export {
   averageBrightness,
+  sliderTargets,
   expandSceneLights,
   lightTargets,
   roomLightLayout,

@@ -7,6 +7,7 @@ import {
   averageBrightness,
   roomLightLayout,
   lightTargets,
+  sliderTargets,
 } from "../packages/core/groups.mjs";
 
 function fixture() {
@@ -291,4 +292,15 @@ test("average brightness ignores lights that are off, unavailable, or cannot dim
   );
   assert.equal(averageBrightness([light(100, { dimmable: false })]), 0);
   assert.equal(averageBrightness([], 55), 55);
+});
+
+test("adjusting several lights changes only those already on", () => {
+  const sofa = { id: "light.sofa", available: true, on: true };
+  const ceiling = { id: "light.ceiling", available: true, on: false };
+  const broken = { id: "light.broken", available: false, on: true };
+  assert.deepEqual(sliderTargets([sofa, ceiling, broken]), [sofa]);
+  // With nothing on, every light is a target so the slider can turn them on.
+  const off = { ...sofa, on: false };
+  assert.deepEqual(sliderTargets([off, ceiling]), [off, ceiling]);
+  assert.deepEqual(sliderTargets([]), []);
 });

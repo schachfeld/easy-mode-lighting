@@ -11,6 +11,7 @@ import {
 } from "lucide-react-native";
 import {
   averageBrightness,
+  sliderTargets,
   colorName,
   plural,
   sceneMatches,
@@ -93,7 +94,10 @@ export function RoomCard({
               disabled={disabled || !anyAvailable}
               compact
               onChange={(brightness) =>
-                onLightsChange(lights, { on: true, brightness })
+                onLightsChange(sliderTargets(lights), {
+                  on: true,
+                  brightness,
+                })
               }
             />
           </View>
@@ -212,7 +216,10 @@ export function LightCard({
           label={`${light.name} brightness`}
           compact
           onChange={(brightness) =>
-            onChange(members ?? [light], { brightness, on: true })
+            onChange(members ? sliderTargets(members) : [light], {
+              brightness,
+              on: true,
+            })
           }
         />
       )}

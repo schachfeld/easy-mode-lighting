@@ -4,6 +4,7 @@ import {
   colorsClose,
   kelvinClose,
 } from "../packages/core/color.mjs";
+import { sliderTargets } from "../packages/core/groups.mjs";
 import { ColorWheel } from "./ColorWheel";
 import { Brightness, Modal, Toggle, WhiteSlider } from "./components";
 import { plural } from "./format";
@@ -27,6 +28,7 @@ const whites = [
 // The adjust dialog for a single light or a light group.
 export function LightEditor({
   light,
+  members,
   roomName,
   disabled,
   error,
@@ -34,6 +36,8 @@ export function LightEditor({
   onClose,
 }: {
   light: Light | LightGroup;
+  // A group's lights. Adjusting the group changes only those already on.
+  members?: Light[];
   roomName?: string;
   disabled: boolean;
   error?: string;
@@ -41,6 +45,7 @@ export function LightEditor({
   onClose: () => void;
 }) {
   const locked = disabled || !light.available;
+  const adjusted = members ? sliderTargets(members) : [light];
   const supportedKelvin = (kelvin: number) =>
     Math.max(light.minKelvin, Math.min(light.maxKelvin, kelvin));
   // Bulbs report colors and temperatures slightly differently from what they
@@ -99,7 +104,7 @@ export function LightEditor({
           <Brightness
             value={light.on ? light.brightness : 0}
             onChange={(brightness) =>
-              onChange([light], { brightness, on: true })
+              onChange(adjusted, { brightness, on: true })
             }
             disabled={locked}
           />
@@ -117,7 +122,7 @@ export function LightEditor({
               label={`${light.name} color`}
               disabled={locked}
               onChange={(color) =>
-                onChange([light], { color, colorMode: "rgb", on: true })
+                onChange(adjusted, { color, colorMode: "rgb", on: true })
               }
             />
             <div className="color-swatches">
@@ -130,7 +135,7 @@ export function LightEditor({
                   aria-pressed={selectedColor === color}
                   disabled={locked}
                   onClick={() =>
-                    onChange([light], { color, colorMode: "rgb", on: true })
+                    onChange(adjusted, { color, colorMode: "rgb", on: true })
                   }
                 >
                   {selectedColor === color && <Check size={17} />}
@@ -152,7 +157,7 @@ export function LightEditor({
             inactive={light.colorMode !== "color_temp"}
             disabled={locked}
             onChange={(kelvin) =>
-              onChange([light], { kelvin, colorMode: "color_temp", on: true })
+              onChange(adjusted, { kelvin, colorMode: "color_temp", on: true })
             }
           />
           <div className="white-presets">
@@ -165,7 +170,7 @@ export function LightEditor({
                   className={selectedWhite === white ? "selected" : ""}
                   aria-pressed={selectedWhite === white}
                   onClick={() =>
-                    onChange([light], {
+                    onChange(adjusted, {
                       kelvin,
                       colorMode: "color_temp",
                       on: true,

@@ -244,9 +244,9 @@ export default function App({
         : "Glow · Your home, in a good light";
   }, [room?.name, page]);
   const disabled = !home?.connected || !streamOnline;
+  const currentGroup = home?.groups?.find((group) => group.id === lightEditor);
   const currentLight =
-    home?.lights.find((l) => l.id === lightEditor) ??
-    home?.groups?.find((group) => group.id === lightEditor);
+    home?.lights.find((l) => l.id === lightEditor) ?? currentGroup;
 
   function renderScene(scene: Scene) {
     return (
@@ -474,6 +474,11 @@ export default function App({
       {currentLight && (
         <LightEditor
           light={currentLight}
+          members={
+            home && currentGroup
+              ? lightTargets(home, currentGroup.memberIds)
+              : undefined
+          }
           roomName={home?.rooms.find((r) => r.id === currentLight.roomId)?.name}
           disabled={disabled}
           error={toast?.error ? toast.message : undefined}
