@@ -1,4 +1,4 @@
-name: Mobile iOS TestFlight
+name: Mobile iOS TestFlight (deprecated Tauri app)
 
 on:
   workflow_dispatch:

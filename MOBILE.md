@@ -1,4 +1,9 @@
-# Glow mobile
+# Glow mobile (deprecated Tauri app)
+
+> [!WARNING]
+> The Tauri app is deprecated. The current phone app is the React Native app in [`native/`](native/README.md); together with the Home Assistant add-on, it is the current version of Glow. Make phone changes in `native/`, not here.
+>
+> Some sections of this guide also apply to the React Native app: [the login identity page](#publish-the-login-identity-page), [light groups](#light-groups) and [where scenes live](#where-scenes-live).
 
 Glow builds the Home Assistant add-on and a Tauri 2 app from the same React UI and lighting core. The mobile app connects directly to Home Assistant; it does not need the Glow add-on or a separate Node server.
 
@@ -31,11 +36,13 @@ npm run mobile:ios
 
 The mobile dev server uses port 5181; the add-on dev server continues to use 5180. Tauri supplies `TAURI_DEV_HOST` for physical-device development. Android projects and Xcode projects are generated into `src-tauri/gen/` and are not committed. App icons and iOS local-network permission text are included. iOS requires version 16 or later; Android's minimum SDK is 24.
 
-The **Mobile Android build** GitHub Actions workflow can produce a debug ARM64 APK from a manually selected branch. Debug artifacts are for testing. The **Mobile iOS TestFlight** workflow builds a signed App Store build and uploads it to TestFlight; see below. Google Play distribution still needs signing and release configuration. The normal CI also compiles the Rust shell on Linux. Local browser tests mock native IPC; they do not replace device testing or prove that a native package builds.
+The **Mobile Android build (deprecated Tauri app)** GitHub Actions workflow can produce a debug ARM64 APK from a manually selected branch. Debug artifacts are for testing. The **Mobile iOS TestFlight (deprecated Tauri app)** workflow builds a signed App Store build and uploads it to TestFlight; see below. Google Play distribution still needs signing and release configuration. The normal CI also compiles the Rust shell on Linux. Local browser tests mock native IPC; they do not replace device testing or prove that a native package builds.
 
 ## Release to TestFlight
 
-The **Mobile iOS TestFlight** GitHub Actions workflow builds the iOS app on a macOS runner, signs it for App Store distribution, checks the packaged app, and uploads it to App Store Connect. The app version comes from `package.json`; the build number (`CFBundleVersion`) is derived from the workflow run, so every upload is unique. The signed IPA is also kept as a workflow artifact for seven days.
+The React Native app uses the same bundle ID and App Store Connect app. TestFlight shows the build with the highest number as the newest, so a Tauri build uploaded after a React Native one replaces it for testers.
+
+The **Mobile iOS TestFlight (deprecated Tauri app)** GitHub Actions workflow builds the iOS app on a macOS runner, signs it for App Store distribution, checks the packaged app, and uploads it to App Store Connect. The app version comes from `package.json`; the build number (`CFBundleVersion`) is derived from the workflow run, so every upload is unique. The signed IPA is also kept as a workflow artifact for seven days.
 
 ### One-time Apple setup
 
@@ -64,7 +71,7 @@ The workflow stops before building if any value is missing.
 ### Upload a build
 
 1. Make sure the [login identity page](#publish-the-login-identity-page) is published; account sign-in cannot work without it.
-2. Run **Mobile iOS TestFlight** from **Actions** on `main` or a release branch. Leave **Upload** enabled; disable it to only produce and check a signed IPA.
+2. Run **Mobile iOS TestFlight (deprecated Tauri app)** from **Actions** on `main` or a release branch. Leave **Upload** enabled; disable it to only produce and check a signed IPA.
 3. After App Store Connect finishes processing (usually 5–30 minutes), the build appears under **TestFlight**. Add it to an internal testing group, or submit it for beta review to use external testers. Beta review needs test notes explaining that a reachable Home Assistant instance is required, plus a demo instance or a screen recording.
 
 The app declares `ITSAppUsesNonExemptEncryption = false`, because Glow only uses encryption for HTTPS/WSS connections and to protect saved sign-in credentials on the device. Confirm this matches your export-compliance assessment; if not, remove the key from `src-tauri/Info.ios.plist` and answer the encryption questions in App Store Connect instead. `src-tauri/PrivacyInfo.xcprivacy` declares no tracking or collected data, and the file-timestamp and elapsed-time APIs used by the Rust runtime. Fill in the App Store Connect privacy questionnaire as **Data Not Collected** to match. iOS app icons are opaque, as App Store Connect requires.
