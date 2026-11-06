@@ -1,7 +1,7 @@
 import { Platform } from "react-native";
 import { Tabs } from "expo-router";
 import { NativeTabs } from "expo-router/native-tabs";
-import { LayoutGrid, Settings2, Sparkles } from "lucide-react-native";
+import { LayoutGrid, Palette, Settings2 } from "lucide-react-native";
 import { GlowProvider } from "../../glow";
 import { useSession } from "../../session";
 import { fonts, useColors } from "../../theme";
@@ -43,7 +43,9 @@ function GlassTabs() {
         contentStyle={{ backgroundColor: colors.bg }}
       >
         <NativeTabs.Trigger.Label>Scenes</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="sparkles" />
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "paintpalette", selected: "paintpalette.fill" }}
+        />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
         name="settings"
@@ -90,7 +92,7 @@ function BarTabs() {
         options={{
           title: "Scenes",
           tabBarIcon: ({ color, size }) => (
-            <Sparkles color={color} size={size - 2} />
+            <Palette color={color} size={size - 2} />
           ),
         }}
       />

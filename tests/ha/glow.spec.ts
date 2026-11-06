@@ -114,10 +114,7 @@ test("colors and whites from the light editor reach the bulb", async ({
   page,
 }) => {
   await button(page, "Open Living room").click();
-  await page
-    .locator(".light-card", { hasText: "Sofa lamp" })
-    .getByRole("button", { name: "Adjust light" })
-    .click();
+  await page.getByRole("button", { name: "Adjust Sofa lamp" }).click();
   await page
     .getByRole("button", { name: /^Set color / })
     .nth(4)

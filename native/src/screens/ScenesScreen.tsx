@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { router } from "expo-router";
-import { Heart, Sparkles } from "lucide-react-native";
+import { Heart, Palette } from "lucide-react-native";
 import { useGlow } from "../glow";
 import { Page } from "../components/Overlays";
 import { Chip, Title } from "../components/ui";
@@ -55,14 +55,14 @@ export function ScenesScreen() {
       <SceneGrid scenes={scenes} inRoom={false} />
       {!scenes.length && (
         <EmptyState
-          icon={Sparkles}
+          icon={Palette}
           title="No scenes yet"
           text={
             filter === "favorites"
               ? "Tap the heart on any scene to make it a favorite."
               : "Open a room to save your first scene."
           }
-          action={filter === "favorites" ? "Explore scenes" : "Go to rooms"}
+          action={filter === "favorites" ? "Show all scenes" : "Go to rooms"}
           onAction={() =>
             filter === "favorites" ? setFilter("all") : router.navigate("/")
           }

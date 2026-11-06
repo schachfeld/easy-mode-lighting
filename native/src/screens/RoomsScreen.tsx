@@ -140,7 +140,7 @@ export function RoomsScreen() {
           icon={House}
           title="No rooms yet"
           text="Add lights to Areas in Home Assistant and they’ll appear here automatically. Unassigned lights appear in “Other lights”."
-          action="How it works"
+          action="Open Settings & help"
           onAction={() => router.navigate("/settings")}
         />
       ) : (

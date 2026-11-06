@@ -83,7 +83,7 @@ export function RoomScreen({ roomId }: { roomId: string }) {
             >
               {room.name}
             </Txt>
-            <Txt size={13} color={tone.ink}>
+            <Txt size={13} tone="textSecondary">
               {onCount} of {plural(lights.length, "light")} on
             </Txt>
           </View>

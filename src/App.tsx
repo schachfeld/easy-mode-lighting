@@ -6,9 +6,9 @@ import {
   House,
   LayoutGrid,
   LoaderCircle,
+  Palette,
   RotateCcw,
   Settings2,
-  Sparkles,
   Sun,
   WifiOff,
   X,
@@ -305,7 +305,7 @@ export default function App({
             aria-current={page === "scenes" ? "page" : undefined}
             onClick={() => navigate("scenes")}
           >
-            <Sparkles size={19} />
+            <Palette size={19} />
             <span>All scenes</span>
           </button>
           {/* Phones hide the sidebar footer, so settings get their own button here. */}

@@ -23,7 +23,10 @@ test("the color wheel and white slider change a light as you drag", async ({
     });
   });
   await page.goto("/#/rooms/bathroom");
-  await page.getByRole("button", { name: "Adjust light" }).first().click();
+  await page
+    .locator(".light-card:not(.light-group-card) .light-name-button:visible")
+    .first()
+    .click();
   const dialog = page.getByRole("dialog");
   const wheel = dialog.getByRole("slider", { name: "Mirror lights color" });
   const status = page
