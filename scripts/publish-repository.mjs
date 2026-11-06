@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { repositoryUrl, writeCatalog } from "./catalog.mjs";
 
-if (process.env.GITHUB_REPOSITORY !== "schachfeld/easy-mode-lighting")
+if (process.env.GITHUB_REPOSITORY !== "schachfeld/glow")
   throw new Error("Run publication only in the Glow GitHub repository.");
 const directory = mkdtempSync(join(tmpdir(), "glow-catalog-"));
 const git = (args) =>

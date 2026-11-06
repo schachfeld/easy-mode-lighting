@@ -1,6 +1,6 @@
 # Releasing Glow
 
-The source repository is https://github.com/schachfeld/easy-mode-lighting. Development happens on `main`; the generated `home-assistant` branch contains only the published app catalog. Never edit the catalog branch manually.
+The source repository is https://github.com/schachfeld/glow. Development happens on `main`; the generated `home-assistant` branch contains only the published app catalog. Never edit the catalog branch manually.
 
 ## Normal development
 
@@ -56,7 +56,7 @@ Use the actual new version for subsequent releases. Published tags and versioned
 The **Release** workflow:
 
 1. Runs the same CI checks again for the tagged commit.
-2. Builds and publishes `ghcr.io/schachfeld/easy-mode-lighting:VERSION` for `linux/amd64` and `linux/arm64`.
+2. Builds and publishes `ghcr.io/schachfeld/glow:VERSION` for `linux/amd64` and `linux/arm64`.
 3. Pulls the exact published digest anonymously and checks actual startup on both architectures. The image revision must match the release commit.
 4. Creates a GitHub release with the changelog entry, local-install archives, and SHA-256 checksums.
 5. Publishes `repository.yaml`, the app manifest, documentation, icon, and release evidence to the `home-assistant` branch. The catalog cannot be downgraded or replace an existing version with different code or a different image.
@@ -67,7 +67,7 @@ Only the last step offers the update to Home Assistant. The release workflow use
 
 GitHub makes new container packages private by default, even when source repositories are public. The first release may therefore stop at its anonymous-pull check.
 
-Open https://github.com/users/schachfeld/packages/container/easy-mode-lighting/settings and change the package visibility to **Public**. Then use **Re-run failed jobs** on the release run. The image has already been built; the failed publication job resumes without rebuilding it. No Home Assistant update is offered while the package is private.
+Open https://github.com/users/schachfeld/packages/container/glow/settings and change the package visibility to **Public**. Then use **Re-run failed jobs** on the release run. The image has already been built; the failed publication job resumes without rebuilding it. No Home Assistant update is offered while the package is private.
 
 See [GitHub's container registry documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#pushing-container-images).
 
@@ -76,7 +76,7 @@ See [GitHub's container registry documentation](https://docs.github.com/en/packa
 After the first release succeeds, add this URL in Home Assistant's app store → **Repositories**:
 
 ```text
-https://github.com/schachfeld/easy-mode-lighting#home-assistant
+https://github.com/schachfeld/glow#home-assistant
 ```
 
 Install and start **Glow**, then enable **Show in sidebar**. Subsequent successful releases become normal Home Assistant app updates.

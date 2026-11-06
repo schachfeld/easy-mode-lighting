@@ -58,10 +58,10 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/schachfeld/easy-mode-lighting:${{ steps.version.outputs.value }}
+          tags: ghcr.io/schachfeld/glow:${{ steps.version.outputs.value }}
           build-args: BUILD_VERSION=${{ steps.version.outputs.value }}
           labels: |
-            org.opencontainers.image.source=https://github.com/schachfeld/easy-mode-lighting
+            org.opencontainers.image.source=https://github.com/schachfeld/glow
             org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -87,9 +87,9 @@ jobs:
       # This job deliberately has no registry login: HA must be able to pull anonymously.
       - name: Check public access and start both architectures
         run: |
-          IMAGE="ghcr.io/schachfeld/easy-mode-lighting@$RELEASE_DIGEST"
+          IMAGE="ghcr.io/schachfeld/glow@$RELEASE_DIGEST"
           if ! docker manifest inspect "$IMAGE" > /dev/null; then
-            echo "::error::Make the easy-mode-lighting container package public at https://github.com/users/schachfeld/packages/container/easy-mode-lighting/settings, then re-run failed jobs. Home Assistant has not been offered this update."
+            echo "::error::Make the glow container package public at https://github.com/users/schachfeld/packages/container/glow/settings, then re-run failed jobs. Home Assistant has not been offered this update."
             exit 1
           fi
           node scripts/smoke-container.mjs "$IMAGE" linux/amd64

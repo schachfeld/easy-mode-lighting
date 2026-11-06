@@ -15,7 +15,7 @@ page = (root / "index.html").read_bytes()
 
 class Identity(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path != "/easy-mode-lighting/":
+        if self.path != "/glow/":
             self.send_error(404)
             return
         self.send_response(200)

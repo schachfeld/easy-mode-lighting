@@ -2,7 +2,7 @@ import { releaseInfo } from "./release-lib.mjs";
 
 const { version } = releaseInfo(process.cwd(), process.env.GITHUB_REF_NAME);
 const response = await fetch(
-  `https://api.github.com/repos/schachfeld/easy-mode-lighting/releases/tags/v${version}`,
+  `https://api.github.com/repos/schachfeld/glow/releases/tags/v${version}`,
   {
     headers: {
       Authorization: `Bearer ${process.env.GH_TOKEN}`,

@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { releaseInfo } from "./release-lib.mjs";
 
-const repository = "schachfeld/easy-mode-lighting";
+const repository = "schachfeld/glow";
 const { version } = releaseInfo(process.cwd(), process.env.GITHUB_REF_NAME);
 const tag = `v${version}`;
 const response = await fetch(

@@ -42,9 +42,7 @@ test("account sign-in opens HA, validates callback, stores only the renewable cr
     fullPage: true,
   });
   const login = await startLogin(page);
-  expect(login.clientId).toBe(
-    "https://schachfeld.github.io/easy-mode-lighting/",
-  );
+  expect(login.clientId).toBe("https://schachfeld.github.io/glow/");
   expect(login.path).toBe("/ha/auth/authorize");
   const returnUrl = `${login.callback}?state=${login.state}&code=one-time-code`;
   await callback(page, returnUrl);
