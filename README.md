@@ -71,6 +71,8 @@ The same React interface and lighting core also power a Tauri 2 app for Android 
 
 See [the mobile guide](MOBILE.md) for prerequisites, build commands, architecture, and storage behavior. Preview its connection screen with `npm run dev:mobile`; build its frontend with `npm run build:mobile`. New scenes are saved in Home Assistant and appear in both mobile and the add-on.
 
+A native React Native rewrite of the phone app lives in [`native/`](native/README.md). It shares the same lighting core and offers the same features with a native interface.
+
 ## Scene storage
 
 In live mode, saving a scene writes a persistent Home Assistant scene to `scenes.yaml`, available to dashboards, automations, mobile, and the add-on. This uses the Home Assistant scene editor API and requires an administrator connection, the `config` integration, and `scene: !include scenes.yaml` (standard Home Assistant defaults). Editing or deleting a published scene in Glow updates or deletes it in Home Assistant.

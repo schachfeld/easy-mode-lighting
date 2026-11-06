@@ -2,6 +2,8 @@
 
 Glow builds the Home Assistant add-on and a Tauri 2 app from the same React UI and lighting core. The mobile app connects directly to Home Assistant; it does not need the Glow add-on or a separate Node server.
 
+A React Native (Expo) rewrite of this app, sharing the same core, is in [`native/`](native/README.md).
+
 ## Run and build
 
 Install dependencies with `npm ci`. Install the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) for your development machine and target platform first. Rust 1.90 or newer is required by the plugins. Android needs Android Studio, its SDK/NDK, and a JDK. iOS needs macOS and Xcode.
