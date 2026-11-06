@@ -1,5 +1,6 @@
 import { Linking, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
+import { router } from "expo-router";
 import {
   ExternalLink,
   House,
@@ -133,6 +134,12 @@ export function SettingsScreen() {
         icon={LogOut}
         label={demo ? "Leave demo" : "Disconnect"}
         onPress={session.disconnect}
+      />
+      <Button
+        kind="text"
+        label="Imprint"
+        style={{ alignSelf: "center" }}
+        onPress={() => router.navigate("/settings/imprint")}
       />
       <Txt size={12} tone="faint" style={{ textAlign: "center" }}>
         Glow {Constants.expoConfig?.version}
