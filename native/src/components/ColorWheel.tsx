@@ -8,6 +8,7 @@ import {
 import { GestureDetector, usePanGesture } from "react-native-gesture-handler";
 import { colorName, colorsClose, hexToHsv, hsvToHex } from "../core";
 import { useColors } from "../theme";
+import { useHold } from "./hold";
 
 type Point = { h: number; s: number };
 const center: Point = { h: 0, s: 0 };
@@ -80,16 +81,23 @@ export function ColorWheel({
     setDrag(null);
     flush();
   };
-  // A native pan gesture, so a page or sheet never scrolls away while a
-  // finger is on the wheel, whichever way it moves.
+  // The page or sheet holds still while a finger is on the wheel, whichever
+  // way it moves.
+  const hold = useHold();
   const pan = usePanGesture({
     minDistance: 0,
     enabled: !disabled,
     runOnJS: true,
     disableReanimated: true,
-    onBegin: move,
+    onBegin: (event) => {
+      hold(true);
+      move(event);
+    },
     onUpdate: move,
-    onFinalize: release,
+    onFinalize: () => {
+      hold(false);
+      release();
+    },
   });
   const adjust = (event: AccessibilityActionEvent) => {
     const step = 15;

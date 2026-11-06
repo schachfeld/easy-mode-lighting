@@ -3,13 +3,18 @@ import {
   StyleSheet,
   View,
   type AccessibilityActionEvent,
-  type GestureResponderEvent,
   type LayoutChangeEvent,
 } from "react-native";
+import {
+  GestureDetector,
+  GestureStateManager,
+  usePanGesture,
+} from "react-native-gesture-handler";
 import { LinearGradient } from "expo-linear-gradient";
 import { Sun, Thermometer } from "lucide-react-native";
 import { whiteToHex } from "../core";
 import { useColors } from "../theme";
+import { useHold } from "./hold";
 import { Txt } from "./ui";
 
 // Lights follow a slider while it moves. The caller coalesces commands, and
@@ -42,8 +47,9 @@ function useSliderDraft(
   return { draft, change, commit };
 }
 
-// A horizontal track. Dragging sideways moves it; a vertical swipe still
-// scrolls the page, and a tap jumps to that spot.
+// A horizontal track. It claims the touch as soon as a finger lands and holds
+// the page still until it lifts, so moving the finger up or down while dragging
+// neither scrolls the page nor swipes back. A tap jumps to that spot.
 function Track({
   value,
   min,
@@ -72,12 +78,9 @@ function Track({
   thumbColor?: string;
 }) {
   const colors = useColors();
+  const hold = useHold();
   const width = useRef(1);
-  // Android reports locationX relative to whatever is under the finger while
-  // it moves, so positions are measured from where the touch started.
-  const start = useRef({ x: 0, origin: 0, moved: false });
-  const local = (event: GestureResponderEvent) =>
-    event.nativeEvent.pageX - start.current.origin;
+  const start = useRef({ x: 0, moved: false });
   const range = Math.max(1, max - min);
   const fraction = Math.min(1, Math.max(0, (value - min) / range));
   const at = (x: number) => {
@@ -93,62 +96,65 @@ function Track({
     onMove(Math.min(max, Math.max(min, value + delta)));
     onRelease();
   };
-  return (
-    <View
-      accessible
-      accessibilityRole="adjustable"
-      accessibilityLabel={label}
-      accessibilityState={{ disabled }}
-      accessibilityValue={{ min, max, now: value, text: valueText }}
-      accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
-      onAccessibilityAction={disabled ? undefined : keyboard}
-      style={styles.track}
-      hitSlop={trackSlop}
-      onLayout={(event: LayoutChangeEvent) => {
-        width.current = Math.max(1, event.nativeEvent.layout.width);
-      }}
-      onStartShouldSetResponder={() => !disabled}
-      onResponderGrant={(event: GestureResponderEvent) => {
-        const { locationX, pageX } = event.nativeEvent;
-        start.current = {
-          x: locationX,
-          origin: pageX - locationX,
-          moved: false,
-        };
-      }}
-      onResponderMove={(event: GestureResponderEvent) => {
-        const x = local(event);
-        if (!start.current.moved && Math.abs(x - start.current.x) < 4) return;
-        start.current.moved = true;
+  const pan = usePanGesture({
+    manualActivation: true,
+    enabled: !disabled,
+    onTouchesDown: ({ handlerTag }) => {
+      hold(true);
+      GestureStateManager.activate(handlerTag);
+    },
+    hitSlop: trackSlop,
+    runOnJS: true,
+    disableReanimated: true,
+    onBegin: ({ x }) => {
+      start.current = { x, moved: false };
+    },
+    onUpdate: ({ x }) => {
+      if (!start.current.moved && Math.abs(x - start.current.x) < 4) return;
+      start.current.moved = true;
+      onMove(at(x));
+    },
+    onFinalize: ({ x, canceled }) => {
+      hold(false);
+      if (!start.current.moved) {
+        if (canceled) return;
         onMove(at(x));
-      }}
-      onResponderRelease={(event: GestureResponderEvent) => {
-        if (!start.current.moved) {
-          onMove(at(local(event)));
-          onTap?.();
-        }
-        onRelease();
-      }}
-      onResponderTerminationRequest={() => !start.current.moved}
-      onResponderTerminate={() => {
-        if (start.current.moved) onRelease();
-      }}
-    >
-      <View pointerEvents="none" style={styles.trackLine}>
-        {track(fraction)}
-      </View>
+        onTap?.();
+      }
+      onRelease();
+    },
+  });
+  return (
+    <GestureDetector gesture={pan}>
       <View
-        pointerEvents="none"
-        style={[
-          styles.thumb,
-          {
-            left: `${fraction * 100}%`,
-            backgroundColor: thumbColor ?? colors.knob,
-            borderColor: colors.thumbBorder,
-          },
-        ]}
-      />
-    </View>
+        accessible
+        accessibilityRole="adjustable"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled }}
+        accessibilityValue={{ min, max, now: value, text: valueText }}
+        accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+        onAccessibilityAction={disabled ? undefined : keyboard}
+        style={styles.track}
+        onLayout={(event: LayoutChangeEvent) => {
+          width.current = Math.max(1, event.nativeEvent.layout.width);
+        }}
+      >
+        <View pointerEvents="none" style={styles.trackLine}>
+          {track(fraction)}
+        </View>
+        <View
+          pointerEvents="none"
+          style={[
+            styles.thumb,
+            {
+              left: `${fraction * 100}%`,
+              backgroundColor: thumbColor ?? colors.knob,
+              borderColor: colors.thumbBorder,
+            },
+          ]}
+        />
+      </View>
+    </GestureDetector>
   );
 }
 

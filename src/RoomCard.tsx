@@ -1,5 +1,5 @@
 import { ChevronRight } from "lucide-react";
-import { averageBrightness } from "../packages/core/groups.mjs";
+import { averageBrightness, sliderTargets } from "../packages/core/groups.mjs";
 import { Brightness, RoomIcon, Toggle } from "./components";
 import { plural } from "./format";
 import { sceneMatches } from "../packages/core/scenes.mjs";
@@ -67,7 +67,10 @@ export function RoomCard({
             disabled={disabled || !anyAvailable}
             compact
             onChange={(brightness) =>
-              onLightsChange(lights, { on: true, brightness })
+              onLightsChange(sliderTargets(lights), {
+                on: true,
+                brightness,
+              })
             }
           />
         )}

@@ -1,5 +1,6 @@
 import { ChevronRight, Layers, Lightbulb } from "lucide-react";
 import { colorName, whiteName } from "../packages/core/color.mjs";
+import { sliderTargets } from "../packages/core/groups.mjs";
 import { Brightness, Toggle } from "./components";
 import { plural } from "./format";
 import type { Light, LightGroup, LightSettings } from "./types";
@@ -70,7 +71,10 @@ export function LightCard({
           label={`${light.name} brightness`}
           compact
           onChange={(brightness) =>
-            onChange(members ?? [light], { brightness, on: true })
+            onChange(members ? sliderTargets(members) : [light], {
+              brightness,
+              on: true,
+            })
           }
         />
       )}

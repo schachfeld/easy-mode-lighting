@@ -1,8 +1,10 @@
 import { StyleSheet, View } from "react-native";
-import { router } from "expo-router";
+import { useState } from "react";
+import { router, Stack } from "expo-router";
 import { ArrowLeft, Plus, Settings2 } from "lucide-react-native";
 import {
   averageBrightness,
+  sliderTargets,
   lightTargets,
   plural,
   roomLightLayout,
@@ -16,7 +18,6 @@ import { Brightness } from "../components/Slider";
 import {
   Button,
   Card,
-  FieldLabel,
   Notice,
   Toggle,
   ToggleColor,
@@ -28,6 +29,8 @@ import { SceneGrid, SectionHeading } from "./shared";
 export function RoomScreen({ roomId }: { roomId: string }) {
   const colors = useColors();
   const glow = useGlow();
+  // Dragging a slider sideways shouldn't swipe back to the rooms list.
+  const [held, setHeld] = useState(false);
   const home = glow.home;
   if (!home) return <Loading />;
   const room = home.rooms.find((r) => r.id === roomId);
@@ -52,29 +55,31 @@ export function RoomScreen({ roomId }: { roomId: string }) {
   const hasGroups = home.groups?.some((group) => group.roomId === room.id);
   const layout = roomLightLayout(home, room.id);
   const scenes = home.scenes.filter((s) => s.roomId === room.id);
-  return (
-    <ToggleColor.Provider value={tone.on}>
-      <Page>
-        <Button
-          kind="plain"
-          icon={ArrowLeft}
-          label="All rooms"
-          onPress={back}
-          style={styles.back}
-        />
-        <Card
-          style={[
-            styles.hero,
-            { backgroundColor: tone.bg, borderColor: tone.bg },
-          ]}
-        >
-          <RoomIcon style={room.style} size={52} />
+  const dimmable = lights.some((l) => l.dimmable);
+  const header = (
+    <>
+      <Button
+        kind="plain"
+        icon={ArrowLeft}
+        label="All rooms"
+        onPress={back}
+        style={styles.back}
+      />
+      <Card
+        style={[
+          styles.hero,
+          { backgroundColor: tone.bg, borderColor: tone.bg },
+        ]}
+      >
+        <View style={styles.heroRow}>
+          <RoomIcon style={room.style} size={44} />
           <View style={{ flex: 1 }}>
             <Txt
               accessibilityRole="header"
-              size={28}
+              size={24}
               weight="semibold"
-              style={{ letterSpacing: -0.8 }}
+              style={{ letterSpacing: -0.6 }}
+              numberOfLines={1}
             >
               {room.name}
             </Txt>
@@ -88,20 +93,27 @@ export function RoomScreen({ roomId }: { roomId: string }) {
             disabled={glow.disabled || !anyAvailable}
             onChange={() => glow.lightsAction(lights, { on: !onCount })}
           />
-        </Card>
-        {lights.some((l) => l.dimmable) && (
-          <Card style={styles.master}>
-            <FieldLabel>Room brightness</FieldLabel>
-            <Brightness
-              value={averageBrightness(lights)}
-              label="Room brightness"
-              disabled={glow.disabled || !anyAvailable}
-              onChange={(brightness) =>
-                glow.lightsAction(lights, { on: true, brightness })
-              }
-            />
-          </Card>
+        </View>
+        {dimmable && (
+          <Brightness
+            value={averageBrightness(lights)}
+            label="Room brightness"
+            disabled={glow.disabled || !anyAvailable}
+            onChange={(brightness) =>
+              glow.lightsAction(sliderTargets(lights), {
+                on: true,
+                brightness,
+              })
+            }
+          />
         )}
+      </Card>
+    </>
+  );
+  return (
+    <ToggleColor.Provider value={tone.on}>
+      <Stack.Screen options={{ gestureEnabled: !held }} />
+      <Page header={header} onHold={setHeld}>
         <SectionHeading title="Scenes" count={scenes.length}>
           <Button
             kind="primary"
@@ -150,12 +162,6 @@ export function RoomScreen({ roomId }: { roomId: string }) {
 
 const styles = StyleSheet.create({
   back: { alignSelf: "flex-start", marginBottom: -8 },
-  hero: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    padding: 20,
-    borderRadius: 20,
-  },
-  master: { padding: 16, gap: 4 },
+  hero: { padding: 16, borderRadius: 20, gap: 10 },
+  heroRow: { flexDirection: "row", alignItems: "center", gap: 14 },
 });

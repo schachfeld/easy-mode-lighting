@@ -1,18 +1,21 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Platform,
   Pressable,
-  RefreshControl,
-  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
+// Gesture Handler's scroll view gives way to a slider or the color wheel that
+// holds the touch.
+import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "expo-router/tabs";
 import { Check, CircleHelp, RotateCcw, WifiOff, X } from "lucide-react-native";
+import { lightTargets } from "../core";
 import { useGlow } from "../glow";
 import { useColors } from "../theme";
+import { HoldContext } from "./hold";
 import { LightEditor } from "./LightEditor";
 import { LightGroupSettings } from "./LightGroupSettings";
 import { SceneEditor } from "./SceneEditor";
@@ -23,9 +26,11 @@ export function Overlays() {
   const glow = useGlow();
   const { home, toast } = glow;
   const errorMessage = toast?.error ? toast.message : undefined;
+  const currentGroup = home?.groups?.find(
+    (group) => group.id === glow.lightEditor,
+  );
   const currentLight =
-    home?.lights.find((l) => l.id === glow.lightEditor) ??
-    home?.groups?.find((group) => group.id === glow.lightEditor);
+    home?.lights.find((l) => l.id === glow.lightEditor) ?? currentGroup;
   return (
     <>
       {home && glow.customizeRoom && (
@@ -79,6 +84,11 @@ export function Overlays() {
       {currentLight && (
         <LightEditor
           light={currentLight}
+          members={
+            home && currentGroup
+              ? lightTargets(home, currentGroup.memberIds)
+              : undefined
+          }
           roomName={home?.rooms.find((r) => r.id === currentLight.roomId)?.name}
           disabled={glow.disabled}
           error={errorMessage}
@@ -185,26 +195,39 @@ export function ToastView() {
   );
 }
 
-// A scrolling page under the tab bar, with the reconnection banner.
+// A scrolling page under the tab bar, with the reconnection banner. A header
+// stays fixed at the top while the rest of the page scrolls beneath it. The
+// page holds still while a slider on it is dragged, and onHold tells the
+// screen, for example to pause its back gesture.
 export function Page({
   children,
+  header,
   onRefresh,
+  onHold,
 }: {
   children: ReactNode;
+  header?: ReactNode;
   onRefresh?: () => void;
+  onHold?: (held: boolean) => void;
 }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const tabBar = useTabBarHeight();
   const { home } = useGlow();
-  return (
+  const [held, setHeld] = useState(false);
+  const hold = (next: boolean) => {
+    setHeld(next);
+    onHold?.(next);
+  };
+  const page = (
     <ScrollView
+      scrollEnabled={!held}
       style={{ flex: 1, backgroundColor: colors.bg }}
       // On iOS the system adds the status bar and tab bar to the insets, so the
       // page scrolls under the Liquid Glass bar.
       contentInsetAdjustmentBehavior={glassTabs ? "automatic" : "never"}
       contentContainerStyle={{
-        paddingTop: (glassTabs ? 0 : insets.top) + 12,
+        paddingTop: (header || glassTabs ? 0 : insets.top) + 12,
         paddingBottom: (glassTabs ? 0 : tabBar) + 90,
         paddingHorizontal: 18,
         gap: 18,
@@ -237,9 +260,42 @@ export function Page({
       {children}
     </ScrollView>
   );
+  if (!header)
+    return <HoldContext.Provider value={hold}>{page}</HoldContext.Provider>;
+  return (
+    <HoldContext.Provider value={hold}>
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
+        <View
+          style={[
+            styles.header,
+            {
+              paddingTop: insets.top + 8,
+              backgroundColor: colors.bg,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <View style={styles.headerContent}>{header}</View>
+        </View>
+        {page}
+      </View>
+    </HoldContext.Provider>
+  );
 }
 
 const styles = StyleSheet.create({
+  header: {
+    paddingHorizontal: 18,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    zIndex: 1,
+  },
+  headerContent: {
+    gap: 8,
+    width: "100%",
+    maxWidth: 864,
+    alignSelf: "center",
+  },
   toast: {
     position: "absolute",
     flexDirection: "row",

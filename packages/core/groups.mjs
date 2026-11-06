@@ -12,6 +12,14 @@ export function averageBrightness(lights, fallback = 0) {
     : fallback;
 }
 
+// Adjusting several lights at once (brightness, color or white) changes only
+// the ones already on, so it never switches on the rest. When none are on,
+// it turns them all on.
+export function sliderTargets(lights) {
+  const lit = lights.filter((light) => light.available && light.on);
+  return lit.length ? lit : lights;
+}
+
 // Only collapse groups whose complete membership can be resolved to visible
 // lights in one room. Unknown, hidden, cyclic and cross-room membership stays
 // visible as before; guessing here could silently hide a control.

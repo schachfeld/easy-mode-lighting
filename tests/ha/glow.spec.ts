@@ -77,6 +77,39 @@ test("room controls switch and dim the lights in Home Assistant", async ({
     .toEqual([255, 255]);
 });
 
+test("room brightness only dims the lights that are already on", async ({
+  page,
+}) => {
+  // The sofa lamp is on and the ceiling light is off.
+  await control(page, "slider", "Living room brightness").focus();
+  await page.keyboard.press("End");
+  await expect
+    .poll(async () => (await light("sofa_lamp")).attributes.brightness)
+    .toBe(255);
+  expect((await light("ceiling_light")).state).toBe("off");
+
+  await button(page, "Open Living room").click();
+  await control(page, "slider", "Room brightness").focus();
+  await page.keyboard.press("Home");
+  await expect
+    .poll(async () => (await light("sofa_lamp")).attributes.brightness)
+    .toBe(3);
+  expect((await light("ceiling_light")).state).toBe("off");
+
+  // With every light off, the slider turns the whole room on.
+  const room = control(page, "switch", "Living room all lights");
+  await room.click();
+  await expect.poll(async () => (await light("sofa_lamp")).state).toBe("off");
+  await control(page, "slider", "Room brightness").focus();
+  await page.keyboard.press("End");
+  await expect
+    .poll(async () => [
+      (await light("sofa_lamp")).attributes.brightness,
+      (await light("ceiling_light")).attributes.brightness,
+    ])
+    .toEqual([255, 255]);
+});
+
 test("colors and whites from the light editor reach the bulb", async ({
   page,
 }) => {

@@ -5,6 +5,7 @@ import {
   colorsClose,
   kelvinClose,
   plural,
+  sliderTargets,
   type Light,
   type LightGroup,
 } from "../core";
@@ -34,6 +35,7 @@ const whites = [
 // The adjust dialog for a single light or a light group.
 export function LightEditor({
   light,
+  members,
   roomName,
   disabled,
   error,
@@ -41,6 +43,8 @@ export function LightEditor({
   onClose,
 }: {
   light: Light | LightGroup;
+  // A group's lights. Adjusting the group changes only those already on.
+  members?: Light[];
   roomName?: string;
   disabled: boolean;
   error?: string;
@@ -49,6 +53,7 @@ export function LightEditor({
 }) {
   const colors = useColors();
   const locked = disabled || !light.available;
+  const adjusted = members ? sliderTargets(members) : [light];
   const supportedKelvin = (kelvin: number) =>
     Math.max(light.minKelvin, Math.min(light.maxKelvin, kelvin));
   // Bulbs report colors and temperatures slightly differently from what they
@@ -117,7 +122,7 @@ export function LightEditor({
           <Brightness
             value={light.on ? light.brightness : 0}
             onChange={(brightness) =>
-              onChange([light], { brightness, on: true })
+              onChange(adjusted, { brightness, on: true })
             }
             disabled={locked}
           />
@@ -132,7 +137,7 @@ export function LightEditor({
             label={`${light.name} color`}
             disabled={locked}
             onChange={(color) =>
-              onChange([light], { color, colorMode: "rgb", on: true })
+              onChange(adjusted, { color, colorMode: "rgb", on: true })
             }
           />
           <View style={styles.swatches}>
@@ -146,7 +151,7 @@ export function LightEditor({
                   accessibilityState={{ selected, disabled: locked }}
                   disabled={locked}
                   onPress={() =>
-                    onChange([light], { color, colorMode: "rgb", on: true })
+                    onChange(adjusted, { color, colorMode: "rgb", on: true })
                   }
                   style={[
                     styles.swatch,
@@ -177,7 +182,7 @@ export function LightEditor({
             disabled={locked}
             label={`${light.name} white temperature`}
             onChange={(kelvin) =>
-              onChange([light], { kelvin, colorMode: "color_temp", on: true })
+              onChange(adjusted, { kelvin, colorMode: "color_temp", on: true })
             }
           />
           <View style={styles.whites}>
@@ -192,7 +197,7 @@ export function LightEditor({
                   accessibilityState={{ selected, disabled: locked }}
                   disabled={locked}
                   onPress={() =>
-                    onChange([light], {
+                    onChange(adjusted, {
                       kelvin,
                       colorMode: "color_temp",
                       on: true,
